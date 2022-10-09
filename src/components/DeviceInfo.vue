@@ -2,11 +2,11 @@
 import { ref } from "vue";
 import { invoke } from "@tauri-apps/api/tauri";
 
-const hid_devices: string[] = ref();
-const hid_device = ref("");
+const HidDevices: Array<string> = ref();
 
 async function getDevice() {
-  hid_device.value = await invoke("get_hid_device");
+  HidDevices.values = await invoke("get_hid_device");
+  console.log(HidDevices)
 }
 
 </script>
@@ -17,10 +17,10 @@ async function getDevice() {
 
   </v-table>
   <div class="card">
-    <button type="button" @click="getDevices()">Get all HID devices</button>
+    <button type="button" @click="getDevice()">Get all HID devices</button>
   </div>
 
-  <li v-for="device in hid_devices">
+  <li v-for="device in HidDevices">
     {{device}}
   </li>
 </template>

@@ -3,22 +3,20 @@
     windows_subsystem = "windows"
 )]
 
+mod types;
+
 use anyhow::{bail, Result};
 use hidapi::HidApi;
 use once_cell::sync::OnceCell;
 use tauri::async_runtime::Mutex;
 
+use types::Devices;
+
 static HID_API: OnceCell<Mutex<HidApi>> = OnceCell::new();
 
-// Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
 #[tauri::command]
-fn greet(name: &str) -> String {
-    format!("Hello, {}! You've been greeted from Rust!", name)
-}
-
-#[tauri::command]
-async fn get_hid_device() -> String {
-    HID_API
+async fn get_hid_device() -> Vec<String> {
+    let devices: Vec<String> = HID_API
         .get()
         .unwrap()
         .lock()
@@ -43,7 +41,10 @@ async fn get_hid_device() -> String {
                 }
             )
         })
-        .collect()
+        .collect();
+
+    dbg!(devices)
+    // Ok(Devices { list: devices })
 }
 
 fn main() -> Result<()> {
@@ -55,10 +56,7 @@ fn main() -> Result<()> {
     }?;
 
     tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![
-            greet,
-            get_hid_device
-        ])
+        .invoke_handler(tauri::generate_handler![get_hid_device])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 
