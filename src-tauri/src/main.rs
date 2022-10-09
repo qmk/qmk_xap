@@ -17,38 +17,6 @@ fn greet(name: &str) -> String {
 }
 
 #[tauri::command]
-fn get_hid_devices() -> Vec<String> {
-    match HidApi::new() {
-        Ok(api) => api
-            .device_list()
-            .map(|device| {
-                format!(
-                    "VID: {:04x}, PID: {:04x}, Serial: {}, Product name: {}, Manufacturer: {}",
-                    device.vendor_id(),
-                    device.product_id(),
-                    match device.serial_number() {
-                        Some(s) => s,
-                        _ => "<COULD NOT FETCH>",
-                    },
-                    match device.product_string() {
-                        Some(s) => s,
-                        _ => "<COULD NOT FETCH>",
-                    },
-                    match device.manufacturer_string() {
-                        Some(s) => s,
-                        _ => "<COULD_NOT_FETCH>",
-                    }
-                )
-            })
-            .collect(),
-        Err(e) => {
-            eprintln!("Error: {}", e);
-            Default::default()
-        }
-    }
-}
-
-#[tauri::command]
 async fn get_hid_device() -> String {
     HID_API
         .get()
@@ -89,7 +57,6 @@ fn main() -> Result<()> {
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
             greet,
-            get_hid_devices,
             get_hid_device
         ])
         .run(tauri::generate_context!())
