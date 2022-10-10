@@ -2,25 +2,17 @@
 import { ref } from "vue";
 import { invoke } from "@tauri-apps/api/tauri";
 
-const HidDevices: Array<string> = ref();
+const XAPDevice: ref<string> = ref("");
 
 async function getDevice() {
-  HidDevices.values = await invoke("get_xap_devices");
-  console.log(HidDevices)
+  XAPDevice.value = await invoke("get_xap_device");
+  console.log(XAPDevice)
 }
 
 </script>
 
 <template>
-  <h2>Device Info</h2>
-  <v-table>
-
-  </v-table>
-  <div class="card">
-    <button type="button" @click="getDevice()">Get all HID devices</button>
-  </div>
-
-  <li v-for="device in HidDevices">
-    {{device}}
-  </li>
+    <h2>Device Info</h2>
+    <button type="button" @click="getDevice()">Show Device Info</button>
+    <p>{{XAPDevice}}</p>
 </template>

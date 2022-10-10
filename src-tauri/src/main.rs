@@ -4,32 +4,50 @@
 )]
 
 mod types;
-mod xap_client;
+mod xap;
 
-use anyhow::{bail, Result};
+use std::time::Duration;
+
+use anyhow::Result;
+use log::{info, LevelFilter};
 use once_cell::sync::OnceCell;
 use tauri::async_runtime::Mutex;
 
-use xap_client::XAPClient;
+use xap::{XAPClient, XAPDevice};
 
-static XAP_CLIENT: OnceCell<Mutex<XAPClient>> = OnceCell::new();
+static XAP_DEVICE: OnceCell<Mutex<XAPDevice>> = OnceCell::new();
 
 #[tauri::command]
-async fn get_xap_devices() -> Vec<String> {
-    let devices: Vec<String> = XAP_CLIENT.get().unwrap().lock().await.get_xap_devices();
-    dbg!(devices)
+async fn get_xap_device() -> Option<String> {
+    let device = XAP_DEVICE.get().unwrap().lock().await;
+
+    Some(format!("{}", device))
 }
 
 fn main() -> Result<()> {
-    match XAPClient::new() {
-        Ok(api) => XAP_CLIENT
-            .set(Mutex::new(api))
-            .map_err(|_| anyhow::anyhow!("failed to instanciate mutex")),
-        Err(err) => bail!("failed to create a USB HID instance with {err}"),
-    }?;
+    env_logger::builder()
+        .format_timestamp(None)
+        .filter_level(LevelFilter::Info)
+        .init();
+
+    let mut xap_client = XAPClient::new()?;
+
+    info!("querying for compatible XAP devices");
+    let device = loop {
+        if let Ok(device) = xap_client.get_first_xap_device() {
+            break device;
+        } else {
+            info!(".");
+            std::thread::sleep(Duration::from_secs(1));
+        }
+    };
+
+    XAP_DEVICE
+        .set(Mutex::new(device))
+        .expect("couldn't move XAP device into Mutex");
 
     tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![get_xap_devices])
+        .invoke_handler(tauri::generate_handler![get_xap_device])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 
