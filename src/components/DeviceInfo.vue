@@ -5,7 +5,7 @@ import { invoke } from "@tauri-apps/api/tauri";
 const HidDevices: Array<string> = ref();
 
 async function getDevice() {
-  HidDevices.values = await invoke("get_hid_device");
+  HidDevices.values = await invoke("get_xap_devices");
   console.log(HidDevices)
 }
 
