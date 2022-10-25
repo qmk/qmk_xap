@@ -3,6 +3,7 @@
     windows_subsystem = "windows"
 )]
 
+mod protocol;
 mod types;
 mod xap;
 
@@ -22,6 +23,13 @@ async fn get_xap_device() -> Option<String> {
     let device = XAP_DEVICE.get().unwrap().lock().await;
 
     Some(format!("{}", device))
+}
+
+#[tauri::command]
+async fn get_secure_status() -> Option<()> {
+    let device = XAP_DEVICE.get().unwrap().lock().await;
+    device.query_secure_status().unwrap();
+    Some(())
 }
 
 fn main() -> Result<()> {

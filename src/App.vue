@@ -7,8 +7,7 @@ import RGB from "./components/RGB.vue";
   <v-app>
     <v-navigation-drawer expand-on-hover rail>
       <v-list>
-        <v-list-item prepend-avatar="qmk.png" title="QMK XAP"
-          subtitle="Rocks!"></v-list-item>
+        <v-list-item prepend-avatar="qmk.png" title="QMK XAP" subtitle="Rocks!"></v-list-item>
       </v-list>
 
       <v-divider></v-divider>
@@ -21,16 +20,17 @@ import RGB from "./components/RGB.vue";
     </v-navigation-drawer>
     <v-main>
       <!-- <v-container> -->
-        <!-- <v-row> -->
-          <!-- <v-col cols="2">
+      <!-- <v-row> -->
+      <!-- <v-col cols="2">
             <v-sheet rounded="lg">
               <DeviceInfo />
             </v-sheet>
           </v-col> -->
-          <!-- <v-col> -->
-              <RGB />
-          <!-- </v-col> -->
-        <!-- </v-row> -->
+      <!-- <v-col> -->
+      <DeviceInfo />
+      <RGB />
+      <!-- </v-col> -->
+      <!-- </v-row> -->
       <!-- </v-container> -->
     </v-main>
   </v-app>

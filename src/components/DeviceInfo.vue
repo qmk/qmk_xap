@@ -9,10 +9,15 @@ async function getDevice() {
   console.log(XAPDevice)
 }
 
+async function getSecureStatus() {
+  await invoke("get_secure_status")
+}
+
 </script>
 
 <template>
     <h2>Device Info</h2>
     <button type="button" @click="getDevice()">Show Device Info</button>
     <p>{{XAPDevice}}</p>
+    <button type="button" @click="getSecureStatus()">Get Secure Status</button>
 </template>
