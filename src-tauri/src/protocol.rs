@@ -229,11 +229,8 @@ impl BinRead for XAPSecureStatus {
         _options: &ReadOptions,
         _args: Self::Args,
     ) -> BinResult<Self> {
-        let mut status = [0_u8];
-
-        reader.read_exact(&mut status)?;
-
-        Ok(match status[0] {
+        let raw_status: u8 = reader.read_le()?;
+        Ok(match raw_status {
             1 => Self::UnlockInitiated,
             2 => Self::Unlocked,
             _ => Self::Disabled,
@@ -299,8 +296,7 @@ impl XAPRequest for QMKCapabilitiesQuery {
 // RGB LIGHT SUBSYSTEM - INCOMPLETE!
 //
 
-#[binrw]
-#[derive(Debug, TS, Serialize)]
+#[derive(BinWrite, BinRead, Debug, TS, Serialize)]
 #[repr(C, packed)]
 #[ts(export)]
 pub struct RGBLightConfig {
