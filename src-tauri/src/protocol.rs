@@ -1,17 +1,30 @@
-use std::io::Write;
+use std::{
+    fmt::Debug,
+    io::{Cursor, Seek, Write},
+};
 
-use anyhow::{bail, Result};
+use anyhow::{anyhow, bail, Result};
+use binrw::{prelude::*, ReadOptions};
 use bitflags::bitflags;
+use log::debug;
+use serde::Serialize;
+use ts_rs::TS;
 
 #[derive(Debug, Clone)]
+#[binwrite]
+#[repr(C, u16)]
 pub enum Token {
-    WithResponse { token: u16 },
+    WithResponse {
+        token: u16,
+    },
+    #[br(magic = 0xFFFE)]
     WithoutResponse,
+    #[br(magic = 0xFFFF)]
     Broadcast,
 }
 
 fn random_xap_token_value() -> u16 {
-    let mut token = 0_u16;
+    let mut token;
     loop {
         token = rand::random();
         match token {
@@ -23,10 +36,6 @@ fn random_xap_token_value() -> u16 {
 }
 
 impl Token {
-    pub(crate) fn raw_token(&self) -> u16 {
-        self.clone().into()
-    }
-
     pub(crate) fn regular_token() -> Token {
         Self::WithResponse {
             token: random_xap_token_value(),
@@ -42,63 +51,121 @@ impl Token {
     }
 }
 
-impl TryFrom<u16> for Token {
-    type Error = anyhow::Error;
+impl BinRead for Token {
+    type Args = ();
 
-    fn try_from(value: u16) -> Result<Self, Self::Error> {
-        match value {
-            0x0100..=0xFFFD => Ok(Token::WithResponse { token: value }),
+    fn read_options<R: std::io::Read + std::io::Seek>(
+        reader: &mut R,
+        _options: &ReadOptions,
+        _args: Self::Args,
+    ) -> BinResult<Self> {
+        let raw_token: u16 = reader.read_le()?;
+
+        match raw_token {
+            0x0100..=0xFFFD => Ok(Token::WithResponse { token: raw_token }),
             0xFFFE => Ok(Token::WithoutResponse),
             0xFFFF => Ok(Token::Broadcast),
-            _ => bail!("invalid token value {}", value),
+            _ => Err(binrw::Error::Custom {
+                pos: 0,
+                err: Box::new(anyhow!("XAP token has invalid value of {}", raw_token)),
+            }),
         }
     }
 }
 
-impl Into<u16> for Token {
-    fn into(self) -> u16 {
-        match self {
-            Token::WithResponse { token } => token,
-            Token::WithoutResponse => 0xFFFE,
-            Token::Broadcast => 0xFFFF,
+bitflags! {
+    #[binread]
+    pub struct ResponseFlags: u8 {
+        const SUCCESS = 0b1;
+        const SECURE_FAILURE = 0b10;
+    }
+}
+
+pub struct RequestRaw<T: XAPRequest> {
+    token: Token,
+    payload_len: u8,
+    payload: T,
+}
+
+impl<T> RequestRaw<T>
+where
+    T: XAPRequest,
+{
+    pub fn to_response(&self, report: &[u8]) -> Result<T::Response> {
+        let mut reader = Cursor::new(report);
+        let raw_response = ResponseRaw::read_le(&mut reader)?;
+
+        debug!("received raw XAP response: {:#?}", raw_response);
+
+        // TODO add flag handling here
+        if !raw_response.flags.contains(ResponseFlags::SUCCESS) {
+            bail!("XAP responded with a failed transaction!");
+        }
+
+        let mut reader = Cursor::new(raw_response.payload);
+        T::Response::read_le(&mut reader)
+            .map_err(|err| anyhow!("failed to deserialize XAP response with {}", err))
+    }
+
+    pub fn new(payload: T) -> Self {
+        Self {
+            token: Token::regular_token(),
+            payload_len: (T::id().len() + std::mem::size_of::<T>()) as u8,
+            payload,
         }
     }
 }
 
-pub trait XAPRequest: Sized {
-    type Response: TryFrom<ResponseRaw, Error = anyhow::Error>;
+impl<T> BinWrite for RequestRaw<T>
+where
+    T: XAPRequest,
+{
+    type Args = ();
+
+    fn write_options<W: Write + Seek>(
+        &self,
+        writer: &mut W,
+        _options: &binrw::WriteOptions,
+        _args: Self::Args,
+    ) -> BinResult<()> {
+        writer.write_le(&self.token)?;
+        writer.write_le(&self.payload_len)?;
+        writer.write_le(&T::id())?;
+        writer.write_le(&self.payload)
+    }
+}
+
+#[binread]
+#[derive(Debug)]
+pub struct ResponseRaw {
+    token: Token,
+    flags: ResponseFlags,
+    #[br(temp)]
+    payload_len: u8,
+    #[br(count = payload_len)]
+    payload: Vec<u8>,
+}
+
+pub trait XAPRequest: Sized + Debug + BinWrite<Args = ()> {
+    type Response: BinRead<Args = ()>;
 
     fn id() -> &'static [u8];
 
     fn is_secure() -> bool {
         false
     }
-
-    fn write_raw_report(&self, mut report: &mut [u8]) -> anyhow::Result<()> {
-        report.write(&self.token().raw_token().to_le_bytes())?;
-
-        let id = Self::id();
-        report.write(id)?;
-        report.write(&[id.len() as u8])?;
-
-        Ok(())
-    }
-
-    fn token(&self) -> &Token;
-
-    fn has_response(&self) -> bool {
-        matches!(self.token(), Token::WithResponse { .. })
-    }
-
-    fn to_response(&self, report: &[u8]) -> Result<Self::Response> {
-        let raw_response = ResponseRaw::try_from(report)?;
-        raw_response.try_into()
-    }
 }
 
-pub struct XAPVersionQuery {
-    token: Token,
-}
+//
+// XAP SUBSYSTEM
+//
+
+#[binread]
+#[derive(Debug, Serialize)]
+pub struct XAPVersion(u32);
+
+#[derive(Debug, BinWrite)]
+pub struct XAPVersionQuery;
 
 impl XAPRequest for XAPVersionQuery {
     type Response = XAPVersion;
@@ -106,25 +173,13 @@ impl XAPRequest for XAPVersionQuery {
     fn id() -> &'static [u8] {
         &[0x00, 0x00]
     }
-
-    fn token(&self) -> &Token {
-        &self.token
-    }
 }
 
-pub struct XAPVersion(u32);
+#[derive(BinRead, Debug)]
+pub struct XAPCapabilities(u32);
 
-impl TryFrom<ResponseRaw> for XAPVersion {
-    type Error = anyhow::Error;
-
-    fn try_from(_value: ResponseRaw) -> Result<Self, Self::Error> {
-        Ok(XAPVersion(0))
-    }
-}
-
-pub struct XAPCapabilitiesQuery {
-    token: Token,
-}
+#[derive(BinWrite, Debug)]
+pub struct XAPCapabilitiesQuery;
 
 impl XAPRequest for XAPCapabilitiesQuery {
     type Response = XAPCapabilities;
@@ -132,24 +187,13 @@ impl XAPRequest for XAPCapabilitiesQuery {
     fn id() -> &'static [u8] {
         &[0x00, 0x01]
     }
-    fn token(&self) -> &Token {
-        &self.token
-    }
 }
 
-pub struct XAPCapabilities(u32);
+#[derive(BinRead, Debug)]
+pub struct XAPEnabledSubsystems(u32);
 
-impl TryFrom<ResponseRaw> for XAPCapabilities {
-    type Error = anyhow::Error;
-
-    fn try_from(value: ResponseRaw) -> Result<Self, Self::Error> {
-        Ok(XAPCapabilities(0))
-    }
-}
-
-pub struct XAPEnabledSubsystemsQuery {
-    token: Token,
-}
+#[derive(BinWrite, Debug)]
+pub struct XAPEnabledSubsystemsQuery;
 
 impl XAPRequest for XAPEnabledSubsystemsQuery {
     type Response = XAPEnabledSubsystems;
@@ -157,32 +201,10 @@ impl XAPRequest for XAPEnabledSubsystemsQuery {
     fn id() -> &'static [u8] {
         &[0x00, 0x02]
     }
-    fn token(&self) -> &Token {
-        &self.token
-    }
 }
 
-pub struct XAPEnabledSubsystems(u32);
-
-impl TryFrom<ResponseRaw> for XAPEnabledSubsystems {
-    type Error = anyhow::Error;
-
-    fn try_from(value: ResponseRaw) -> Result<Self, Self::Error> {
-        Ok(XAPEnabledSubsystems(0))
-    }
-}
-
-pub struct XAPSecureStatusQuery {
-    token: Token,
-}
-
-impl XAPSecureStatusQuery {
-    pub fn new() -> Self {
-        Self {
-            token: Token::regular_token(),
-        }
-    }
-}
+#[derive(BinWrite, Debug)]
+pub struct XAPSecureStatusQuery;
 
 impl XAPRequest for XAPSecureStatusQuery {
     type Response = XAPSecureStatus;
@@ -190,110 +212,125 @@ impl XAPRequest for XAPSecureStatusQuery {
     fn id() -> &'static [u8] {
         &[0x0, 0x3]
     }
-
-    fn token(&self) -> &Token {
-        &self.token
-    }
 }
 
-#[repr(u8)]
+#[derive(Debug, Serialize)]
 pub enum XAPSecureStatus {
     Disabled,
     UnlockInitiated,
     Unlocked,
 }
 
-impl From<u8> for XAPSecureStatus {
-    fn from(status: u8) -> Self {
-        match status {
+impl BinRead for XAPSecureStatus {
+    type Args = ();
+
+    fn read_options<R: std::io::Read + std::io::Seek>(
+        reader: &mut R,
+        _options: &ReadOptions,
+        _args: Self::Args,
+    ) -> BinResult<Self> {
+        let mut status = [0_u8];
+
+        reader.read_exact(&mut status)?;
+
+        Ok(match status[0] {
             1 => Self::UnlockInitiated,
             2 => Self::Unlocked,
             _ => Self::Disabled,
-        }
+        })
     }
 }
 
-impl TryFrom<ResponseRaw> for XAPSecureStatus {
-    type Error = anyhow::Error;
-
-    fn try_from(value: ResponseRaw) -> Result<Self, Self::Error> {
-        Ok(value.payload[0].into())
-    }
-}
-
-pub struct EmptyResponse;
-
-impl TryFrom<ResponseRaw> for EmptyResponse {
-    type Error = anyhow::Error;
-
-    fn try_from(value: ResponseRaw) -> Result<Self, Self::Error> {
-        Ok(EmptyResponse)
-    }
-}
-
-pub struct XAPSecureStatusUnlock {
-    token: Token,
-}
+#[derive(BinWrite, Debug)]
+pub struct XAPSecureStatusUnlock;
 
 impl XAPRequest for XAPSecureStatusUnlock {
-    type Response = EmptyResponse;
+    type Response = ();
 
     fn id() -> &'static [u8] {
         &[0x0, 0x4]
     }
-    fn token(&self) -> &Token {
-        &self.token
-    }
 }
 
-pub struct XAPSecureStatusLock {
-    token: Token,
-}
+#[derive(BinWrite, Debug)]
+pub struct XAPSecureStatusLock;
 
 impl XAPRequest for XAPSecureStatusLock {
-    type Response = EmptyResponse;
+    type Response = ();
 
     fn id() -> &'static [u8] {
         &[0x0, 0x5]
     }
+}
 
-    fn token(&self) -> &Token {
-        &self.token
+//
+// QMK SUBSYSTEM - INCOMPLETE!
+//
+
+#[derive(BinRead, Debug)]
+pub struct QMKVersion(u32);
+
+#[derive(BinWrite, Debug)]
+pub struct QMKVersionQuery;
+
+impl XAPRequest for QMKVersionQuery {
+    type Response = QMKVersion;
+
+    fn id() -> &'static [u8] {
+        &[0x1, 0x0]
     }
 }
 
-pub struct QMKVersionQuery {
-    token: Token,
-}
-pub struct QMKVersionQueryResponse {
-    version: u32,
-}
+#[derive(BinRead, Debug)]
+pub struct QMKCapabilities(u32);
 
-pub struct QMKCapabilitiesQuery {
-    token: Token,
-}
+#[derive(BinWrite, Debug)]
+pub struct QMKCapabilitiesQuery;
 
-pub struct QMKCapabilitiesResponse {
-    capabilities: u32,
-}
+impl XAPRequest for QMKCapabilitiesQuery {
+    type Response = QMKCapabilities;
 
-bitflags! {
-    pub struct ResponseFlags: u8 {
-        const SUCCESS = 0b1;
-        const SECURE_FAILURE = 0b10;
+    fn id() -> &'static [u8] {
+        &[0x1, 0x1]
     }
 }
 
-pub struct ResponseRaw {
-    token: Token,
-    flags: ResponseFlags,
-    payload: Vec<u8>,
+//
+// RGB LIGHT SUBSYSTEM - INCOMPLETE!
+//
+
+#[binrw]
+#[derive(Debug, TS)]
+#[repr(C, packed)]
+pub struct RGBLightConfig {
+    pub enable: u8,
+    pub mode: u8,
+    pub hue: u8,
+    pub sat: u8,
+    pub val: u8,
+    pub speed: u8,
 }
 
-impl TryFrom<&[u8]> for ResponseRaw {
-    type Error = anyhow::Error;
+#[derive(BinWrite, Debug)]
+pub struct RGBLightConfigQuery;
 
-    fn try_from(value: &[u8]) -> Result<Self, Self::Error> {
-        todo!()
+impl XAPRequest for RGBLightConfigQuery {
+    type Response = RGBLightConfig;
+
+    fn id() -> &'static [u8] {
+        &[0x6, 0x3, 0x3]
+    }
+}
+
+#[derive(BinWrite, Debug)]
+pub struct RGBLightConfigCommand {
+    pub config: RGBLightConfig,
+}
+
+impl XAPRequest for RGBLightConfigCommand {
+    type Response = ();
+
+    fn id() -> &'static [u8] {
+        &[0x6, 0x3, 0x4]
     }
 }

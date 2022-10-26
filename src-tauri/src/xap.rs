@@ -1,13 +1,19 @@
 use std::fmt::Debug;
 use std::fmt::Display;
+use std::io::Cursor;
 
 use anyhow::{bail, Result};
+use binrw::BinWriterExt;
 use hidapi::{DeviceInfo, HidApi, HidDevice};
-use tauri::api::http::RawResponse;
 
+use crate::protocol::RGBLightConfig;
+use crate::protocol::RGBLightConfigCommand;
+use crate::protocol::RequestRaw;
 use crate::protocol::XAPRequest;
 use crate::protocol::XAPSecureStatus;
 use crate::protocol::XAPSecureStatusQuery;
+use crate::protocol::XAPVersion;
+use crate::protocol::XAPVersionQuery;
 
 const XAP_USAGE_PAGE: u16 = 0xFF51;
 const XAP_USAGE: u16 = 0x0058;
@@ -52,27 +58,39 @@ impl Display for XAPDevice {
 
 impl XAPDevice {
     pub fn query_secure_status(&self) -> Result<XAPSecureStatus> {
-        let request = XAPSecureStatusQuery::new();
+        self.do_query(RequestRaw::new(XAPSecureStatusQuery {}))
+    }
+
+    pub fn query_xap_version(&self) -> Result<XAPVersion> {
+        self.do_query(RequestRaw::new(XAPVersionQuery {}))
+    }
+
+    pub fn set_rgblight_config(&self) -> Result<()> {
+        let request = RequestRaw::new(RGBLightConfigCommand {
+            config: RGBLightConfig {
+                enable: 1,
+                mode: 1,
+                hue: rand::random(),
+                sat: 255,
+                val: 255,
+                speed: 50,
+            },
+        });
         self.do_query(request)
     }
 
-    fn do_query<T>(&self, request: impl XAPRequest + XAPRequest<Response = T>) -> Result<T> {
-        let mut report: [u8; 8] = [0; 8];
+    fn do_query<T: XAPRequest>(&self, request: RequestRaw<T>) -> Result<T::Response> {
+        let mut report: [u8; 64] = [0; 64];
 
-        request.write_raw_report(&mut report)?;
+        let mut writer = Cursor::new(&mut report[1..]);
+        writer.write_le(&request)?;
+
         self.device.write(&report)?;
 
+        // TODO handle multi packet and host responses aka. do Token matching
+        // and packet re-assembly
         self.device.read_timeout(&mut report, 500)?;
         request.to_response(&report)
-    }
-
-    fn do_command<T>(&self, request: impl XAPRequest) -> Result<()> {
-        let mut report: [u8; 8] = [0; 8];
-
-        request.write_raw_report(&mut report)?;
-        self.device.write(&report)?;
-
-        Ok(())
     }
 }
 
