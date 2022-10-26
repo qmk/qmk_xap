@@ -300,8 +300,9 @@ impl XAPRequest for QMKCapabilitiesQuery {
 //
 
 #[binrw]
-#[derive(Debug, TS)]
+#[derive(Debug, TS, Serialize)]
 #[repr(C, packed)]
+#[ts(export)]
 pub struct RGBLightConfig {
     pub enable: u8,
     pub mode: u8,
