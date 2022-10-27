@@ -1,22 +1,33 @@
 use std::fmt::Debug;
 use std::fmt::Display;
 use std::io::Cursor;
+use std::thread;
+use std::thread::JoinHandle;
+use std::time::Duration;
+use std::time::Instant;
 
 use anyhow::{bail, Result};
 use binrw::BinWriterExt;
+use crossbeam_channel::unbounded;
+use crossbeam_channel::Receiver;
+use crossbeam_channel::Sender;
 use hidapi::{DeviceInfo, HidApi, HidDevice};
+use log::error;
+
+use log::trace;
 
 use crate::protocol::RGBLightConfig;
 use crate::protocol::RGBLightConfigCommand;
 use crate::protocol::RequestRaw;
+use crate::protocol::ResponseRaw;
+use crate::protocol::Token;
 use crate::protocol::XAPRequest;
-use crate::protocol::XAPSecureStatus;
-use crate::protocol::XAPSecureStatusQuery;
 use crate::protocol::XAPVersion;
 use crate::protocol::XAPVersionQuery;
 
 const XAP_USAGE_PAGE: u16 = 0xFF51;
 const XAP_USAGE: u16 = 0x0058;
+const XAP_REPORT_SIZE: usize = 64;
 
 pub(crate) struct XAPClient {
     hid: HidApi,
@@ -24,7 +35,10 @@ pub(crate) struct XAPClient {
 
 pub(crate) struct XAPDevice {
     info: DeviceInfo,
-    device: HidDevice,
+    tx: HidDevice,
+    _rx_thread: JoinHandle<()>,
+    rx_channel: Receiver<ResponseRaw>,
+    broadcast_channel: Receiver<ResponseRaw>,
 }
 
 impl Debug for XAPDevice {
@@ -57,10 +71,6 @@ impl Display for XAPDevice {
 }
 
 impl XAPDevice {
-    pub fn query_secure_status(&self) -> Result<XAPSecureStatus> {
-        self.do_query(RequestRaw::new(XAPSecureStatusQuery {}))
-    }
-
     pub fn query_xap_version(&self) -> Result<XAPVersion> {
         self.do_query(RequestRaw::new(XAPVersionQuery {}))
     }
@@ -79,18 +89,86 @@ impl XAPDevice {
         self.do_query(request)
     }
 
-    fn do_query<T: XAPRequest>(&self, request: RequestRaw<T>) -> Result<T::Response> {
-        let mut report: [u8; 64] = [0; 64];
+    pub fn do_query<T: XAPRequest>(&self, request: RequestRaw<T>) -> Result<T::Response> {
+        let mut report = [0; XAP_REPORT_SIZE];
 
         let mut writer = Cursor::new(&mut report[1..]);
         writer.write_le(&request)?;
 
-        self.device.write(&report)?;
+        trace!("send XAP report with token {:?}", request.token());
+        self.tx.write(&report)?;
 
-        // TODO handle multi packet and host responses aka. do Token matching
-        // and packet re-assembly
-        self.device.read_timeout(&mut report, 500)?;
-        request.to_response(&report)
+        let start = Instant::now();
+
+        let response = loop {
+            let response = self.rx_channel.recv_timeout(Duration::from_millis(500))?;
+            if response.token() == request.token() {
+                break response;
+            }
+            if start.elapsed() > Duration::from_secs(5) {
+                bail!(
+                    "failed to receive XAP response for request {:?} in 5 seconds",
+                    request.token()
+                )
+            }
+        };
+
+        response.into_xap_response::<T>()
+    }
+
+    pub fn new(info: DeviceInfo, rx: HidDevice, tx: HidDevice) -> Self {
+        let (tx_channel, rx_channel) = unbounded();
+        let (broadcast_tx_channel, broadcast_rx_channel) = unbounded();
+
+        Self {
+            info,
+            tx,
+            _rx_thread: Self::start_rx_thread(rx, broadcast_tx_channel, tx_channel),
+            rx_channel,
+            broadcast_channel: broadcast_rx_channel,
+        }
+    }
+
+    fn start_rx_thread(
+        rx: HidDevice,
+        broadcast_tx_channel: Sender<ResponseRaw>,
+        tx_channel: Sender<ResponseRaw>,
+    ) -> JoinHandle<()> {
+        // TODO: not happy with the heavy nesting, this should be cleaned-up.
+        // Also nobody consumes the broadcast messages ATM.
+        thread::spawn(move || loop {
+            let result: Result<()> = (|| {
+                let mut report = [0_u8; XAP_REPORT_SIZE];
+                loop {
+                    rx.read(&mut report)?;
+
+                    match ResponseRaw::from_raw_report(&report) {
+                        Ok(response) => {
+                            if *response.token() == Token::Broadcast {
+                                trace!(
+                                    "received XAP broadcast package with payload {:#?}",
+                                    response.payload()
+                                );
+                                broadcast_tx_channel.send(response)?;
+                            } else {
+                                trace!(
+                                    "
+                                received XAP package with token {:?} and payload {:#?}",
+                                    response.token(),
+                                    response.payload()
+                                );
+                                tx_channel.send(response)?;
+                            }
+                        }
+                        Err(err) => error!("received malformed XAP HID report {}", err),
+                    }
+                }
+            })();
+
+            if let Err(err) = result {
+                error!("error in XAP receive thread {}", err);
+            }
+        })
     }
 }
 
@@ -109,10 +187,11 @@ impl XAPClient {
             .device_list()
             .find(|info| info.usage_page() == XAP_USAGE_PAGE && info.usage() == XAP_USAGE)
         {
-            Some(info) => Ok(XAPDevice {
-                info: info.clone(),
-                device: info.open_device(&self.hid)?,
-            }),
+            Some(info) => Ok(XAPDevice::new(
+                info.clone(),
+                info.open_device(&self.hid)?,
+                info.open_device(&self.hid)?,
+            )),
             None => bail!("no XAP compatible device found!"),
         }
     }

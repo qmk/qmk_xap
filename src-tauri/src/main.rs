@@ -12,10 +12,12 @@ use std::time::Duration;
 use anyhow::Result;
 use log::{info, LevelFilter};
 use once_cell::sync::OnceCell;
-use protocol::{XAPSecureStatus, XAPVersion};
+use protocol::{XAPSecureStatus, XAPVersion, XAPVersionQuery};
 use tauri::async_runtime::Mutex;
 
 use xap::{XAPClient, XAPDevice};
+
+use crate::protocol::{RequestRaw, XAPSecureStatusQuery};
 
 static XAP_DEVICE: OnceCell<Mutex<XAPDevice>> = OnceCell::new();
 
@@ -29,13 +31,15 @@ async fn get_xap_device() -> Option<String> {
 #[tauri::command]
 async fn get_secure_status() -> Option<XAPSecureStatus> {
     let device = XAP_DEVICE.get().unwrap().lock().await;
-    dbg!(device.query_secure_status().ok())
+    dbg!(device
+        .do_query(RequestRaw::new(XAPSecureStatusQuery {}))
+        .ok())
 }
 
 #[tauri::command]
 async fn get_xap_version() -> Option<XAPVersion> {
     let device = XAP_DEVICE.get().unwrap().lock().await;
-    dbg!(device.query_xap_version().ok())
+    dbg!(device.do_query(RequestRaw::new(XAPVersionQuery {})).ok())
 }
 
 #[tauri::command]

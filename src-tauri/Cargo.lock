@@ -2783,6 +2783,7 @@ dependencies = [
  "anyhow",
  "binrw",
  "bitflags",
+ "crossbeam-channel",
  "env_logger",
  "hidapi",
  "log",

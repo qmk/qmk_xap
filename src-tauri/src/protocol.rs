@@ -10,7 +10,7 @@ use log::debug;
 use serde::Serialize;
 use ts_rs::TS;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 #[binwrite]
 #[br(repr = u16)]
 pub enum Token {
@@ -87,27 +87,15 @@ impl<T> RequestRaw<T>
 where
     T: XAPRequest,
 {
-    pub fn to_response(&self, report: &[u8]) -> Result<T::Response> {
-        let mut reader = Cursor::new(report);
-        let raw_response = ResponseRaw::read_le(&mut reader)?;
-
-        debug!("received raw XAP response: {:#?}", raw_response);
-
-        // TODO add flag handling here
-        if !raw_response.flags.contains(ResponseFlags::SUCCESS) {
-            bail!("XAP responded with a failed transaction!");
-        }
-
-        let mut reader = Cursor::new(raw_response.payload);
-        T::Response::read_le(&mut reader)
-            .map_err(|err| anyhow!("failed to deserialize XAP response with {}", err))
-    }
-
     pub fn new(payload: T) -> Self {
         Self {
             token: Token::regular_token(),
             payload,
         }
+    }
+
+    pub fn token(&self) -> &Token {
+        &self.token
     }
 }
 
@@ -152,6 +140,40 @@ pub struct ResponseRaw {
     payload_len: u8,
     #[br(count = payload_len)]
     payload: Vec<u8>,
+}
+
+impl ResponseRaw {
+    pub fn from_raw_report(report: &[u8]) -> Result<Self> {
+        let mut reader = Cursor::new(report);
+        let raw_response = ResponseRaw::read_le(&mut reader)?;
+
+        debug!("received raw XAP response: {:#?}", raw_response);
+
+        // TODO add flag handling here
+        if !raw_response.flags.contains(ResponseFlags::SUCCESS) {
+            bail!("XAP responded with a failed transaction!");
+        }
+
+        Ok(raw_response)
+    }
+
+    pub fn token(&self) -> &Token {
+        &self.token
+    }
+
+    pub fn payload(&self) -> &[u8] {
+        &self.payload
+    }
+
+    pub fn into_xap_response<T>(self) -> Result<T::Response>
+    where
+        T: XAPRequest,
+    {
+        let mut reader = Cursor::new(self.payload);
+
+        T::Response::read_le(&mut reader)
+            .map_err(|err| anyhow!("failed to deserialize XAP response with {}", err))
+    }
 }
 
 pub trait XAPRequest: Sized + Debug + BinWrite<Args = ()> {
