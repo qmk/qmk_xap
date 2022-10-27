@@ -1008,6 +1008,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"colord@npm:^2.9.3":
+  version: 2.9.3
+  resolution: "colord@npm:2.9.3"
+  checksum: 95d909bfbcfd8d5605cbb5af56f2d1ce2b323990258fd7c0d2eb0e6d3bb177254d7fb8213758db56bb4ede708964f78c6b992b326615f81a18a6aaf11d64c650
+  languageName: node
+  linkType: hard
+
 "commondir@npm:^1.0.1":
   version: 1.0.1
   resolution: "commondir@npm:1.0.1"
@@ -2001,6 +2008,26 @@ __metadata:
   languageName: node
   linkType: hard
 
+"qmk-xap-gui@workspace:.":
+  version: 0.0.0-use.local
+  resolution: "qmk-xap-gui@workspace:."
+  dependencies:
+    "@tauri-apps/api": ^1.1.0
+    "@tauri-apps/cli": ^1.1.0
+    "@types/node": ^18.7.10
+    "@vitejs/plugin-vue": ^3.1.2
+    "@vitejs/plugin-vue-jsx": ^2.0.1
+    "@vue/runtime-dom": ^3.2.40
+    colord: ^2.9.3
+    typescript: ^4.6.4
+    vite: ^3.0.2
+    vite-plugin-vuetify: 1.0.0-alpha.17
+    vue: ^3.2.37
+    vue-tsc: ^0.40.0
+    vuetify: 3.0.0-beta.13
+  languageName: unknown
+  linkType: soft
+
 "readable-stream@npm:^3.6.0":
   version: 3.6.0
   resolution: "readable-stream@npm:3.6.0"
@@ -2248,25 +2275,6 @@ __metadata:
   checksum: a04c07bb9e2d8f46776517d4618f2406fb977a74d914ad98b264fc3db0fe8224da5bec11e5f8902c5b9bcb8ace22d95fbe3c7b36b8593b7dfc8391a25898f32f
   languageName: node
   linkType: hard
-
-"tauri-app@workspace:.":
-  version: 0.0.0-use.local
-  resolution: "tauri-app@workspace:."
-  dependencies:
-    "@tauri-apps/api": ^1.1.0
-    "@tauri-apps/cli": ^1.1.0
-    "@types/node": ^18.7.10
-    "@vitejs/plugin-vue": ^3.1.2
-    "@vitejs/plugin-vue-jsx": ^2.0.1
-    "@vue/runtime-dom": ^3.2.40
-    typescript: ^4.6.4
-    vite: ^3.0.2
-    vite-plugin-vuetify: 1.0.0-alpha.17
-    vue: ^3.2.37
-    vue-tsc: ^0.40.0
-    vuetify: 3.0.0-beta.13
-  languageName: unknown
-  linkType: soft
 
 "to-fast-properties@npm:^2.0.0":
   version: 2.0.0

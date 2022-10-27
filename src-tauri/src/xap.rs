@@ -16,8 +16,8 @@ use log::error;
 
 use log::trace;
 
-use crate::protocol::RGBLightConfig;
-use crate::protocol::RGBLightConfigCommand;
+use crate::protocol::RGBConfig;
+use crate::protocol::RGBLightConfigSet;
 use crate::protocol::RequestRaw;
 use crate::protocol::ResponseRaw;
 use crate::protocol::Token;
@@ -73,24 +73,6 @@ impl Display for XAPDevice {
 }
 
 impl XAPDevice {
-    pub fn query_xap_version(&self) -> XAPResult<XAPVersion> {
-        self.do_query(XAPVersionQuery {})
-    }
-
-    pub fn set_rgblight_config(&self) -> XAPResult<()> {
-        let request = RGBLightConfigCommand {
-            config: RGBLightConfig {
-                enable: 1,
-                mode: 1,
-                hue: rand::random(),
-                sat: 255,
-                val: 255,
-                speed: 50,
-            },
-        };
-        self.do_query(request)
-    }
-
     pub fn do_query<T: XAPRequest>(&self, request: T) -> XAPResult<T::Response> {
         let request = RequestRaw::new(request);
         let mut report = [0; XAP_REPORT_SIZE];

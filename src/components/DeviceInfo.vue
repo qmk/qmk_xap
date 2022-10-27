@@ -18,10 +18,6 @@ async function getXAPVersion() {
   XAPVersion.value = await invoke("get_xap_version")
 }
 
-async function setRGBLight() {
-  await invoke("set_rgblight")
-}
-
 </script>
 
 <template>
@@ -34,6 +30,4 @@ async function setRGBLight() {
 
   <button type="button" @click="getXAPVersion()">Get XAP Version</button>
   <p>{{ XAPVersion }}</p>
-
-  <button type="button" @click="setRGBLight()">Set RGB Light</button>
 </template>

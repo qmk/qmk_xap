@@ -2051,6 +2051,27 @@ dependencies = [
 ]
 
 [[package]]
+name = "qmk-xap-gui"
+version = "0.0.0"
+dependencies = [
+ "anyhow",
+ "binrw",
+ "bitflags",
+ "crossbeam-channel",
+ "env_logger",
+ "hidapi",
+ "log",
+ "once_cell",
+ "rand 0.8.5",
+ "serde",
+ "serde_json",
+ "tauri",
+ "tauri-build",
+ "thiserror",
+ "ts-rs",
+]
+
+[[package]]
 name = "quick-xml"
 version = "0.23.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2774,27 +2795,6 @@ dependencies = [
  "webkit2gtk",
  "webview2-com",
  "windows 0.39.0",
-]
-
-[[package]]
-name = "tauri-app"
-version = "0.0.0"
-dependencies = [
- "anyhow",
- "binrw",
- "bitflags",
- "crossbeam-channel",
- "env_logger",
- "hidapi",
- "log",
- "once_cell",
- "rand 0.8.5",
- "serde",
- "serde_json",
- "tauri",
- "tauri-build",
- "thiserror",
- "ts-rs",
 ]
 
 [[package]]

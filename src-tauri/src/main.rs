@@ -15,7 +15,11 @@ use std::{
 use log::{info, LevelFilter};
 use tauri::State;
 
-use protocol::{XAPSecureStatus, XAPVersion, XAPVersionQuery, XAPResult};
+use protocol::{
+    RGBConfig, RGBLightConfigGet, RGBLightConfigSave, RGBLightConfigSet, RGBLightEffectsQuery,
+    XAPSecureStatusQuery,
+};
+use protocol::{XAPResult, XAPSecureStatus, XAPVersion, XAPVersionQuery};
 use xap::{XAPClient, XAPDevice};
 
 pub(crate) struct AppState {
@@ -30,8 +34,6 @@ impl AppState {
     }
 }
 
-use crate::protocol::{RequestRaw, XAPSecureStatusQuery};
-
 #[tauri::command]
 fn get_xap_device(state: State<AppState>) -> String {
     format!("{}", state.device())
@@ -39,18 +41,35 @@ fn get_xap_device(state: State<AppState>) -> String {
 
 #[tauri::command]
 fn get_secure_status(state: State<AppState>) -> XAPResult<XAPSecureStatus> {
-    let device = state.device.lock().unwrap();
-    dbg!(device.do_query(XAPSecureStatusQuery {}))
+    state.device().do_query(XAPSecureStatusQuery {})
 }
 
 #[tauri::command]
 fn get_xap_version(state: State<AppState>) -> XAPResult<XAPVersion> {
-    dbg!(state.device().do_query(XAPVersionQuery {}))
+    state.device().do_query(XAPVersionQuery {})
 }
 
 #[tauri::command]
-fn set_rgblight(state: State<AppState>) -> XAPResult<()> {
-    dbg!(state.device().set_rgblight_config())
+fn get_rgblight_config(state: State<AppState>) -> XAPResult<RGBConfig> {
+    state.device().do_query(RGBLightConfigGet {})
+}
+
+#[tauri::command]
+fn get_rgblight_effects(state: State<AppState>) -> XAPResult<Vec<u8>> {
+    state
+        .device()
+        .do_query(RGBLightEffectsQuery {})
+        .map(|effects| effects.enabled_effect_list())
+}
+
+#[tauri::command]
+fn set_rgblight_config(arg: RGBConfig, state: State<AppState>) -> XAPResult<()> {
+    state.device().do_query(RGBLightConfigSet { config: arg })
+}
+
+#[tauri::command]
+fn save_rgblight_config(state: State<AppState>) -> XAPResult<()> {
+    state.device().do_query(RGBLightConfigSave {})
 }
 
 fn main() -> XAPResult<()> {
@@ -79,7 +98,10 @@ fn main() -> XAPResult<()> {
             get_xap_device,
             get_secure_status,
             get_xap_version,
-            set_rgblight
+            get_rgblight_config,
+            set_rgblight_config,
+            save_rgblight_config,
+            get_rgblight_effects
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
