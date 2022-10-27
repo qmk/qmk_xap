@@ -22,12 +22,12 @@ async function getXAPVersion() {
 
 <template>
   <h2>Device Info</h2>
-  <button type="button" @click="getDevice()">Show Device Info</button>
+  <q-btn @click="getDevice()" label="Show Device Info"/>
   <p>{{ XAPDevice }}</p>
 
-  <button type="button" @click="getSecureStatus()">Get Secure Status</button>
+  <q-btn @click="getSecureStatus()" label="Get Secure Status"/>
   <p>{{ XAPSecureStatus }}</p>
 
-  <button type="button" @click="getXAPVersion()">Get XAP Version</button>
+  <q-btn @click="getXAPVersion()" label="Get XAP Version"/>
   <p>{{ XAPVersion }}</p>
 </template>

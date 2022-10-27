@@ -10,7 +10,7 @@ export interface RGB {
   b: number
 }
 
-let currentConfig: ref<RGBConfig> = ref({
+const currentConfig: ref<RGBConfig> = ref({
   enable: 1,
   mode: 1,
   hue: 255,
@@ -34,10 +34,6 @@ watch(currentColor, async (newColor: RGB, oldColor: RGB) => {
   await setConfig()
 })
 
-watch(currentConfig, async (newConfig: RGBConfig, oldConfig: RGBConfig) => {
-  await setConfig()
-})
-
 onMounted(async () => {
   await getConfig()
   await getRGBlightEffects()
@@ -58,6 +54,8 @@ async function getRGBlightEffects() {
 }
 
 async function setConfig() {
+  console.log("set config")
+  console.log(currentConfig)
   await invoke('set_rgblight_config', { arg: currentConfig.value })
     .catch((error) => console.error(error))
 }
@@ -70,10 +68,12 @@ async function saveConfig() {
 </script>
 
 <template>
-  <h2>RGB</h2>
-  <div class="d-flex flex-column">
-    <v-select label="Mode" @select="setConfig()" :items="enabledEffects" v-model="currentConfig.mode"></v-select>
-    <v-color-picker hide-mode-switch show-swatches :modes="['rgb']" v-model="currentColor" />
-    <v-btn type="button" @click="saveConfig()">Save</v-btn>
-  </div>
+  <q-card class="my-card">
+    <q-card-section>
+      <h2>RGB</h2>
+      <q-select v-model.lazy.number="currentConfig.mode" @input-value="setConfig()" :options="enabledEffects" label="Mode"/>
+      <q-color v-model.lazy="currentColor" default-view="palette" format-model="rgb" no-header class="rgbPicker" />
+      <q-btn color="white" text-color="black" label="Save" @click="saveConfig" />
+    </q-card-section>
+  </q-card>
 </template>
