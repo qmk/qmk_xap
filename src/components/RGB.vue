@@ -65,15 +65,22 @@ async function saveConfig() {
     .catch((error) => console.error(error))
 }
 
+// WTF - why is this even necessary
+async function changeMode(mode: number) {
+  console.log(mode)
+  currentConfig.value.mode = mode
+  await setConfig()
+}
+
 </script>
 
 <template>
-  <q-card class="my-card">
-    <q-card-section>
+
+    <div class="q-gutter-md q-pa-md">
       <h2>RGB</h2>
-      <q-select v-model.lazy.number="currentConfig.mode" @input-value="setConfig()" :options="enabledEffects" label="Mode"/>
+      <q-select v-model.lazy.number="currentConfig.mode" @update:modelValue="changeMode" :options="enabledEffects"
+        label="Mode" emit-value />
       <q-color v-model.lazy="currentColor" default-view="palette" format-model="rgb" no-header class="rgbPicker" />
       <q-btn color="white" text-color="black" label="Save" @click="saveConfig" />
-    </q-card-section>
-  </q-card>
+    </div>
 </template>

@@ -1,33 +1,38 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 import { invoke } from "@tauri-apps/api/tauri";
 
 const XAPDevice: ref<string> = ref("");
 const XAPSecureStatus: ref<string> = ref("");
 const XAPVersion: ref<string> = ref("");
 
-async function getDevice() {
+onMounted(async () => {
   XAPDevice.value = await invoke("get_xap_device");
-}
-
-async function getSecureStatus() {
   XAPSecureStatus.value = await invoke("get_secure_status")
-}
-
-async function getXAPVersion() {
   XAPVersion.value = await invoke("get_xap_version")
-}
+})
 
 </script>
 
 <template>
-  <h2>Device Info</h2>
-  <q-btn @click="getDevice()" label="Show Device Info"/>
-  <p>{{ XAPDevice }}</p>
+  <div class="q-gutter-md q-pa-md">
+    <h2>Device Info</h2>
+    <q-field filled label="Device" stack-label>
+      <template v-slot:control>
+        <div class="self-center full-width no-outline" tabindex="0">{{ XAPDevice }}</div>
+      </template>
+    </q-field>
 
-  <q-btn @click="getSecureStatus()" label="Get Secure Status"/>
-  <p>{{ XAPSecureStatus }}</p>
+    <q-field filled label="Secure Status" stack-label>
+      <template v-slot:control>
+        <div class="self-center full-width no-outline" tabindex="0">{{ XAPSecureStatus }}</div>
+      </template>
+    </q-field>
 
-  <q-btn @click="getXAPVersion()" label="Get XAP Version"/>
-  <p>{{ XAPVersion }}</p>
+    <q-field filled label="XAP Version" stack-label>
+      <template v-slot:control>
+        <div class="self-center full-width no-outline" tabindex="0">{{ XAPVersion }}</div>
+      </template>
+    </q-field>
+  </div>
 </template>
