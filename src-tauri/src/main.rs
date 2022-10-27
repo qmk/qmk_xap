@@ -3,7 +3,6 @@
     windows_subsystem = "windows"
 )]
 
-mod protocol;
 mod types;
 mod xap;
 
