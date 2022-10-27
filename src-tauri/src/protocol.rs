@@ -12,7 +12,7 @@ use ts_rs::TS;
 
 #[derive(Debug, Clone)]
 #[binwrite]
-#[repr(C, u16)]
+#[br(repr = u16)]
 pub enum Token {
     WithResponse {
         token: u16,
@@ -23,22 +23,10 @@ pub enum Token {
     Broadcast,
 }
 
-fn random_xap_token_value() -> u16 {
-    let mut token;
-    loop {
-        token = rand::random();
-        match token {
-            0x0100..=0xFFFD => break,
-            _ => continue,
-        }
-    }
-    token
-}
-
 impl Token {
     pub(crate) fn regular_token() -> Token {
         Self::WithResponse {
-            token: random_xap_token_value(),
+            token: Self::random_xap_token_value(),
         }
     }
 
@@ -48,6 +36,15 @@ impl Token {
 
     pub(crate) fn without_response_token() -> Token {
         Self::WithoutResponse
+    }
+
+    fn random_xap_token_value() -> u16 {
+        loop {
+            match rand::random() {
+                token @ 0x0100..=0xFFFD => break token,
+                _ => continue,
+            }
+        }
     }
 }
 
@@ -83,7 +80,6 @@ bitflags! {
 
 pub struct RequestRaw<T: XAPRequest> {
     token: Token,
-    payload_len: u8,
     payload: T,
 }
 
@@ -110,7 +106,6 @@ where
     pub fn new(payload: T) -> Self {
         Self {
             token: Token::regular_token(),
-            payload_len: (T::id().len() + std::mem::size_of::<T>()) as u8,
             payload,
         }
     }
@@ -129,9 +124,22 @@ where
         _args: Self::Args,
     ) -> BinResult<()> {
         writer.write_le(&self.token)?;
-        writer.write_le(&self.payload_len)?;
+        // Dummy write of the payload length, which is not known at this point.
+        writer.write_le(&0_u8)?;
         writer.write_le(&T::id())?;
-        writer.write_le(&self.payload)
+        writer.write_le(&self.payload)?;
+
+        // Calculate payload size from current position in the writer stream,
+        // which points at the end of payload and contains the Token and payload
+        // lenght field itself. These have to be substracted to get the total
+        // size of the payload.
+        let payload_length = writer.stream_position()?
+            - std::mem::size_of::<u16>() as u64 // Token
+            - std::mem::size_of::<u8>() as u64; // payload length field
+
+        // Position our writer on the payload_length field again and write the correct value.
+        writer.seek(std::io::SeekFrom::Start(2))?;
+        writer.write_le(&(payload_length as u8))
     }
 }
 
@@ -297,7 +305,6 @@ impl XAPRequest for QMKCapabilitiesQuery {
 //
 
 #[derive(BinWrite, BinRead, Debug, TS, Serialize)]
-#[repr(C, packed)]
 #[ts(export)]
 pub struct RGBLightConfig {
     pub enable: u8,
