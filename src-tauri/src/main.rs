@@ -3,7 +3,6 @@
     windows_subsystem = "windows"
 )]
 
-mod protocol;
 mod types;
 mod xap;
 
@@ -12,25 +11,29 @@ use std::time::Duration;
 use anyhow::Result;
 use log::{info, LevelFilter};
 use once_cell::sync::OnceCell;
-use protocol::{XAPSecureStatus, XAPVersion, XAPVersionQuery};
 use tauri::async_runtime::Mutex;
 
-use xap::{XAPClient, XAPDevice};
+use xap::*;
 
-use crate::protocol::{RequestRaw, XAPSecureStatusQuery};
 
 static XAP_DEVICE: OnceCell<Mutex<XAPDevice>> = OnceCell::new();
 
+macro_rules! get_device {
+    () => {
+        XAP_DEVICE.get().unwrap().lock().await
+    }
+}
+
 #[tauri::command]
 async fn get_xap_device() -> Option<String> {
-    let device = XAP_DEVICE.get().unwrap().lock().await;
+    let device = get_device!();
 
     Some(format!("{}", device))
 }
 
 #[tauri::command]
 async fn get_secure_status() -> Option<XAPSecureStatus> {
-    let device = XAP_DEVICE.get().unwrap().lock().await;
+    let device = get_device!();
     dbg!(device
         .do_query(RequestRaw::new(XAPSecureStatusQuery {}))
         .ok())
@@ -38,13 +41,13 @@ async fn get_secure_status() -> Option<XAPSecureStatus> {
 
 #[tauri::command]
 async fn get_xap_version() -> Option<XAPVersion> {
-    let device = XAP_DEVICE.get().unwrap().lock().await;
+    let device = get_device!();
     dbg!(device.do_query(RequestRaw::new(XAPVersionQuery {})).ok())
 }
 
 #[tauri::command]
 async fn set_rgblight() -> Option<()> {
-    let device = XAP_DEVICE.get().unwrap().lock().await;
+    let device = get_device!();
     dbg!(device.set_rgblight_config().ok())
 }
 
