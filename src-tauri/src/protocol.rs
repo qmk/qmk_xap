@@ -3,12 +3,38 @@ use std::{
     io::{Cursor, Seek, Write},
 };
 
-use anyhow::{anyhow, bail, Result};
+use anyhow::{anyhow, bail};
 use binrw::{prelude::*, ReadOptions};
 use bitflags::bitflags;
+use hidapi::HidError;
 use log::debug;
 use serde::Serialize;
 use ts_rs::TS;
+
+pub type XAPResult<T> = core::result::Result<T, XAPError>;
+
+#[derive(thiserror::Error, Debug)]
+pub enum XAPError {
+    // TODO find better names and description
+    #[error(transparent)]
+    BitHandling(#[from] binrw::Error),
+    #[error("XAP communication failed")]
+    Protocol(String),
+    #[error(transparent)]
+    HID(#[from] HidError),
+    #[error("something happened")]
+    Other(#[from] anyhow::Error),
+}
+
+// TODO structured JSON error?
+impl Serialize for XAPError {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        serializer.serialize_str(&self.to_string())
+    }
+}
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 #[binwrite]
@@ -143,7 +169,7 @@ pub struct ResponseRaw {
 }
 
 impl ResponseRaw {
-    pub fn from_raw_report(report: &[u8]) -> Result<Self> {
+    pub fn from_raw_report(report: &[u8]) -> XAPResult<Self> {
         let mut reader = Cursor::new(report);
         let raw_response = ResponseRaw::read_le(&mut reader)?;
 
@@ -151,7 +177,9 @@ impl ResponseRaw {
 
         // TODO add flag handling here
         if !raw_response.flags.contains(ResponseFlags::SUCCESS) {
-            bail!("XAP responded with a failed transaction!");
+            return Err(XAPError::Protocol(
+                "XAP responded with a failed transaction!".to_owned(),
+            ));
         }
 
         Ok(raw_response)
@@ -165,14 +193,13 @@ impl ResponseRaw {
         &self.payload
     }
 
-    pub fn into_xap_response<T>(self) -> Result<T::Response>
+    pub fn into_xap_response<T>(self) -> XAPResult<T::Response>
     where
         T: XAPRequest,
     {
         let mut reader = Cursor::new(self.payload);
 
-        T::Response::read_le(&mut reader)
-            .map_err(|err| anyhow!("failed to deserialize XAP response with {}", err))
+        Ok(T::Response::read_le(&mut reader)?)
     }
 }
 

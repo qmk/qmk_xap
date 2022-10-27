@@ -6,7 +6,7 @@ use std::thread::JoinHandle;
 use std::time::Duration;
 use std::time::Instant;
 
-use anyhow::{bail, Result};
+use anyhow::{anyhow, bail};
 use binrw::BinWriterExt;
 use crossbeam_channel::unbounded;
 use crossbeam_channel::Receiver;
@@ -21,7 +21,9 @@ use crate::protocol::RGBLightConfigCommand;
 use crate::protocol::RequestRaw;
 use crate::protocol::ResponseRaw;
 use crate::protocol::Token;
+use crate::protocol::XAPError;
 use crate::protocol::XAPRequest;
+use crate::protocol::XAPResult;
 use crate::protocol::XAPVersion;
 use crate::protocol::XAPVersionQuery;
 
@@ -71,12 +73,12 @@ impl Display for XAPDevice {
 }
 
 impl XAPDevice {
-    pub fn query_xap_version(&self) -> Result<XAPVersion> {
-        self.do_query(RequestRaw::new(XAPVersionQuery {}))
+    pub fn query_xap_version(&self) -> XAPResult<XAPVersion> {
+        self.do_query(XAPVersionQuery {})
     }
 
-    pub fn set_rgblight_config(&self) -> Result<()> {
-        let request = RequestRaw::new(RGBLightConfigCommand {
+    pub fn set_rgblight_config(&self) -> XAPResult<()> {
+        let request = RGBLightConfigCommand {
             config: RGBLightConfig {
                 enable: 1,
                 mode: 1,
@@ -85,11 +87,12 @@ impl XAPDevice {
                 val: 255,
                 speed: 50,
             },
-        });
+        };
         self.do_query(request)
     }
 
-    pub fn do_query<T: XAPRequest>(&self, request: RequestRaw<T>) -> Result<T::Response> {
+    pub fn do_query<T: XAPRequest>(&self, request: T) -> XAPResult<T::Response> {
+        let request = RequestRaw::new(request);
         let mut report = [0; XAP_REPORT_SIZE];
 
         let mut writer = Cursor::new(&mut report[1..]);
@@ -101,15 +104,19 @@ impl XAPDevice {
         let start = Instant::now();
 
         let response = loop {
-            let response = self.rx_channel.recv_timeout(Duration::from_millis(500))?;
+            let response = self
+                .rx_channel
+                .recv_timeout(Duration::from_millis(500))
+                .map_err(|err| anyhow!("failed to reveice response {}", err))?;
+
             if response.token() == request.token() {
                 break response;
             }
             if start.elapsed() > Duration::from_secs(5) {
-                bail!(
+                return Err(XAPError::Protocol(format!(
                     "failed to receive XAP response for request {:?} in 5 seconds",
                     request.token()
-                )
+                )));
             }
         };
 
@@ -137,7 +144,7 @@ impl XAPDevice {
         // TODO: not happy with the heavy nesting, this should be cleaned-up.
         // Also nobody consumes the broadcast messages ATM.
         thread::spawn(move || loop {
-            let result: Result<()> = (|| {
+            let result: anyhow::Result<()> = (|| {
                 let mut report = [0_u8; XAP_REPORT_SIZE];
                 loop {
                     rx.read(&mut report)?;
@@ -173,13 +180,13 @@ impl XAPDevice {
 }
 
 impl XAPClient {
-    pub fn new() -> Result<Self> {
+    pub fn new() -> XAPResult<Self> {
         Ok(XAPClient {
             hid: HidApi::new()?,
         })
     }
 
-    pub fn get_first_xap_device(&mut self) -> Result<XAPDevice> {
+    pub fn get_first_xap_device(&mut self) -> XAPResult<XAPDevice> {
         self.hid.refresh_devices()?;
 
         match self
@@ -192,7 +199,7 @@ impl XAPClient {
                 info.open_device(&self.hid)?,
                 info.open_device(&self.hid)?,
             )),
-            None => bail!("no XAP compatible device found!"),
+            None => return Err(XAPError::Other(anyhow!("no XAP compatible device found!"))),
         }
     }
 }

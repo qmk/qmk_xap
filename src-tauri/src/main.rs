@@ -7,48 +7,53 @@ mod protocol;
 mod types;
 mod xap;
 
-use std::time::Duration;
+use std::{
+    sync::{Arc, Mutex, MutexGuard},
+    time::Duration,
+};
 
-use anyhow::Result;
 use log::{info, LevelFilter};
-use once_cell::sync::OnceCell;
-use protocol::{XAPSecureStatus, XAPVersion, XAPVersionQuery};
-use tauri::async_runtime::Mutex;
+use tauri::State;
 
+use protocol::{XAPSecureStatus, XAPVersion, XAPVersionQuery, XAPResult};
 use xap::{XAPClient, XAPDevice};
+
+pub(crate) struct AppState {
+    device: Arc<Mutex<XAPDevice>>,
+}
+
+impl AppState {
+    pub(crate) fn device(&self) -> MutexGuard<XAPDevice> {
+        self.device
+            .lock()
+            .expect("couldn't acquire lock to XAP device")
+    }
+}
 
 use crate::protocol::{RequestRaw, XAPSecureStatusQuery};
 
-static XAP_DEVICE: OnceCell<Mutex<XAPDevice>> = OnceCell::new();
-
 #[tauri::command]
-async fn get_xap_device() -> Option<String> {
-    let device = XAP_DEVICE.get().unwrap().lock().await;
-
-    Some(format!("{}", device))
+fn get_xap_device(state: State<AppState>) -> String {
+    format!("{}", state.device())
 }
 
 #[tauri::command]
-async fn get_secure_status() -> Option<XAPSecureStatus> {
-    let device = XAP_DEVICE.get().unwrap().lock().await;
-    dbg!(device
-        .do_query(RequestRaw::new(XAPSecureStatusQuery {}))
-        .ok())
+fn get_secure_status(state: State<AppState>) -> XAPResult<XAPSecureStatus> {
+    let device = state.device.lock().unwrap();
+    dbg!(device.do_query(XAPSecureStatusQuery {}))
 }
 
 #[tauri::command]
-async fn get_xap_version() -> Option<XAPVersion> {
-    let device = XAP_DEVICE.get().unwrap().lock().await;
-    dbg!(device.do_query(RequestRaw::new(XAPVersionQuery {})).ok())
+fn get_xap_version(state: State<AppState>) -> XAPResult<XAPVersion> {
+    dbg!(state.device().do_query(XAPVersionQuery {}))
 }
 
 #[tauri::command]
-async fn set_rgblight() -> Option<()> {
-    let device = XAP_DEVICE.get().unwrap().lock().await;
-    dbg!(device.set_rgblight_config().ok())
+fn set_rgblight(state: State<AppState>) -> XAPResult<()> {
+    dbg!(state.device().set_rgblight_config())
 }
 
-fn main() -> Result<()> {
+fn main() -> XAPResult<()> {
     env_logger::builder()
         .format_timestamp(None)
         .filter_level(LevelFilter::Info)
@@ -66,11 +71,10 @@ fn main() -> Result<()> {
         }
     };
 
-    XAP_DEVICE
-        .set(Mutex::new(device))
-        .expect("couldn't move XAP device into Mutex");
-
     tauri::Builder::default()
+        .manage(AppState {
+            device: Arc::new(Mutex::new(device)),
+        })
         .invoke_handler(tauri::generate_handler![
             get_xap_device,
             get_secure_status,

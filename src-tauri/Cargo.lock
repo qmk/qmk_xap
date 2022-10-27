@@ -2793,6 +2793,7 @@ dependencies = [
  "serde_json",
  "tauri",
  "tauri-build",
+ "thiserror",
  "ts-rs",
 ]
 
