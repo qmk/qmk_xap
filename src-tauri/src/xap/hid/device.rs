@@ -1,4 +1,4 @@
-use anyhow::{bail, Result};
+use anyhow::anyhow;
 use binrw::BinWriterExt;
 use crate::xap::*;
 use crossbeam_channel::{Receiver, Sender, unbounded};
@@ -52,25 +52,8 @@ impl Display for XAPDevice {
 }
 
 impl XAPDevice {
-    pub fn query_xap_version(&self) -> Result<XAPVersion> {
-        self.do_query(RequestRaw::new(XAPVersionQuery {}))
-    }
-
-    pub fn set_rgblight_config(&self) -> Result<()> {
-        let request = RequestRaw::new(RGBLightConfigCommand {
-            config: RGBLightConfig {
-                enable: 1,
-                mode: 1,
-                hue: rand::random(),
-                sat: 255,
-                val: 255,
-                speed: 50,
-            },
-        });
-        self.do_query(request)
-    }
-
-    pub fn do_query<T: XAPRequest>(&self, request: RequestRaw<T>) -> Result<T::Response> {
+    pub fn do_query<T: XAPRequest>(&self, request: T) -> XAPResult<T::Response> {
+        let request = RequestRaw::new(request);
         let mut report = [0; XAP_REPORT_SIZE];
 
         let mut writer = Cursor::new(&mut report[1..]);
@@ -82,15 +65,19 @@ impl XAPDevice {
         let start = Instant::now();
 
         let response = loop {
-            let response = self.rx_channel.recv_timeout(Duration::from_millis(500))?;
+            let response = self
+                .rx_channel
+                .recv_timeout(Duration::from_millis(500))
+                .map_err(|err| anyhow!("failed to reveice response {}", err))?;
+
             if response.token() == request.token() {
                 break response;
             }
             if start.elapsed() > Duration::from_secs(5) {
-                bail!(
+                return Err(XAPError::Protocol(format!(
                     "failed to receive XAP response for request {:?} in 5 seconds",
                     request.token()
-                )
+                )));
             }
         };
 
@@ -118,7 +105,7 @@ impl XAPDevice {
         // TODO: not happy with the heavy nesting, this should be cleaned-up.
         // Also nobody consumes the broadcast messages ATM.
         thread::spawn(move || loop {
-            let result: Result<()> = (|| {
+            let result: anyhow::Result<()> = (|| {
                 let mut report = [0_u8; XAP_REPORT_SIZE];
                 loop {
                     rx.read(&mut report)?;

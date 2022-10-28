@@ -1,6 +1,6 @@
-use anyhow::{bail, Result};
+use anyhow::anyhow;
 use hidapi::HidApi;
-use crate::xap::XAPDevice;
+use crate::xap::{XAPDevice, XAPError, XAPResult};
 
 const XAP_USAGE_PAGE: u16 = 0xFF51;
 const XAP_USAGE: u16 = 0x0058;
@@ -10,13 +10,13 @@ pub struct XAPClient {
 }
 
 impl XAPClient {
-    pub fn new() -> Result<Self> {
+    pub fn new() -> XAPResult<Self> {
         Ok(XAPClient {
             hid: HidApi::new()?,
         })
     }
 
-    pub fn get_first_xap_device(&mut self) -> Result<XAPDevice> {
+    pub fn get_first_xap_device(&mut self) -> XAPResult<XAPDevice> {
         self.hid.refresh_devices()?;
 
         match self
@@ -29,7 +29,7 @@ impl XAPClient {
                 info.open_device(&self.hid)?,
                 info.open_device(&self.hid)?,
             )),
-            None => bail!("no XAP compatible device found!"),
+            None => return Err(XAPError::Other(anyhow!("no XAP compatible device found!"))),
         }
     }
 }

@@ -1,3 +1,5 @@
+// This file defines the different kind of tokens
+
 use anyhow::anyhow;
 use bitflags::bitflags;
 use binrw::{prelude::*, ReadOptions};

@@ -6,49 +6,63 @@
 mod types;
 mod xap;
 
-use std::time::Duration;
-
 use anyhow::Result;
 use log::{info, LevelFilter};
-use once_cell::sync::OnceCell;
-use tauri::async_runtime::Mutex;
-
+use std::{
+    sync::{Arc, Mutex, MutexGuard},
+    time::Duration,
+};
+use tauri::State;
 use xap::*;
 
+pub(crate) struct AppState {
+    device: Arc<Mutex<XAPDevice>>,
+}
 
-static XAP_DEVICE: OnceCell<Mutex<XAPDevice>> = OnceCell::new();
-
-macro_rules! get_device {
-    () => {
-        XAP_DEVICE.get().unwrap().lock().await
+impl AppState {
+    pub(crate) fn device(&self) -> MutexGuard<XAPDevice> {
+        self.device
+            .lock()
+            .expect("couldn't acquire lock to XAP device")
     }
 }
 
 #[tauri::command]
-async fn get_xap_device() -> Option<String> {
-    let device = get_device!();
-
-    Some(format!("{}", device))
+fn get_xap_device(state: State<AppState>) -> String {
+    format!("{}", state.device())
 }
 
 #[tauri::command]
-async fn get_secure_status() -> Option<XAPSecureStatus> {
-    let device = get_device!();
-    dbg!(device
-        .do_query(RequestRaw::new(XAPSecureStatusQuery {}))
-        .ok())
+fn get_secure_status(state: State<AppState>) -> XAPResult<XAPSecureStatus> {
+    state.device().do_query(XAPSecureStatusQuery {})
 }
 
 #[tauri::command]
-async fn get_xap_version() -> Option<XAPVersion> {
-    let device = get_device!();
-    dbg!(device.do_query(RequestRaw::new(XAPVersionQuery {})).ok())
+fn get_xap_version(state: State<AppState>) -> XAPResult<XAPVersion> {
+    state.device().do_query(XAPVersionQuery {})
 }
 
 #[tauri::command]
-async fn set_rgblight() -> Option<()> {
-    let device = get_device!();
-    dbg!(device.set_rgblight_config().ok())
+fn get_rgblight_config(state: State<AppState>) -> XAPResult<RGBConfig> {
+    state.device().do_query(RGBLightConfigGet {})
+}
+
+#[tauri::command]
+fn get_rgblight_effects(state: State<AppState>) -> XAPResult<Vec<u8>> {
+    state
+        .device()
+        .do_query(RGBLightEffectsQuery {})
+        .map(|effects| effects.enabled_effect_list())
+}
+
+#[tauri::command]
+fn set_rgblight_config(arg: RGBConfig, state: State<AppState>) -> XAPResult<()> {
+    state.device().do_query(RGBLightConfigSet { config: arg })
+}
+
+#[tauri::command]
+fn save_rgblight_config(state: State<AppState>) -> XAPResult<()> {
+    state.device().do_query(RGBLightConfigSave {})
 }
 
 fn main() -> Result<()> {
@@ -69,16 +83,18 @@ fn main() -> Result<()> {
         }
     };
 
-    XAP_DEVICE
-        .set(Mutex::new(device))
-        .expect("couldn't move XAP device into Mutex");
-
     tauri::Builder::default()
+        .manage(AppState {
+            device: Arc::new(Mutex::new(device)),
+        })
         .invoke_handler(tauri::generate_handler![
             get_xap_device,
             get_secure_status,
             get_xap_version,
-            set_rgblight
+            get_rgblight_config,
+            set_rgblight_config,
+            save_rgblight_config,
+            get_rgblight_effects
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

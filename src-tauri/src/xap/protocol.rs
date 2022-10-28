@@ -1,3 +1,5 @@
+// Top level module to get everything inside the protocol
+
 mod core;
 mod routes;
 mod token;

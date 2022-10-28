@@ -1,12 +1,40 @@
 // This file defines the base structs and implements the needed traits for them
-use anyhow::{anyhow, bail, Result};
+
+use anyhow::{bail, Result};
 use binrw::prelude::*;
+use hidapi::HidError;
 use log::debug;
 use std::{
     fmt::Debug,
     io::{Cursor, Seek, Write}
 };
+use serde::Serialize;
 use super::token::*;
+
+pub type XAPResult<T> = core::result::Result<T, XAPError>;
+
+#[derive(thiserror::Error, Debug)]
+pub enum XAPError {
+    // TODO find better names and description
+    #[error(transparent)]
+    BitHandling(#[from] binrw::Error),
+    #[error("XAP communication failed")]
+    Protocol(String),
+    #[error(transparent)]
+    HID(#[from] HidError),
+    #[error("something happened")]
+    Other(#[from] anyhow::Error),
+}
+
+// TODO structured JSON error?
+impl Serialize for XAPError {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        serializer.serialize_str(&self.to_string())
+    }
+}
 
 pub struct RequestRaw<T: XAPRequest> {
     token: Token,
@@ -95,14 +123,13 @@ impl ResponseRaw {
         &self.payload
     }
 
-    pub fn into_xap_response<T>(self) -> Result<T::Response>
+    pub fn into_xap_response<T>(self) -> XAPResult<T::Response>
     where
         T: XAPRequest,
     {
         let mut reader = Cursor::new(self.payload);
 
-        T::Response::read_le(&mut reader)
-            .map_err(|err| anyhow!("failed to deserialize XAP response with {}", err))
+        Ok(T::Response::read_le(&mut reader)?)
     }
 }
 
