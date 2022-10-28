@@ -1,6 +1,6 @@
 // QMK SUBSYSTEM - INCOMPLETE!
 
-use super::route_imports::*;
+use super::common_imports::*;
 
 #[derive(BinRead, Debug)]
 pub struct QMKVersion(u32);
