@@ -1,4 +1,4 @@
-use anyhow::{bail, Result};
+use anyhow::anyhow;
 use binrw::BinWriterExt;
 use crate::xap::*;
 use crossbeam_channel::{Receiver, Sender, unbounded};

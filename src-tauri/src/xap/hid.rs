@@ -1,3 +1,5 @@
+// Top level module to get hid-related submodules
+
 mod client;
 mod device;
 

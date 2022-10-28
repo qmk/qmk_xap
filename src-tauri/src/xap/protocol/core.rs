@@ -5,9 +5,10 @@ use std::{
     io::{Cursor, Seek, Write},
 };
 
-use anyhow::{anyhow, bail, Result};
+use anyhow::Result;
 use binrw::prelude::*;
 use log::debug;
+use serde::Serialize;
 
 use super::token::*;
 

@@ -1,3 +1,5 @@
+// RGBLIGHT SUBSYSTEM - INCOMPLETE!
+
 use super::route_imports::*;
 
 #[derive(BinWrite, BinRead, Debug, TS, Serialize, Deserialize)]

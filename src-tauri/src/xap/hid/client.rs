@@ -1,6 +1,6 @@
-use anyhow::{bail, Result};
+use anyhow::anyhow;
 use hidapi::HidApi;
-use crate::xap::XAPDevice;
+use crate::xap::{XAPDevice, XAPError, XAPResult};
 
 const XAP_USAGE_PAGE: u16 = 0xFF51;
 const XAP_USAGE: u16 = 0x0058;

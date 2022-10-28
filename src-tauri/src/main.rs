@@ -79,6 +79,9 @@ fn main() -> XAPResult<()> {
     };
 
     tauri::Builder::default()
+        .manage(AppState {
+            device: Arc::new(Mutex::new(device)),
+        })
         .invoke_handler(tauri::generate_handler![
             get_xap_device,
             get_secure_status,
