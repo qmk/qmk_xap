@@ -1,6 +1,6 @@
 // RGBLIGHT SUBSYSTEM - INCOMPLETE!
 
-use super::route_imports::*;
+use super::common_imports::*;
 
 #[derive(BinWrite, BinRead, Debug, TS, Serialize, Deserialize)]
 #[ts(export)]
