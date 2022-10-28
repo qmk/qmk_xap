@@ -1,15 +1,15 @@
+use crate::xap::*;
 use anyhow::anyhow;
 use binrw::BinWriterExt;
-use crate::xap::*;
-use crossbeam_channel::{Receiver, Sender, unbounded};
+use crossbeam_channel::{unbounded, Receiver, Sender};
 use hidapi::{DeviceInfo, HidDevice};
-use log::{error, trace};
+use log::{error, info, trace};
 use std::{
     fmt::{Debug, Display},
     io::Cursor,
     thread,
     thread::JoinHandle,
-    time::{Duration, Instant}
+    time::{Duration, Instant},
 };
 
 const XAP_REPORT_SIZE: usize = 64;
@@ -17,7 +17,7 @@ const XAP_REPORT_SIZE: usize = 64;
 pub struct XAPDevice {
     info: DeviceInfo,
     tx: HidDevice,
-    _rx_thread: JoinHandle<()>,
+    rx_thread: JoinHandle<()>,
     rx_channel: Receiver<ResponseRaw>,
     broadcast_channel: Receiver<ResponseRaw>,
 }
@@ -91,10 +91,14 @@ impl XAPDevice {
         Self {
             info,
             tx,
-            _rx_thread: Self::start_rx_thread(rx, broadcast_tx_channel, tx_channel),
+            rx_thread: Self::start_rx_thread(rx, broadcast_tx_channel, tx_channel),
             rx_channel,
             broadcast_channel: broadcast_rx_channel,
         }
+    }
+
+    pub fn info(&self) -> &DeviceInfo {
+        &self.info
     }
 
     fn start_rx_thread(
@@ -104,7 +108,7 @@ impl XAPDevice {
     ) -> JoinHandle<()> {
         // TODO: not happy with the heavy nesting, this should be cleaned-up.
         // Also nobody consumes the broadcast messages ATM.
-        thread::spawn(move || loop {
+        thread::spawn(move || {
             let result: anyhow::Result<()> = (|| {
                 let mut report = [0_u8; XAP_REPORT_SIZE];
                 loop {
@@ -135,6 +139,7 @@ impl XAPDevice {
 
             if let Err(err) = result {
                 error!("error in XAP receive thread {}", err);
+                std::thread::sleep(Duration::from_millis(100));
             }
         })
     }

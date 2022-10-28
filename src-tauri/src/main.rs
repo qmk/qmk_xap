@@ -8,56 +8,103 @@ mod xap;
 
 use std::{sync::Arc, time::Duration};
 
+use anyhow::anyhow;
 use log::{info, LevelFilter};
-use protocol::{
+use tauri::State;
+use tokio::sync::Mutex;
+use xap::protocol::{
     RGBConfig, RGBLightConfigGet, RGBLightConfigSave, RGBLightConfigSet, RGBLightEffectsQuery,
-    XAPError, XAPSecureStatusQuery,
+    XAPResult, XAPSecureStatus, XAPSecureStatusQuery, XAPVersion, XAPVersionQuery,
 };
-use protocol::{XAPResult, XAPSecureStatus, XAPVersion, XAPVersionQuery};
-use tauri::{Manager, State};
-use tokio::sync::{Mutex, MutexGuard};
-use xap::{XAPClient, XAPDevice};
+use xap::{XAPClient, XAPDevice, XAPError, XAPRequest};
 
 pub(crate) struct AppState {
-    device: Arc<Mutex<XAPResult<XAPDevice>>>,
+    device: Arc<Mutex<Option<XAPDevice>>>,
+    client: Arc<Mutex<XAPClient>>,
+}
+
+impl AppState {
+    pub async fn do_query<T>(&self, request: T) -> XAPResult<T::Response>
+    where
+        T: XAPRequest,
+    {
+        let result = match &*self.device.lock().await {
+            Some(device) => device.do_query(request),
+            None => Err(XAPError::Other(anyhow!("Device not available"))),
+        };
+
+        if result.is_err() {
+            self.process_error().await;
+        }
+
+        result
+    }
+
+    pub async fn do_action<T, F>(&self, action: F) -> XAPResult<T>
+    where
+        F: FnOnce(&XAPDevice) -> XAPResult<T>,
+    {
+        let result = match &*self.device.lock().await {
+            Some(device) => action(device),
+            None => Err(XAPError::Other(anyhow!("Device not available"))),
+        };
+
+        if result.is_err() {
+            self.process_error().await;
+        }
+
+        result
+    }
+
+    // TODO MOVE THIS INTO SINGLETON STATE HANDLING INSTANCE
+    async fn process_error(&self) {
+        let mut client = self.client.lock().await;
+        let mut device = self.device.lock().await;
+
+        if let Some(inner_device) = &(*device) {
+            if !client.is_device_connected(inner_device) {
+                *device = None;
+            }
+        }
+    }
 }
 
 #[tauri::command]
-async fn get_xap_device(state: State<AppState>) -> XAPResult<String> {
-    Ok(format!("{}", *(state.device.lock().await)?))
+async fn get_xap_device(state: State<'_, AppState>) -> XAPResult<String> {
+    state.do_action(|device| Ok(format!("{}", device))).await
 }
 
 #[tauri::command]
-async fn get_secure_status(state: State<AppState>) -> XAPResult<XAPSecureStatus> {
-    state.device()?.do_query(XAPSecureStatusQuery {})
+async fn get_secure_status(state: State<'_, AppState>) -> XAPResult<XAPSecureStatus> {
+    state.do_query(XAPSecureStatusQuery {}).await
 }
 
 #[tauri::command]
-async fn get_xap_version(state: State<AppState>) -> XAPResult<XAPVersion> {
-    state.device().do_query(XAPVersionQuery {})
+async fn get_xap_version(state: State<'_, AppState>) -> XAPResult<XAPVersion> {
+    state.do_query(XAPVersionQuery {}).await
 }
 
 #[tauri::command]
-async fn get_rgblight_config(state: State<AppState>) -> XAPResult<RGBConfig> {
-    state.device().do_query(RGBLightConfigGet {})
+async fn get_rgblight_config(state: State<'_, AppState>) -> XAPResult<RGBConfig> {
+    state.do_query(RGBLightConfigGet {}).await
 }
 
 #[tauri::command]
-async fn get_rgblight_effects(state: State<AppState>) -> XAPResult<Vec<u8>> {
+async fn get_rgblight_effects(state: State<'_, AppState>) -> XAPResult<Vec<u8>> {
     state
-        .device()
         .do_query(RGBLightEffectsQuery {})
+        .await
         .map(|effects| effects.enabled_effect_list())
 }
 
 #[tauri::command]
-async fn set_rgblight_config(arg: RGBConfig, state: State<AppState>) -> XAPResult<()> {
-    state.device().do_query(RGBLightConfigSet { config: arg })
+async fn set_rgblight_config(arg: RGBConfig, state: State<'_, AppState>) -> XAPResult<()> {
+    state.do_query(RGBLightConfigSet { config: arg }).await
 }
 
 #[tauri::command]
-async fn save_rgblight_config(state: State<AppState>) -> XAPResult<()> {
-    state.device().do_query(RGBLightConfigSave {})
+async fn save_rgblight_config(state: State<'_, AppState>) -> XAPResult<()> {
+    state.do_query(RGBLightConfigSave {}).await
 }
 
 fn main() -> XAPResult<()> {
@@ -66,22 +113,32 @@ fn main() -> XAPResult<()> {
         .filter_level(LevelFilter::Info)
         .init();
 
-    let mut xap_client = XAPClient::new().expect("couldn't create XAP client, aborting!");
+    let shared_device = Arc::new(Mutex::new(None));
+    let client = Arc::new(Mutex::new(
+        XAPClient::new().expect("couldn't create XAP client, aborting!"),
+    ));
 
-    info!("querying for compatible XAP devices");
-    let device = loop {
-        if let Ok(device) = xap_client.get_first_xap_device() {
-            break device;
-        } else {
-            info!(".");
-            std::thread::sleep(Duration::from_secs(1));
-        }
+    let state = AppState {
+        device: shared_device.clone(),
+        client: client.clone(),
     };
 
+    tauri::async_runtime::spawn(async move {
+        info!("querying for compatible XAP devices");
+        let device = loop {
+            if let Ok(device) = client.lock().await.get_first_xap_device() {
+                break device;
+            } else {
+                info!(".");
+                std::thread::sleep(Duration::from_secs(1));
+            }
+        };
+
+        shared_device.lock().await.replace(device);
+    });
+
     tauri::Builder::default()
-        .manage(AppState {
-            device: Arc::new(Mutex::new(device)),
-        })
+        .manage(state)
         .invoke_handler(tauri::generate_handler![
             get_xap_device,
             get_secure_status,
@@ -91,19 +148,6 @@ fn main() -> XAPResult<()> {
             save_rgblight_config,
             get_rgblight_effects
         ])
-        .setup(|app| {
-            let handle = app.app_handle();
-            let splashscreen_window = app.get_window("splashscreen").unwrap();
-            let main_window = app.get_window("main").unwrap();
-            tauri::async_runtime::spawn(async move {
-                handle.manage(AppState {
-                    device: Arc::new(Mutex::new(None)),
-                });
-                splashscreen_window.close().unwrap();
-                main_window.show().unwrap();
-            });
-            Ok(())
-        })
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 

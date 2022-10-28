@@ -1,5 +1,7 @@
 use anyhow::anyhow;
 use hidapi::HidApi;
+use log::error;
+
 use crate::xap::{XAPDevice, XAPError, XAPResult};
 
 const XAP_USAGE_PAGE: u16 = 0xFF51;
@@ -31,5 +33,22 @@ impl XAPClient {
             )),
             None => return Err(XAPError::Other(anyhow!("no XAP compatible device found!"))),
         }
+    }
+
+    pub fn is_device_connected(&mut self, device: &XAPDevice) -> bool {
+        if let Err(err) = self.hid.refresh_devices() {
+            error!("error refreshing HID devices {}", err);
+            return false;
+        }
+
+        let device = device.info();
+
+        self.hid.device_list().any(|candidate| {
+            candidate.path() == device.path()
+                && candidate.product_id() == device.product_id()
+                && candidate.vendor_id() == device.vendor_id()
+                && candidate.usage_page() == device.usage_page()
+                && candidate.usage() == device.usage()
+        })
     }
 }

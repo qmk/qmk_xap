@@ -3,14 +3,6 @@
 import DeviceInfo from "./components/DeviceInfo.vue"
 import RGB from "./components/RGB.vue"
 
-import { ref } from 'vue'
-
-
-const leftDrawerOpen = ref(false)
-
-async function toggleLeftDrawer() {
-  leftDrawerOpen.value = !leftDrawerOpen.value
-}
 </script>
 
 <template>
@@ -18,8 +10,6 @@ async function toggleLeftDrawer() {
 
     <q-header elevated class="bg-primary text-white" height-hint="98">
       <q-toolbar>
-        <q-btn dense flat round icon="menu" @click="toggleLeftDrawer" />
-
         <q-toolbar-title>
           <q-avatar>
             <img src="src/assets/qmk.svg">
@@ -34,10 +24,6 @@ async function toggleLeftDrawer() {
         <q-route-tab to="/page3" label="RGB" />
       </q-tabs>
     </q-header>
-
-    <q-drawer show-if-above v-model="leftDrawerOpen" side="left" bordered>
-      <!-- drawer content -->
-    </q-drawer>
 
     <q-page-container>
       <div class="q-pa-md">

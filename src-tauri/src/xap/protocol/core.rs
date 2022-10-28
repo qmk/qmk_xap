@@ -16,12 +16,13 @@ pub type XAPResult<T> = core::result::Result<T, XAPError>;
 
 #[derive(thiserror::Error, Debug)]
 pub enum XAPError {
-    // TODO find better names and description
-    #[error(transparent)]
+    #[error("bit marshalling failed")]
     BitHandling(#[from] binrw::Error),
     #[error("XAP communication failed")]
     Protocol(String),
-    #[error("something happened")]
+    #[error("HID communication failed")]
+    HID(#[from] hidapi::HidError),
+    #[error("an error occured")]
     Other(#[from] anyhow::Error),
 }
 

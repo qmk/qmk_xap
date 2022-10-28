@@ -60,15 +60,7 @@
         "resizable": true,
         "title": "QMK XAP GUI",
         "width": 800,
-        "visible": false,
         "decorations": false
-      },
-      {
-        "width": 600,
-        "height": 800,
-        "decorations": false,
-        "url": "splashscreen.html",
-        "label": "splashscreen"
       }
     ]
   }
