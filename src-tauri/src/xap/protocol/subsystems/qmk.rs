@@ -1,5 +1,7 @@
 use binrw::*;
 use crate::xap::XAPRequest;
+use serde::{Deserialize, Serialize};
+use ts_rs::TS;
 
 // ==============================
 // 0x1 0x0
@@ -109,8 +111,16 @@ impl XAPRequest for QMKConfigBlobLengthQuery {
 #[derive(BinRead, Debug)]
 pub struct ConfigBlobChunk([u8; 32]);
 
+#[derive(BinWrite, BinRead, Debug, TS, Serialize, Deserialize)]
+#[ts(export)]
+pub struct ConfigBlobOffset {
+    pub offset: u16,
+}
+
 #[derive(BinWrite, Debug)]
-pub struct ConfigBlobChunkQuery;
+pub struct ConfigBlobChunkQuery {
+    offset: ConfigBlobOffset,
+}
 
 impl XAPRequest for ConfigBlobChunkQuery {
     type Response = ConfigBlobChunk;

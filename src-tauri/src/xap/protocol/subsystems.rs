@@ -2,6 +2,8 @@
 
 mod xap;
 mod qmk;
+mod keymap;
+mod remap;
 mod lighting;
 
 pub use xap::*;
