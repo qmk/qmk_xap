@@ -6,4 +6,6 @@ mod lighting;
 
 pub use xap::*;
 pub use qmk::*;
+pub use keymap::*;
+pub use remap::*;
 pub use lighting::*;

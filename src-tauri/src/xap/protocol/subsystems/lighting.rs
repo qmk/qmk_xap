@@ -1,4 +1,5 @@
 // Aggregator of the different lighting modes controlled by XAP, each one on its own file + Capabilities query
+
 use binrw::*;
 use crate::xap::XAPRequest;
 
