@@ -1,18 +1,10 @@
-// RGBLIGHT SUBSYSTEM - INCOMPLETE!
+use binrw::*;
+use crate::xap::XAPRequest;
+use serde::{Deserialize, Serialize};
+use ts_rs::TS;
 
-use super::common_imports::*;
-
-#[derive(BinWrite, BinRead, Debug, TS, Serialize, Deserialize)]
-#[ts(export)]
-pub struct RGBConfig {
-    pub enable: u8,
-    pub mode: u8,
-    pub hue: u8,
-    pub sat: u8,
-    pub val: u8,
-    pub speed: u8,
-}
-
+// ==============================
+// 0x6 0x3 0x1
 #[derive(BinRead, Debug)]
 pub struct RGBLightCapabilities(u32);
 
@@ -20,13 +12,15 @@ pub struct RGBLightCapabilities(u32);
 pub struct RGBLightCapabilitiesQuery;
 
 impl XAPRequest for RGBLightCapabilitiesQuery {
-    type Response = RGBConfig;
+    type Response = RGBLightCapabilities;
 
     fn id() -> &'static [u8] {
         &[0x6, 0x3, 0x1]
     }
 }
 
+// ==============================
+// 0x6 0x3 0x2
 #[derive(BinRead, Debug)]
 pub struct RGBLightEffects(u64);
 
@@ -57,20 +51,35 @@ impl XAPRequest for RGBLightEffectsQuery {
     }
 }
 
+// ==============================
+// 0x6 0x3 0x3
+#[derive(BinWrite, BinRead, Debug, TS, Serialize, Deserialize)]
+#[ts(export)]
+pub struct RGBLightConfig {
+    pub enable: u8,
+    pub mode: u8,
+    pub hue: u8,
+    pub sat: u8,
+    pub val: u8,
+    pub speed: u8,
+}
+
 #[derive(BinWrite, Debug)]
 pub struct RGBLightConfigGet;
 
 impl XAPRequest for RGBLightConfigGet {
-    type Response = RGBConfig;
+    type Response = RGBLightConfig;
 
     fn id() -> &'static [u8] {
         &[0x6, 0x3, 0x3]
     }
 }
 
+// ==============================
+// 0x6 0x3 0x4
 #[derive(BinWrite, Debug)]
 pub struct RGBLightConfigSet {
-    pub config: RGBConfig,
+    pub config: RGBLightConfig,
 }
 
 impl XAPRequest for RGBLightConfigSet {
@@ -81,6 +90,8 @@ impl XAPRequest for RGBLightConfigSet {
     }
 }
 
+// ==============================
+// 0x6 0x3 0x5
 #[derive(BinWrite, Debug)]
 pub struct RGBLightConfigSave;
 
