@@ -1,7 +1,8 @@
 use binrw::*;
-use crate::xap::XAPRequest;
 use serde::{Deserialize, Serialize};
 use ts_rs::TS;
+
+use crate::xap::XAPRequest;
 
 // ==============================
 // 0x1 0x0
@@ -153,7 +154,7 @@ impl XAPRequest for QMKJumpToBootloaderQuery {
 // ==============================
 // 0x1 0x8
 #[derive(BinRead, Debug)]
-pub struct QMKHardwareIdentifier([u32;4]);
+pub struct QMKHardwareIdentifier([u32; 4]);
 
 #[derive(BinWrite, Debug)]
 pub struct QMKHardwareIdentifierQuery;

@@ -1,8 +1,8 @@
 // This file defines the different kind of tokens
 
 use anyhow::anyhow;
-use bitflags::bitflags;
 use binrw::{prelude::*, ReadOptions};
+use bitflags::bitflags;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 #[binwrite]

@@ -1,6 +1,7 @@
 use binrw::*;
-use crate::xap::XAPRequest;
 use serde::Serialize;
+
+use crate::xap::XAPRequest;
 
 // ==============================
 // 0x0 0x0
