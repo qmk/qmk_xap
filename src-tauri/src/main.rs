@@ -3,111 +3,23 @@
     windows_subsystem = "windows"
 )]
 
-mod types;
+#[macro_use]
+mod commands;
+mod state;
 mod xap;
 
 use std::{sync::Arc, time::Duration};
 
-use anyhow::anyhow;
 use log::{info, LevelFilter};
-use tauri::State;
 use tokio::sync::Mutex;
-use xap::protocol::{
-    RGBLightConfig, RGBLightConfigGet, RGBLightConfigSave, RGBLightConfigSet, RGBLightEffectsQuery,
-    XAPResult, XAPSecureStatus, XAPSecureStatusQuery, XAPVersion, XAPVersionQuery,
-};
-use xap::{XAPClient, XAPDevice, XAPError, XAPRequest};
+use tokio::task;
 
-pub(crate) struct AppState {
-    device: Arc<Mutex<Option<XAPDevice>>>,
-    client: Arc<Mutex<XAPClient>>,
-}
+use commands::*;
+use state::AppState;
+use xap::{XAPClient, XAPResult};
 
-impl AppState {
-    pub async fn do_query<T>(&self, request: T) -> XAPResult<T::Response>
-    where
-        T: XAPRequest,
-    {
-        let result = match &*self.device.lock().await {
-            Some(device) => device.do_query(request),
-            None => Err(XAPError::Other(anyhow!("Device not available"))),
-        };
-
-        if result.is_err() {
-            self.process_error().await;
-        }
-
-        result
-    }
-
-    pub async fn do_action<T, F>(&self, action: F) -> XAPResult<T>
-    where
-        F: FnOnce(&XAPDevice) -> XAPResult<T>,
-    {
-        let result = match &*self.device.lock().await {
-            Some(device) => action(device),
-            None => Err(XAPError::Other(anyhow!("Device not available"))),
-        };
-
-        if result.is_err() {
-            self.process_error().await;
-        }
-
-        result
-    }
-
-    // TODO MOVE THIS INTO SINGLETON STATE HANDLING INSTANCE
-    async fn process_error(&self) {
-        let mut client = self.client.lock().await;
-        let mut device = self.device.lock().await;
-
-        if let Some(inner_device) = &(*device) {
-            if !client.is_device_connected(inner_device) {
-                *device = None;
-            }
-        }
-    }
-}
-
-#[tauri::command]
-async fn get_xap_device(state: State<'_, AppState>) -> XAPResult<String> {
-    state.do_action(|device| Ok(format!("{}", device))).await
-}
-
-#[tauri::command]
-async fn get_secure_status(state: State<'_, AppState>) -> XAPResult<XAPSecureStatus> {
-    state.do_query(XAPSecureStatusQuery {}).await
-}
-
-#[tauri::command]
-async fn get_xap_version(state: State<'_, AppState>) -> XAPResult<XAPVersion> {
-    state.do_query(XAPVersionQuery {}).await
-}
-
-#[tauri::command]
-async fn get_rgblight_config(state: State<'_, AppState>) -> XAPResult<RGBLightConfig> {
-    state.do_query(RGBLightConfigGet {}).await
-}
-
-#[tauri::command]
-async fn get_rgblight_effects(state: State<'_, AppState>) -> XAPResult<Vec<u8>> {
-    state
-        .do_query(RGBLightEffectsQuery {})
-        .await
-        .map(|effects| effects.enabled_effect_list())
-}
-
-#[tauri::command]
-async fn set_rgblight_config(arg: RGBLightConfig, state: State<'_, AppState>) -> XAPResult<()> {
-    state.do_query(RGBLightConfigSet { config: arg }).await
-}
-
-#[tauri::command]
-async fn save_rgblight_config(state: State<'_, AppState>) -> XAPResult<()> {
-    state.do_query(RGBLightConfigSave {}).await
-}
-
-fn main() -> XAPResult<()> {
+#[tokio::main]
+async fn main() -> XAPResult<()> {
     env_logger::builder()
         .format_timestamp(None)
         .filter_level(LevelFilter::Info)
@@ -123,7 +35,7 @@ fn main() -> XAPResult<()> {
         client: client.clone(),
     };
 
-    tauri::async_runtime::spawn(async move {
+    let handle = task::spawn(async move {
         info!("querying for compatible XAP devices");
         let device = loop {
             if let Ok(device) = client.lock().await.get_first_xap_device() {
@@ -150,6 +62,8 @@ fn main() -> XAPResult<()> {
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
+
+    handle.await.unwrap();
 
     Ok(())
 }
