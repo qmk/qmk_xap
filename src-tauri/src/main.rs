@@ -13,7 +13,7 @@ use log::{info, LevelFilter};
 use tauri::State;
 use tokio::sync::Mutex;
 use xap::protocol::{
-    RGBConfig, RGBLightConfigGet, RGBLightConfigSave, RGBLightConfigSet, RGBLightEffectsQuery,
+    RGBLightConfig, RGBLightConfigGet, RGBLightConfigSave, RGBLightConfigSet, RGBLightEffectsQuery,
     XAPResult, XAPSecureStatus, XAPSecureStatusQuery, XAPVersion, XAPVersionQuery,
 };
 use xap::{XAPClient, XAPDevice, XAPError, XAPRequest};
@@ -85,7 +85,7 @@ async fn get_xap_version(state: State<'_, AppState>) -> XAPResult<XAPVersion> {
 }
 
 #[tauri::command]
-async fn get_rgblight_config(state: State<'_, AppState>) -> XAPResult<RGBConfig> {
+async fn get_rgblight_config(state: State<'_, AppState>) -> XAPResult<RGBLightConfig> {
     state.do_query(RGBLightConfigGet {}).await
 }
 
@@ -98,7 +98,7 @@ async fn get_rgblight_effects(state: State<'_, AppState>) -> XAPResult<Vec<u8>> 
 }
 
 #[tauri::command]
-async fn set_rgblight_config(arg: RGBConfig, state: State<'_, AppState>) -> XAPResult<()> {
+async fn set_rgblight_config(arg: RGBLightConfig, state: State<'_, AppState>) -> XAPResult<()> {
     state.do_query(RGBLightConfigSet { config: arg }).await
 }
 

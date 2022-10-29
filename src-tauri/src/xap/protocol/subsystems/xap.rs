@@ -1,7 +1,9 @@
-// XAP SUBSYSTEM
+use binrw::*;
+use crate::xap::XAPRequest;
+use serde::Serialize;
 
-use super::common_imports::*;
-
+// ==============================
+// 0x0 0x0
 #[binread]
 #[derive(Debug, Serialize)]
 pub struct XAPVersion(u32);
@@ -17,6 +19,8 @@ impl XAPRequest for XAPVersionQuery {
     }
 }
 
+// ==============================
+// 0x0 0x1
 #[derive(BinRead, Debug)]
 pub struct XAPCapabilities(u32);
 
@@ -31,6 +35,8 @@ impl XAPRequest for XAPCapabilitiesQuery {
     }
 }
 
+// ==============================
+// 0x0 0x2
 #[derive(BinRead, Debug)]
 pub struct XAPEnabledSubsystems(u32);
 
@@ -45,17 +51,8 @@ impl XAPRequest for XAPEnabledSubsystemsQuery {
     }
 }
 
-#[derive(BinWrite, Debug)]
-pub struct XAPSecureStatusQuery;
-
-impl XAPRequest for XAPSecureStatusQuery {
-    type Response = XAPSecureStatus;
-
-    fn id() -> &'static [u8] {
-        &[0x0, 0x3]
-    }
-}
-
+// ==============================
+// 0x0 0x3
 #[derive(Debug, Serialize)]
 pub enum XAPSecureStatus {
     Disabled,
@@ -81,6 +78,19 @@ impl BinRead for XAPSecureStatus {
 }
 
 #[derive(BinWrite, Debug)]
+pub struct XAPSecureStatusQuery;
+
+impl XAPRequest for XAPSecureStatusQuery {
+    type Response = XAPSecureStatus;
+
+    fn id() -> &'static [u8] {
+        &[0x0, 0x3]
+    }
+}
+
+// ==============================
+// 0x0 0x4
+#[derive(BinWrite, Debug)]
 pub struct XAPSecureStatusUnlock;
 
 impl XAPRequest for XAPSecureStatusUnlock {
@@ -91,6 +101,8 @@ impl XAPRequest for XAPSecureStatusUnlock {
     }
 }
 
+// ==============================
+// 0x0 0x5
 #[derive(BinWrite, Debug)]
 pub struct XAPSecureStatusLock;
 
