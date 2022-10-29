@@ -57,6 +57,10 @@ impl XAPRequest for RemapKeycodeQuery {
     fn id() -> &'static [u8] {
         &[0x5, 0x3]
     }
+
+    fn is_secure() -> bool {
+        true
+    }
 }
 
 // ==============================
@@ -80,5 +84,9 @@ impl XAPRequest for RemapEncoderQuery {
 
     fn id() -> &'static [u8] {
         &[0x5, 0x4]
+    }
+
+    fn is_secure() -> bool {
+        true
     }
 }

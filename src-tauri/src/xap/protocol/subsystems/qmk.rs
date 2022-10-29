@@ -144,6 +144,10 @@ impl XAPRequest for QMKJumpToBootloaderQuery {
     fn id() -> &'static [u8] {
         &[0x1, 0x7]
     }
+
+    fn is_secure() -> bool {
+        true
+    }
 }
 
 // ==============================
@@ -175,5 +179,9 @@ impl XAPRequest for QMKReinitializeEepromQuery {
 
     fn id() -> &'static [u8] {
         &[0x1, 0x9]
+    }
+
+    fn is_secure() -> bool {
+        true
     }
 }
