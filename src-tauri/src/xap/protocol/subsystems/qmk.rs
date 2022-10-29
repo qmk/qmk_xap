@@ -1,3 +1,5 @@
+use std::ffi::CStr;
+
 use binrw::*;
 use serde::{Deserialize, Serialize};
 use ts_rs::TS;
@@ -59,15 +61,45 @@ impl XAPRequest for QMKBoardIdentifiersQuery {
 
 // ==============================
 // 0x1 0x3
-// TODO: Implement BinRead for String
-#[derive(BinRead, Debug)]
-pub struct QMKBoardManufacturer(String);
+#[derive(Debug)]
+pub struct CStringResponse(String);
+
+impl BinRead for CStringResponse {
+    type Args = ();
+
+    fn read_options<R: io::Read + io::Seek>(
+        reader: &mut R,
+        _options: &ReadOptions,
+        _args: Self::Args,
+    ) -> BinResult<Self> {
+        use binrw::Error::Custom;
+        let mut bytes = Vec::new();
+        reader.read_to_end(&mut bytes)?;
+
+        // TODO this isn't pretty, maybe there is a less verbose and elegant
+        // solution?
+        let string = CStr::from_bytes_with_nul(&bytes)
+            .map_err(|err| Custom {
+                err: Box::new(err),
+                pos: 0,
+            })
+            .and_then(|cstr| {
+                cstr.to_str().map_err(|err| Custom {
+                    err: Box::new(err),
+                    pos: 0,
+                })
+            })
+            .map(|str| str.to_owned())?;
+
+        Ok(Self(string))
+    }
+}
 
 #[derive(BinWrite, Debug)]
 pub struct QMKBoardManufacturerQuery;
 
 impl XAPRequest for QMKBoardManufacturerQuery {
-    type Response = QMKBoardManufacturer;
+    type Response = CStringResponse;
 
     fn id() -> &'static [u8] {
         &[0x1, 0x3]
@@ -76,15 +108,12 @@ impl XAPRequest for QMKBoardManufacturerQuery {
 
 // ==============================
 // 0x1 0x4
-// TODO: Implement BinRead for String
-#[derive(BinRead, Debug)]
-pub struct QMKProductName(String);
 
 #[derive(BinWrite, Debug)]
 pub struct QMKProductNameQuery;
 
 impl XAPRequest for QMKProductNameQuery {
-    type Response = QMKProductName;
+    type Response = CStringResponse;
 
     fn id() -> &'static [u8] {
         &[0x1, 0x4]
@@ -114,14 +143,10 @@ pub struct ConfigBlobChunk([u8; 32]);
 
 #[derive(BinWrite, BinRead, Debug, TS, Serialize, Deserialize)]
 #[ts(export)]
-pub struct ConfigBlobOffset {
-    pub offset: u16,
-}
+pub struct ConfigBlobOffset(u16);
 
 #[derive(BinWrite, Debug)]
-pub struct ConfigBlobChunkQuery {
-    offset: ConfigBlobOffset,
-}
+pub struct ConfigBlobChunkQuery(u16);
 
 impl XAPRequest for ConfigBlobChunkQuery {
     type Response = ConfigBlobChunk;
