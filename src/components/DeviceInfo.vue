@@ -7,9 +7,9 @@ const XAPSecureStatus: ref<string> = ref("");
 const XAPVersion: ref<string> = ref("");
 
 onMounted(async () => {
-  XAPDevice.value = await invoke("get_xap_device");
-  XAPSecureStatus.value = await invoke("get_secure_status")
-  XAPVersion.value = await invoke("get_xap_version")
+  XAPDevice.value = await invoke("get_xap_device", { id: 'bf7a8aff-57a1-4522-9dfa-c93925d85c72' });
+  XAPSecureStatus.value = await invoke("get_secure_status", { id: 'bf7a8aff-57a1-4522-9dfa-c93925d85c72' })
+  XAPVersion.value = await invoke("get_xap_version", { id: 'bf7a8aff-57a1-4522-9dfa-c93925d85c72' })
 })
 
 </script>

@@ -1,7 +1,16 @@
 <script setup lang="ts">
 
+import { getCurrentInstance } from 'vue'
+import { listen } from '@tauri-apps/api/event'
+
 import DeviceInfo from "./components/DeviceInfo.vue"
 import RGB from "./components/RGB.vue"
+
+// const new_device_handler = await listen('new-device', (event) => {
+//   console.log("new device with id" + event.payload)
+//   const instance = getCurrentInstance();
+//   instance?.proxy?.$forceUpdate();
+// })
 
 </script>
 

@@ -24,13 +24,13 @@ impl Token {
         }
     }
 
-    pub(crate) fn broadcast_token() -> Token {
-        Self::Broadcast
-    }
+    // pub(crate) fn broadcast_token() -> Token {
+    //     Self::Broadcast
+    // }
 
-    pub(crate) fn without_response_token() -> Token {
-        Self::WithoutResponse
-    }
+    // pub(crate) fn without_response_token() -> Token {
+    //     Self::WithoutResponse
+    // }
 
     fn random_xap_token_value() -> u16 {
         loop {

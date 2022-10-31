@@ -42,13 +42,13 @@ onMounted(async () => {
 })
 
 async function getConfig() {
-  await invoke('get_rgblight_config')
+  await invoke('get_rgblight_config', { id: 'bf7a8aff-57a1-4522-9dfa-c93925d85c72' })
     .then((config: RGBConfig) => { currentConfig.value = config })
     .catch((error) => console.error(error))
 }
 
 async function getRGBlightEffects() {
-  await invoke('get_rgblight_effects')
+  await invoke('get_rgblight_effects', { id: 'bf7a8aff-57a1-4522-9dfa-c93925d85c72' })
     .then((effects: Array<number>) => { enabledEffects.value = effects })
     .catch((error) => console.error(error))
 }
@@ -56,12 +56,12 @@ async function getRGBlightEffects() {
 async function setConfig() {
   console.log("set config")
   console.log(currentConfig)
-  await invoke('set_rgblight_config', { arg: currentConfig.value })
+  await invoke('set_rgblight_config', { id: 'bf7a8aff-57a1-4522-9dfa-c93925d85c72', arg: currentConfig.value })
     .catch((error) => console.error(error))
 }
 
 async function saveConfig() {
-  await invoke('save_rgblight_config')
+  await invoke('save_rgblight_config', { id: 'bf7a8aff-57a1-4522-9dfa-c93925d85c72' })
     .catch((error) => console.error(error))
 }
 
@@ -76,11 +76,11 @@ async function changeMode(mode: number) {
 
 <template>
 
-    <div class="q-gutter-md q-pa-md">
-      <h2>RGB</h2>
-      <q-select v-model.lazy.number="currentConfig.mode" @update:modelValue="changeMode" :options="enabledEffects"
-        label="Mode" emit-value />
-      <q-color v-model.lazy="currentColor" default-view="palette" format-model="rgb" no-header class="rgbPicker" />
-      <q-btn color="white" text-color="black" label="Save" @click="saveConfig" />
-    </div>
+  <div class="q-gutter-md q-pa-md">
+    <h2>RGB</h2>
+    <q-select v-model.lazy.number="currentConfig.mode" @update:modelValue="changeMode" :options="enabledEffects"
+      label="Mode" emit-value />
+    <q-color v-model.lazy="currentColor" default-view="palette" format-model="rgb" no-header class="rgbPicker" />
+    <q-btn color="white" text-color="black" label="Save" @click="saveConfig" />
+  </div>
 </template>

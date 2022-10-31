@@ -1,57 +1,83 @@
-use std::sync::Arc;
+use std::{collections::HashMap, fmt::Debug};
 
 use anyhow::anyhow;
-use tokio::sync::Mutex;
+use crossbeam_channel::Sender;
+use log::info;
+use uuid::Uuid;
 
-use crate::xap::{XAPClient, XAPDevice, XAPError, XAPRequest, XAPResult};
+use crate::{
+    xap::{XAPClient, XAPDevice, XAPError, XAPRequest, XAPResult},
+    XAPEvent,
+};
 
 pub(crate) struct AppState {
-    pub(crate) device: Arc<Mutex<Option<XAPDevice>>>,
-    pub(crate) client: Arc<Mutex<XAPClient>>,
+    pub(crate) devices: HashMap<Uuid, XAPDevice>,
+    pub(crate) client: XAPClient,
+    pub(crate) event_channel: Sender<XAPEvent>,
 }
 
-impl AppState {
-    pub async fn do_query<T>(&self, request: T) -> XAPResult<T::Response>
-    where
-        T: XAPRequest,
-    {
-        let result = match &*self.device.lock().await {
-            Some(device) => device.do_query(request),
-            None => Err(XAPError::Other(anyhow!("Device not available"))),
-        };
-
-        if result.is_err() {
-            self.process_error().await;
-        }
-
-        result
+impl Debug for AppState {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("AppState")
+            .field("device", &self.devices)
+            .finish()
     }
-
-    pub async fn do_action<T, F>(&self, action: F) -> XAPResult<T>
+}
+impl AppState {
+    pub fn do_action<T, F>(&self, id: Uuid, action: F) -> XAPResult<T>
     where
         F: FnOnce(&XAPDevice) -> XAPResult<T>,
     {
-        let result = match &*self.device.lock().await {
-            Some(device) => action(device),
-            None => Err(XAPError::Other(anyhow!("Device not available"))),
-        };
-
-        if result.is_err() {
-            self.process_error().await;
+        // TODO actually implement multi-device handling
+        match self.devices.iter().next() {
+            Some(device) => action(device.1),
+            None => Err(XAPError::Other(anyhow!("device not available"))),
         }
-
-        result
     }
 
-    // TODO MOVE THIS INTO SINGLETON STATE HANDLING INSTANCE
-    async fn process_error(&self) {
-        let mut client = self.client.lock().await;
-        let mut device = self.device.lock().await;
+    pub fn do_query<T>(&self, id: Uuid, request: T) -> XAPResult<T::Response>
+    where
+        T: XAPRequest,
+    {
+        // TODO actually implement multi-device handling
+        match self.devices.iter().next() {
+            Some(device) => device.1.do_query(request),
+            None => Err(XAPError::Other(anyhow!("device not available"))),
+        }
+    }
 
-        if let Some(inner_device) = &(*device) {
-            if !client.is_device_connected(inner_device) {
-                *device = None;
+    pub fn new(client: XAPClient, event_channel: Sender<XAPEvent>) -> Self {
+        AppState {
+            client,
+            devices: HashMap::new(),
+            event_channel,
+        }
+    }
+
+    pub fn query_all_devices(&mut self) -> XAPResult<()> {
+        if self.devices.is_empty() {
+            info!("querying for compatible XAP devices");
+            if let Ok(devices) = self.client.xap_devices() {
+                for device in devices {
+                    let device = XAPDevice::new(
+                        device.clone(),
+                        self.event_channel.clone(),
+                        device.open_device(&self.client.hid)?,
+                        device.open_device(&self.client.hid)?,
+                    );
+                    let id = device.id();
+                    self.devices.insert(id, device);
+                    self.event_channel
+                        .send(XAPEvent::NewDevice(id))
+                        .expect("failed to announce new device");
+                }
             }
         }
+        Ok(())
+    }
+
+    pub fn remove_disconnected_devices(&mut self) {
+        self.devices
+            .retain(|_, device| self.client.is_device_connected(&device));
     }
 }

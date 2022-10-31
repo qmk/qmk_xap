@@ -1,25 +1,27 @@
-use crate::xap::*;
+use std::{
+    fmt::{Debug, Display},
+    io::Cursor,
+    thread::JoinHandle,
+    time::{Duration, Instant},
+};
+
 use anyhow::anyhow;
 use binrw::BinWriterExt;
 use crossbeam_channel::{unbounded, Receiver, Sender};
 use hidapi::{DeviceInfo, HidDevice};
-use log::{error, info, trace};
-use std::{
-    fmt::{Debug, Display},
-    io::Cursor,
-    thread,
-    thread::JoinHandle,
-    time::{Duration, Instant},
-};
+use log::{error, trace};
+use uuid::Uuid;
+
+use crate::{xap::*, XAPEvent};
 
 const XAP_REPORT_SIZE: usize = 64;
 
 pub struct XAPDevice {
     info: DeviceInfo,
-    tx: HidDevice,
-    rx_thread: JoinHandle<()>,
+    id: Uuid,
+    tx_device: HidDevice,
+    _rx_thread: JoinHandle<()>,
     rx_channel: Receiver<ResponseRaw>,
-    broadcast_channel: Receiver<ResponseRaw>,
 }
 
 impl Debug for XAPDevice {
@@ -60,7 +62,7 @@ impl XAPDevice {
         writer.write_le(&request)?;
 
         trace!("send XAP report with token {:?}", request.token());
-        self.tx.write(&report)?;
+        self.tx_device.write(&report)?;
 
         let start = Instant::now();
 
@@ -84,16 +86,20 @@ impl XAPDevice {
         response.into_xap_response::<T>()
     }
 
-    pub fn new(info: DeviceInfo, rx: HidDevice, tx: HidDevice) -> Self {
+    pub(crate) fn new(
+        info: DeviceInfo,
+        event_channel: Sender<XAPEvent>,
+        rx: HidDevice,
+        tx: HidDevice,
+    ) -> Self {
         let (tx_channel, rx_channel) = unbounded();
-        let (broadcast_tx_channel, broadcast_rx_channel) = unbounded();
-
+        let id = Uuid::new_v4();
         Self {
             info,
-            tx,
-            rx_thread: Self::start_rx_thread(rx, broadcast_tx_channel, tx_channel),
+            id: id,
+            tx_device: tx,
+            _rx_thread: Self::start_rx_thread(id, rx, event_channel, tx_channel),
             rx_channel,
-            broadcast_channel: broadcast_rx_channel,
         }
     }
 
@@ -101,15 +107,18 @@ impl XAPDevice {
         &self.info
     }
 
+    pub fn id(&self) -> Uuid {
+        self.id
+    }
+
     fn start_rx_thread(
+        device_id: Uuid,
         rx: HidDevice,
-        broadcast_tx_channel: Sender<ResponseRaw>,
+        event_channel: Sender<XAPEvent>,
         tx_channel: Sender<ResponseRaw>,
-    ) -> JoinHandle<()> {
-        // TODO: not happy with the heavy nesting, this should be cleaned-up.
-        // Also nobody consumes the broadcast messages ATM.
-        thread::spawn(move || {
-            let result: anyhow::Result<()> = (|| {
+    ) -> std::thread::JoinHandle<()> {
+        std::thread::spawn(move || {
+            let result: XAPResult<()> = (|| {
                 let mut report = [0_u8; XAP_REPORT_SIZE];
                 loop {
                     rx.read(&mut report)?;
@@ -121,7 +130,12 @@ impl XAPDevice {
                                     "received XAP broadcast package with payload {:#?}",
                                     response.payload()
                                 );
-                                broadcast_tx_channel.send(response)?;
+                                event_channel
+                                    .send(XAPEvent::Broadcast {
+                                        id: device_id,
+                                        response: response,
+                                    })
+                                    .expect("failed to send broadcast event!");
                             } else {
                                 trace!(
                                     "
@@ -129,17 +143,24 @@ impl XAPDevice {
                                     response.token(),
                                     response.payload()
                                 );
-                                tx_channel.send(response)?;
+                                tx_channel
+                                    .send(response)
+                                    .expect("failed to forward received XAP report");
                             }
                         }
-                        Err(err) => error!("received malformed XAP HID report {}", err),
+                        Err(err) => error!("received malformed XAP HID report {err}"),
                     }
                 }
             })();
 
             if let Err(err) = result {
-                error!("error in XAP receive thread {}", err);
-                std::thread::sleep(Duration::from_millis(100));
+                // Terminate thread and notify state
+                event_channel
+                    .send(XAPEvent::RxError {
+                        id: device_id,
+                        error: err,
+                    })
+                    .expect("failed to send error event!");
             }
         })
     }
