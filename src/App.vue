@@ -1,11 +1,27 @@
 <script setup lang="ts">
 
-import { getCurrentInstance, onMounted } from 'vue'
+import { storeToRefs } from 'pinia'
+import { onMounted } from 'vue'
+import { listen } from '@tauri-apps/api/event'
 
-import DeviceInfo from "./components/DeviceInfo.vue"
-import RGB from "./components/RGB.vue"
+import { useXAPDeviceStore } from '@/stores/devices'
+import DeviceInfo from "@/components/DeviceInfo.vue"
+import RGB from "@/components/RGB.vue"
 
-onMounted(async () => {})
+const store = useXAPDeviceStore()
+const { current_id, ids } = storeToRefs(store)
+
+
+onMounted(async () => {
+  const new_device_handler = await listen('new-device', event => {
+    console.log("new device with id" + event.payload.id)
+    store.addId(event.payload.id)
+  })
+  const removed_device_handler = await listen('removed-device', event => {
+    console.log("removed device with id" + event.payload.id)
+    store.removeId(event.payload.id)
+  })
+})
 
 </script>
 
@@ -20,6 +36,7 @@ onMounted(async () => {})
           </q-avatar>
           QMK XAP GUI
         </q-toolbar-title>
+        <q-select v-model="current_id" :options="ids" label="Device" />
       </q-toolbar>
 
       <q-tabs align="left">

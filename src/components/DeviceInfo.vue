@@ -1,16 +1,30 @@
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
-import { invoke } from "@tauri-apps/api/tauri";
+import { ref, watch } from 'vue'
+import { storeToRefs } from 'pinia'
+import { invoke } from '@tauri-apps/api/tauri'
+
+import { useXAPDeviceStore } from '@/stores/devices'
 
 const XAPDevice: ref<string> = ref("");
 const XAPSecureStatus: ref<string> = ref("");
 const XAPVersion: ref<string> = ref("");
 
-onMounted(async () => {
-  XAPDevice.value = await invoke("get_xap_device", { id: 'bf7a8aff-57a1-4522-9dfa-c93925d85c72' });
-  XAPSecureStatus.value = await invoke("get_secure_status", { id: 'bf7a8aff-57a1-4522-9dfa-c93925d85c72' })
-  XAPVersion.value = await invoke("get_xap_version", { id: 'bf7a8aff-57a1-4522-9dfa-c93925d85c72' })
+const store = useXAPDeviceStore()
+const { current_id } = storeToRefs(store)
+
+watch(current_id, async (newId: String | null) => {
+  if (newId != null) {
+    XAPDevice.value = await invoke("get_xap_device", { id: newId });
+    XAPSecureStatus.value = await invoke("get_secure_status", { id: newId })
+    XAPVersion.value = await invoke("get_xap_version", { id: newId })
+    return;
+  }
+
+  XAPDevice.value = ''
+  XAPSecureStatus.value = ''
+  XAPVersion.value = ''
 })
+
 
 </script>
 

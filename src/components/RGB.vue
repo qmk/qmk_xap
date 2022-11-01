@@ -1,10 +1,16 @@
 <script setup lang="ts">
-import { ref, watch, onMounted } from "vue";
-import { invoke } from "@tauri-apps/api/tauri";
-import { RGBConfig } from "RGBConfig";
-import { colord, HsvColor } from "colord";
+import { ref, watch, onMounted } from "vue"
+import { storeToRefs } from 'pinia'
+import { invoke } from "@tauri-apps/api/tauri"
+import { colord, HsvColor } from "colord"
 
-export interface RGB {
+import { RGBConfig } from "RGBConfig"
+import { useXAPDeviceStore } from '@/stores/devices'
+
+const store = useXAPDeviceStore()
+const { current_id } = storeToRefs(store)
+
+interface RGB {
   r: number,
   g: number,
   b: number
@@ -22,11 +28,7 @@ const currentConfig: ref<RGBConfig> = ref({
 const currentColor: ref<RGB> = ref({ r: 33, g: 128, b: 255 })
 const enabledEffects: ref<Array<number>> = ref([])
 
-watch(currentColor, async (newColor: RGB, oldColor: RGB) => {
-  // TODO DOESN'T WORK
-  if (newColor === oldColor) {
-    return
-  }
+watch(currentColor, async (newColor: RGB) => {
   let hsv = colord(newColor).toHsv()
   currentConfig.value.hue = Math.ceil(hsv.h / 360 * 255)
   currentConfig.value.sat = Math.ceil(hsv.s / 100 * 255)
@@ -34,34 +36,39 @@ watch(currentColor, async (newColor: RGB, oldColor: RGB) => {
   await setConfig()
 })
 
-onMounted(async () => {
-  await getConfig()
-  await getRGBlightEffects()
-  let hsv = colord({ h: Math.ceil(currentConfig.value.hue / 255 * 360), s: Math.ceil(currentConfig.value.sat / 255 * 100), v: Math.ceil(currentConfig.value.val / 255 * 100) })
-  currentColor.value = hsv.toRgb()
+watch(current_id, async (newId: String | null) => {
+  if (newId != null) {
+    await getConfig()
+    await getRGBlightEffects()
+    let hsv = colord({ h: Math.ceil(currentConfig.value.hue / 255 * 360), s: Math.ceil(currentConfig.value.sat / 255 * 100), v: Math.ceil(currentConfig.value.val / 255 * 100) })
+    currentColor.value = hsv.toRgb()
+    return;
+  }
+
+  enabledEffects.value = [];
 })
 
 async function getConfig() {
-  await invoke('get_rgblight_config', { id: 'bf7a8aff-57a1-4522-9dfa-c93925d85c72' })
+  await invoke('get_rgblight_config', { id: current_id.value })
     .then((config: RGBConfig) => { currentConfig.value = config })
     .catch((error) => console.error(error))
 }
 
 async function getRGBlightEffects() {
-  await invoke('get_rgblight_effects', { id: 'bf7a8aff-57a1-4522-9dfa-c93925d85c72' })
+  await invoke('get_rgblight_effects', { id: current_id.value })
     .then((effects: Array<number>) => { enabledEffects.value = effects })
     .catch((error) => console.error(error))
 }
 
 async function setConfig() {
   console.log("set config")
-  console.log(currentConfig)
-  await invoke('set_rgblight_config', { id: 'bf7a8aff-57a1-4522-9dfa-c93925d85c72', arg: currentConfig.value })
+  console.log(currentConfig.value)
+  await invoke('set_rgblight_config', { id: current_id.value, arg: currentConfig.value })
     .catch((error) => console.error(error))
 }
 
 async function saveConfig() {
-  await invoke('save_rgblight_config', { id: 'bf7a8aff-57a1-4522-9dfa-c93925d85c72' })
+  await invoke('save_rgblight_config', { id: current_id.value })
     .catch((error) => console.error(error))
 }
 
@@ -71,7 +78,6 @@ async function changeMode(mode: number) {
   currentConfig.value.mode = mode
   await setConfig()
 }
-
 </script>
 
 <template>

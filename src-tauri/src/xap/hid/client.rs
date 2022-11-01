@@ -32,9 +32,8 @@ impl XAPClient {
     where
         F: FnOnce(&XAPDevice) -> XAPResult<T>,
     {
-        // TODO actually implement multi-device handling
-        match self.devices.iter().next() {
-            Some(device) => action(device.1),
+        match self.devices.get(&id) {
+            Some(device) => action(device),
             None => Err(XAPError::Other(anyhow!("device not available"))),
         }
     }
@@ -43,9 +42,8 @@ impl XAPClient {
     where
         T: XAPRequest,
     {
-        // TODO actually implement multi-device handling
-        match self.devices.iter().next() {
-            Some(device) => device.1.do_query(request),
+        match self.devices.get(&id) {
+            Some(device) => device.do_query(request),
             None => Err(XAPError::Other(anyhow!("device not available"))),
         }
     }
