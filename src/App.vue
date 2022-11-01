@@ -1,29 +1,11 @@
 <script setup lang="ts">
 
 import { getCurrentInstance, onMounted } from 'vue'
-import { listen } from '@tauri-apps/api/event'
 
 import DeviceInfo from "./components/DeviceInfo.vue"
 import RGB from "./components/RGB.vue"
 
-onMounted(async () => {
-  const new_device_handler = await listen('new-device', event => {
-    console.log("new device with id")
-    console.log(event.payload.id)
-    window.location.reload();
-    // TODO - doesn't work as I want it to be
-    // const instance = getCurrentInstance();
-    // instance?.proxy?.$forceUpdate();
-  })
-  const removed_device_handler = await listen('removed-device', event => {
-    console.log("removed device with id")
-    console.log(event.payload.id)
-    window.location.reload();
-    // TODO - doesn't work as I want it to be
-    // const instance = getCurrentInstance();
-    // instance?.proxy?.$forceUpdate();
-  })
-})
+onMounted(async () => {})
 
 </script>
 
