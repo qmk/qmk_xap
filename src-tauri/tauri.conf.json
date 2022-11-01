@@ -60,7 +60,7 @@
         "resizable": true,
         "title": "QMK XAP GUI",
         "width": 800,
-        "decorations": false
+        "decorations": true
       }
     ]
   }

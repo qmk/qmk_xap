@@ -42,6 +42,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@vitejs/plugin-vue-jsx", "virtual:b5fe18308d727450b156ed681b84c360e70c690b87adba99dbd11874bd16ecaf7398badf429fe739b68dcc51be06073308f22725320090349ef58cc4fa710558#npm:2.0.1"],\
             ["@vue/runtime-dom", "npm:3.2.40"],\
             ["colord", "npm:2.9.3"],\
+            ["pinia", "virtual:b5fe18308d727450b156ed681b84c360e70c690b87adba99dbd11874bd16ecaf7398badf429fe739b68dcc51be06073308f22725320090349ef58cc4fa710558#npm:2.0.23"],\
             ["quasar", "npm:2.10.0"],\
             ["sass", "npm:1.32.12"],\
             ["typescript", "patch:typescript@npm%3A4.8.4#~builtin<compat/typescript>::version=4.8.4&hash=a1c5e5"],\
@@ -969,6 +970,15 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@vue/compiler-ssr", "npm:3.2.40"],\
             ["@vue/compiler-dom", "npm:3.2.40"],\
             ["@vue/shared", "npm:3.2.40"]\
+          ],\
+          "linkType": "HARD"\
+        }]\
+      ]],\
+      ["@vue/devtools-api", [\
+        ["npm:6.4.5", {\
+          "packageLocation": "./.yarn/cache/@vue-devtools-api-npm-6.4.5-bcd56e5fec-40c5adc878.zip/node_modules/@vue/devtools-api/",\
+          "packageDependencies": [\
+            ["@vue/devtools-api", "npm:6.4.5"]\
           ],\
           "linkType": "HARD"\
         }]\
@@ -2390,6 +2400,38 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "linkType": "HARD"\
         }]\
       ]],\
+      ["pinia", [\
+        ["npm:2.0.23", {\
+          "packageLocation": "./.yarn/cache/pinia-npm-2.0.23-17bda5a8d2-004c76d80b.zip/node_modules/pinia/",\
+          "packageDependencies": [\
+            ["pinia", "npm:2.0.23"]\
+          ],\
+          "linkType": "SOFT"\
+        }],\
+        ["virtual:b5fe18308d727450b156ed681b84c360e70c690b87adba99dbd11874bd16ecaf7398badf429fe739b68dcc51be06073308f22725320090349ef58cc4fa710558#npm:2.0.23", {\
+          "packageLocation": "./.yarn/__virtual__/pinia-virtual-18825453c8/0/cache/pinia-npm-2.0.23-17bda5a8d2-004c76d80b.zip/node_modules/pinia/",\
+          "packageDependencies": [\
+            ["pinia", "virtual:b5fe18308d727450b156ed681b84c360e70c690b87adba99dbd11874bd16ecaf7398badf429fe739b68dcc51be06073308f22725320090349ef58cc4fa710558#npm:2.0.23"],\
+            ["@types/typescript", null],\
+            ["@types/vue", null],\
+            ["@types/vue__composition-api", null],\
+            ["@vue/composition-api", null],\
+            ["@vue/devtools-api", "npm:6.4.5"],\
+            ["typescript", "patch:typescript@npm%3A4.8.4#~builtin<compat/typescript>::version=4.8.4&hash=a1c5e5"],\
+            ["vue", "npm:3.2.40"],\
+            ["vue-demi", "virtual:18825453c89c0444bf2693fa0221b1a287e813cd4b7c858090e54bba926ce6284f5a5391fe4d9e7a74c10fef058266e5189f131f425575773c90d167a3443d3f#npm:0.13.11"]\
+          ],\
+          "packagePeers": [\
+            "@types/typescript",\
+            "@types/vue",\
+            "@types/vue__composition-api",\
+            "@vue/composition-api",\
+            "typescript",\
+            "vue"\
+          ],\
+          "linkType": "HARD"\
+        }]\
+      ]],\
       ["postcss", [\
         ["npm:8.4.17", {\
           "packageLocation": "./.yarn/cache/postcss-npm-8.4.17-301c0fb6cf-a6d9096dd7.zip/node_modules/postcss/",\
@@ -2449,6 +2491,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@vitejs/plugin-vue-jsx", "virtual:b5fe18308d727450b156ed681b84c360e70c690b87adba99dbd11874bd16ecaf7398badf429fe739b68dcc51be06073308f22725320090349ef58cc4fa710558#npm:2.0.1"],\
             ["@vue/runtime-dom", "npm:3.2.40"],\
             ["colord", "npm:2.9.3"],\
+            ["pinia", "virtual:b5fe18308d727450b156ed681b84c360e70c690b87adba99dbd11874bd16ecaf7398badf429fe739b68dcc51be06073308f22725320090349ef58cc4fa710558#npm:2.0.23"],\
             ["quasar", "npm:2.10.0"],\
             ["sass", "npm:1.32.12"],\
             ["typescript", "patch:typescript@npm%3A4.8.4#~builtin<compat/typescript>::version=4.8.4&hash=a1c5e5"],\
@@ -2875,6 +2918,32 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@vue/runtime-dom", "npm:3.2.40"],\
             ["@vue/server-renderer", "virtual:ee1b0f06d22c7073f87fcc94e688c4d6a5316dd1aa1770a54121d2942b302f08768362afc7b1370cd6826afa7582fad4a548059bae34f23d21a4fef21024b7a3#npm:3.2.40"],\
             ["@vue/shared", "npm:3.2.40"]\
+          ],\
+          "linkType": "HARD"\
+        }]\
+      ]],\
+      ["vue-demi", [\
+        ["npm:0.13.11", {\
+          "packageLocation": "./.yarn/unplugged/vue-demi-virtual-8bbcf84069/node_modules/vue-demi/",\
+          "packageDependencies": [\
+            ["vue-demi", "npm:0.13.11"]\
+          ],\
+          "linkType": "SOFT"\
+        }],\
+        ["virtual:18825453c89c0444bf2693fa0221b1a287e813cd4b7c858090e54bba926ce6284f5a5391fe4d9e7a74c10fef058266e5189f131f425575773c90d167a3443d3f#npm:0.13.11", {\
+          "packageLocation": "./.yarn/unplugged/vue-demi-virtual-8bbcf84069/node_modules/vue-demi/",\
+          "packageDependencies": [\
+            ["vue-demi", "virtual:18825453c89c0444bf2693fa0221b1a287e813cd4b7c858090e54bba926ce6284f5a5391fe4d9e7a74c10fef058266e5189f131f425575773c90d167a3443d3f#npm:0.13.11"],\
+            ["@types/vue", null],\
+            ["@types/vue__composition-api", null],\
+            ["@vue/composition-api", null],\
+            ["vue", "npm:3.2.40"]\
+          ],\
+          "packagePeers": [\
+            "@types/vue",\
+            "@types/vue__composition-api",\
+            "@vue/composition-api",\
+            "vue"\
           ],\
           "linkType": "HARD"\
         }]\

@@ -44,9 +44,10 @@ pub(crate) enum XAPEvent {
 }
 
 #[derive(Clone, serde::Serialize)]
+#[serde(untagged)]
 pub(crate) enum FrontendEvent {
-    NewDevice(Uuid),
-    RemovedDevice(Uuid),
+    NewDevice { id: Uuid },
+    RemovedDevice { id: Uuid },
 }
 
 fn start_event_loop(
@@ -71,11 +72,11 @@ fn start_event_loop(
                         },
                         Ok(XAPEvent::NewDevice(id)) => {
                             info!("detected new device - notifying frontend!");
-                            app.emit_all("new-device", FrontendEvent::NewDevice(id));
+                            app.emit_all("new-device", FrontendEvent::NewDevice{id});
                         },
                         Ok(XAPEvent::RemovedDevice(id)) => {
                             info!("removed device - notifying frontend!");
-                            app.emit_all("removed-device", FrontendEvent::RemovedDevice(id));
+                            app.emit_all("removed-device", FrontendEvent::RemovedDevice{id});
                         }
                         Ok(XAPEvent::RxError{id, error}) => {
                             info!("error for device {id} in receive thread : {error}");
