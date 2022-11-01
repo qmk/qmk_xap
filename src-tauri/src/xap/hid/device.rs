@@ -20,7 +20,7 @@ pub struct XAPDevice {
     info: DeviceInfo,
     id: Uuid,
     tx_device: HidDevice,
-    _rx_thread: JoinHandle<()>,
+    rx_thread: JoinHandle<()>,
     rx_channel: Receiver<ResponseRaw>,
 }
 
@@ -98,7 +98,7 @@ impl XAPDevice {
             info,
             id: id,
             tx_device: tx,
-            _rx_thread: Self::start_rx_thread(id, rx, event_channel, tx_channel),
+            rx_thread: Self::start_rx_thread(id, rx, event_channel, tx_channel),
             rx_channel,
         }
     }
@@ -109,6 +109,18 @@ impl XAPDevice {
 
     pub fn id(&self) -> Uuid {
         self.id
+    }
+
+    pub fn is_running(&self) -> bool {
+        !self.rx_thread.is_finished()
+    }
+
+    pub fn is_device(&self, candidate: &DeviceInfo) -> bool {
+        candidate.path() == self.info.path()
+            && candidate.product_id() == self.info.product_id()
+            && candidate.vendor_id() == self.info.vendor_id()
+            && candidate.usage_page() == self.info.usage_page()
+            && candidate.usage() == self.info.usage()
     }
 
     fn start_rx_thread(

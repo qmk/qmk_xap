@@ -5,10 +5,8 @@
 
 #[macro_use]
 mod commands;
-mod state;
 mod xap;
 
-use std::sync::atomic::AtomicBool;
 use std::sync::Arc;
 use std::time::Duration;
 
@@ -24,7 +22,6 @@ use tauri::{AppHandle, Manager};
 use uuid::Uuid;
 
 use commands::*;
-use state::AppState;
 use xap::{ResponseRaw, XAPClient, XAPError, XAPResult};
 
 fn shutdown_event_loop<R: Runtime>(sender: Sender<XAPEvent>) -> TauriPlugin<R> {
@@ -41,25 +38,25 @@ fn shutdown_event_loop<R: Runtime>(sender: Sender<XAPEvent>) -> TauriPlugin<R> {
 pub(crate) enum XAPEvent {
     Broadcast { id: Uuid, response: ResponseRaw },
     NewDevice(Uuid),
+    RemovedDevice(Uuid),
     RxError { id: Uuid, error: XAPError },
-    QueryNewDevice,
     Exit,
 }
 
 #[derive(Clone, serde::Serialize)]
 pub(crate) enum FrontendEvent {
     NewDevice(Uuid),
+    RemovedDevice(Uuid),
 }
 
 fn start_event_loop(
     app: AppHandle,
-    state: Arc<Mutex<AppState>>,
+    state: Arc<Mutex<XAPClient>>,
     event_channel: Receiver<XAPEvent>,
 ) {
     let _ = std::thread::spawn(move || {
         let new_device_ticker = tick(Duration::from_millis(500));
         let state = state;
-        let mut query_for_new_devices = true;
         info!("started event loop");
         'event_loop: loop {
             select! {
@@ -76,14 +73,13 @@ fn start_event_loop(
                             info!("detected new device - notifying frontend!");
                             app.emit_all("new-device", FrontendEvent::NewDevice(id));
                         },
+                        Ok(XAPEvent::RemovedDevice(id)) => {
+                            info!("removed device - notifying frontend!");
+                            app.emit_all("removed-device", FrontendEvent::RemovedDevice(id));
+                        }
                         Ok(XAPEvent::RxError{id, error}) => {
                             info!("error for device {id} in receive thread : {error}");
-                            state.lock().remove_disconnected_devices();
-                            query_for_new_devices = true;
-                        },
-                        Ok(XAPEvent::QueryNewDevice) => {
-                            info!("querying for new XAP devices");
-                            state.lock().query_all_devices();
+                            state.lock().enumerate_xap_devices();
                         },
                         Err(err) => {
                             error!("error receiving event {err}");
@@ -94,9 +90,7 @@ fn start_event_loop(
                 recv(new_device_ticker) -> msg => {
                     match msg {
                         Ok(_) => {
-                            if query_for_new_devices {
-                                state.lock().query_all_devices();
-                            }
+                            state.lock().enumerate_xap_devices();
                         },
                         Err(err) => {
                             error!("failed receiving tick {err}");
@@ -115,8 +109,7 @@ fn main() -> XAPResult<()> {
         .init();
 
     let (event_channel_tx, event_channel_rx): (Sender<XAPEvent>, Receiver<XAPEvent>) = unbounded();
-    let client = XAPClient::new().expect("couldn't create XAP client");
-    let state = Arc::new(Mutex::new(AppState::new(client, event_channel_tx.clone())));
+    let state = Arc::new(Mutex::new(XAPClient::new(event_channel_tx.clone())));
 
     tauri::Builder::default()
         .plugin(shutdown_event_loop(event_channel_tx.clone()))
