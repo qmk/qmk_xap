@@ -14,6 +14,10 @@ export const useXAPDeviceStore = defineStore('xap-device-store', {
     getters: {},
     actions: {
         addDevice(id: string, device: XAPDevice) {
+            // placeholder value if not received
+            device.info.qmk.manufacturer = device.info.qmk?.manufacturer || "unknown manufacturer";
+            device.info.qmk.product_name = device.info.qmk?.product_name || "unknown product";
+
             if (!this.devices.has(id)) {
                 this.devices.set(id, device)
             }

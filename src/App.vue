@@ -39,7 +39,7 @@ onMounted(async () => {
           </q-avatar>
           QMK XAP GUI
         </q-toolbar-title>
-        <q-select filled v-model="currentDevice" :options="devicesA" :option-label="(device: XAPDevice) => (device.info.qmk.manufacturer ?? 'unknown manufacturer') + ': ' + (device.info.qmk.product_name ?? 'unknown product')" label="XAP Device" emit-value/>
+        <q-select filled v-model="currentDevice" :options="devicesA" :option-label="(device: XAPDevice) => device.info.qmk.manufacturer.slice(1, -1) + ': ' + device.info.qmk.product_name.slice(1, -1)" label="XAP Device" emit-value/>
       </q-toolbar>
 
       <q-tabs align="left">
