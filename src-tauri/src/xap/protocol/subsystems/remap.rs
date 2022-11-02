@@ -1,4 +1,5 @@
 use binrw::*;
+use bitflags::bitflags;
 use serde::{Deserialize, Serialize};
 use ts_rs::TS;
 
@@ -6,8 +7,15 @@ use crate::xap::XAPRequest;
 
 // ==============================
 // 0x5 0x1
-#[derive(BinRead, Debug)]
-pub struct RemapCapabilities(u32);
+bitflags! {
+    #[binread]
+    pub struct RemapCapabilities: u32 {
+        const CAPABILITIES = 1 << 0x1;
+        const LAYER_COUNT = 1 << 0x2;
+        const SET_KEYCODE = 1 << 0x3;
+        const SET_ENCODER_KEYCODE = 1 << 0x4;
+    }
+}
 
 #[derive(BinWrite, Debug)]
 pub struct RemapCapabilitiesQuery;

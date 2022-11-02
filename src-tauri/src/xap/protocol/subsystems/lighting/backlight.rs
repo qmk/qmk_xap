@@ -1,4 +1,5 @@
 use binrw::*;
+use bitflags::bitflags;
 use serde::{Deserialize, Serialize};
 use ts_rs::TS;
 
@@ -6,8 +7,16 @@ use crate::xap::XAPRequest;
 
 // ==============================
 // 0x6 0x2 0x1
-#[derive(BinRead, Debug)]
-pub struct BacklightCapabilities(u32);
+bitflags! {
+    #[binread]
+    pub struct BacklightCapabilities: u32 {
+        const CAPABILITIES = 1 << 0x1;
+        const ENABLED_EFFECTS = 1 << 0x2;
+        const GET_CONFIG = 1 << 0x3;
+        const SET_CONFIG = 1 << 0x4;
+        const SAVE_CONFIG = 1 << 0x5;
+    }
+}
 
 #[derive(BinWrite, Debug)]
 pub struct BacklightCapabilitiesQuery;

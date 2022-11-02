@@ -1,6 +1,7 @@
 use std::ffi::CStr;
 
 use binrw::*;
+use bitflags::bitflags;
 use serde::{Deserialize, Serialize};
 use ts_rs::TS;
 
@@ -24,8 +25,21 @@ impl XAPRequest for QMKVersionQuery {
 
 // ==============================
 // 0x1 0x1
-#[derive(BinRead, Debug)]
-pub struct QMKCapabilities(u32);
+bitflags! {
+    #[binread]
+    pub struct QMKCapabilities: u32 {
+        const VERSION = 1 << 0x0;
+        const CAPABILITIES = 1 << 0x1;
+        const BOARD_ID = 1 << 0x2;
+        const BOARD_MANUFACTURER = 1 << 0x3;
+        const PRODUCT_NAME = 1 << 0x4;
+        const CONFIG_BLOB_LENGTH = 1 << 0x5;
+        const CONFIG_BLOB_CHUNK = 1 << 0x6;
+        const JUMP_TO_BOOTLOADER = 1 << 0x7;
+        const HARDWARE_ID = 1 << 0x8;
+        const EEPROM_RESET = 1 << 0x9;
+    }
+}
 
 #[derive(BinWrite, Debug)]
 pub struct QMKCapabilitiesQuery;
@@ -40,7 +54,8 @@ impl XAPRequest for QMKCapabilitiesQuery {
 
 // ==============================
 // 0x1 0x2
-#[derive(BinRead, Debug)]
+#[derive(BinRead, Debug, Serialize, TS)]
+#[ts(export)]
 pub struct QMKBoardIdentifiers {
     pub vendor_id: u16,
     pub product_id: u16,

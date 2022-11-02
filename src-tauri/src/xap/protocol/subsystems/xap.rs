@@ -1,4 +1,5 @@
 use binrw::*;
+use bitflags::bitflags;
 use serde::Serialize;
 
 use crate::xap::XAPRequest;
@@ -22,8 +23,17 @@ impl XAPRequest for XAPVersionQuery {
 
 // ==============================
 // 0x0 0x1
-#[derive(BinRead, Debug)]
-pub struct XAPCapabilities(u32);
+bitflags! {
+    #[binread]
+    pub struct XAPCapabilities: u32 {
+        const VERSION = 1 << 0x0;
+        const CAPABILITIES = 1 << 0x1;
+        const SUBSYSTEMS = 1 << 0x2;
+        const SECURE_STATUS = 1 << 0x3;
+        const SECURE_UNLOCK = 1 << 0x4;
+        const SECURE_LOCK = 1 << 0x5;
+    }
+}
 
 #[derive(BinWrite, Debug)]
 pub struct XAPCapabilitiesQuery;
@@ -38,8 +48,17 @@ impl XAPRequest for XAPCapabilitiesQuery {
 
 // ==============================
 // 0x0 0x2
-#[derive(BinRead, Debug)]
-pub struct XAPEnabledSubsystems(u32);
+bitflags! {
+    #[binread]
+    pub struct XAPEnabledSubsystems: u32 {
+        const QMK = 1 << 0x1;
+        const KEYBOARD = 1 << 0x2;
+        const USER = 1 << 0x3;
+        const KEYMAP = 1 << 0x4;
+        const REMAPPING = 1 << 0x5;
+        const LIGHTING = 1 << 0x6;
+    }
+}
 
 #[derive(BinWrite, Debug)]
 pub struct XAPEnabledSubsystemsQuery;

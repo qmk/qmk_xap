@@ -1,11 +1,19 @@
 use binrw::*;
+use bitflags::bitflags;
 
 use crate::xap::XAPRequest;
 
 // ==============================
 // 0x4 0x1
-#[derive(BinRead, Debug)]
-pub struct KeymapCapabilities(u32);
+bitflags! {
+    #[binread]
+    pub struct KeymapCapabilities: u32 {
+        const CAPABILITIES = 1 << 0x1;
+        const LAYER_COUNT = 1 << 0x2;
+        const GET_KEYCODE = 1 << 0x3;
+        const GET_ENCODER_KEYCODE = 1 << 0x4;
+    }
+}
 
 #[derive(BinWrite, Debug)]
 pub struct KeymapCapabilitiesQuery;
