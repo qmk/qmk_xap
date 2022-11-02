@@ -29,7 +29,7 @@ impl XAPRequest for KeymapCapabilitiesQuery {
 // ==============================
 // 0x4 0x2
 #[derive(BinRead, Debug)]
-pub struct KeymapLayerCount(u8);
+pub struct KeymapLayerCount(pub u8);
 
 #[derive(BinWrite, Debug)]
 pub struct KeymapLayerCountQuery;

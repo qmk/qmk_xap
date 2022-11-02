@@ -7,11 +7,13 @@
 mod commands;
 mod xap;
 
+use std::error::Error;
 use std::sync::Arc;
 use std::time::Duration;
 
 use crossbeam_channel::tick;
 use crossbeam_channel::{select, unbounded, Receiver, Sender};
+use env_logger::Env;
 use log::{error, info, LevelFilter};
 use parking_lot::Mutex;
 use tauri::{
@@ -80,7 +82,9 @@ fn start_event_loop(
                         }
                         Ok(XAPEvent::RxError{id, error}) => {
                             info!("error for device {id} in receive thread : {error}");
-                            state.lock().enumerate_xap_devices();
+                            if let Err(err) = state.lock().enumerate_xap_devices(){
+                                error!("failed to enumerate XAP devices: {err}:\n {:#?}", err.source());
+                            }
                         },
                         Err(err) => {
                             error!("error receiving event {err}");
@@ -91,7 +95,9 @@ fn start_event_loop(
                 recv(new_device_ticker) -> msg => {
                     match msg {
                         Ok(_) => {
-                            state.lock().enumerate_xap_devices();
+                            if let Err(err) = state.lock().enumerate_xap_devices(){
+                                error!("failed to enumerate XAP devices: {err}:\n {:#?}", err.source());
+                            }
                         },
                         Err(err) => {
                             error!("failed receiving tick {err}");
@@ -104,9 +110,8 @@ fn start_event_loop(
 }
 
 fn main() -> XAPResult<()> {
-    env_logger::builder()
+    env_logger::Builder::from_env(Env::default().default_filter_or("info"))
         .format_timestamp(None)
-        .filter_level(LevelFilter::Info)
         .init();
 
     let (event_channel_tx, event_channel_rx): (Sender<XAPEvent>, Receiver<XAPEvent>) = unbounded();

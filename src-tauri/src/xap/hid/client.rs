@@ -98,7 +98,7 @@ impl XAPClient {
                 self.event_channel.clone(),
                 device.open_device(&self.hid)?,
                 device.open_device(&self.hid)?,
-            );
+            )?;
             let id = new_device.id();
             self.devices.insert(id, new_device);
             self.event_channel

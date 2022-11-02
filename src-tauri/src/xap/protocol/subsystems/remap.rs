@@ -31,7 +31,7 @@ impl XAPRequest for RemapCapabilitiesQuery {
 // ==============================
 // 0x5 0x2
 #[derive(BinRead, Debug)]
-pub struct RemapLayerCount(u8);
+pub struct RemapLayerCount(pub u8);
 
 #[derive(BinWrite, Debug)]
 pub struct RemapLayerCountQuery;

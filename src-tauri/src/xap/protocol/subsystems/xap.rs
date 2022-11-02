@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 use binrw::*;
 use bitflags::bitflags;
 use serde::Serialize;
@@ -8,7 +10,7 @@ use crate::xap::XAPRequest;
 // 0x0 0x0
 #[binread]
 #[derive(Debug, Serialize)]
-pub struct XAPVersion(u32);
+pub struct XAPVersion(pub u32);
 
 #[derive(Debug, BinWrite)]
 pub struct XAPVersionQuery;

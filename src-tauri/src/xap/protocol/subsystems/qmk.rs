@@ -1,4 +1,4 @@
-use std::ffi::CStr;
+use std::{ffi::CStr, fmt::Display};
 
 use binrw::*;
 use bitflags::bitflags;
@@ -10,7 +10,7 @@ use crate::xap::XAPRequest;
 // ==============================
 // 0x1 0x0
 #[derive(BinRead, Debug)]
-pub struct QMKVersion(u32);
+pub struct QMKVersion(pub u32);
 
 #[derive(BinWrite, Debug)]
 pub struct QMKVersionQuery;
@@ -30,7 +30,7 @@ bitflags! {
     pub struct QMKCapabilities: u32 {
         const VERSION = 1 << 0x0;
         const CAPABILITIES = 1 << 0x1;
-        const BOARD_ID = 1 << 0x2;
+        const BOARD_IDS = 1 << 0x2;
         const BOARD_MANUFACTURER = 1 << 0x3;
         const PRODUCT_NAME = 1 << 0x4;
         const CONFIG_BLOB_LENGTH = 1 << 0x5;
@@ -77,9 +77,9 @@ impl XAPRequest for QMKBoardIdentifiersQuery {
 // ==============================
 // 0x1 0x3
 #[derive(Debug)]
-pub struct CStringResponse(String);
+pub struct UTF8StringResponse(pub String);
 
-impl BinRead for CStringResponse {
+impl BinRead for UTF8StringResponse {
     type Args = ();
 
     fn read_options<R: io::Read + io::Seek>(
@@ -87,24 +87,8 @@ impl BinRead for CStringResponse {
         _options: &ReadOptions,
         _args: Self::Args,
     ) -> BinResult<Self> {
-        use binrw::Error::Custom;
-        let mut bytes = Vec::new();
-        reader.read_to_end(&mut bytes)?;
-
-        // TODO this isn't pretty, maybe there is a less verbose and elegant
-        // solution?
-        let string = CStr::from_bytes_with_nul(&bytes)
-            .map_err(|err| Custom {
-                err: Box::new(err),
-                pos: 0,
-            })
-            .and_then(|cstr| {
-                cstr.to_str().map_err(|err| Custom {
-                    err: Box::new(err),
-                    pos: 0,
-                })
-            })
-            .map(|str| str.to_owned())?;
+        let mut string = String::new();
+        reader.read_to_string(&mut string)?;
 
         Ok(Self(string))
     }
@@ -114,7 +98,7 @@ impl BinRead for CStringResponse {
 pub struct QMKBoardManufacturerQuery;
 
 impl XAPRequest for QMKBoardManufacturerQuery {
-    type Response = CStringResponse;
+    type Response = UTF8StringResponse;
 
     fn id() -> &'static [u8] {
         &[0x1, 0x3]
@@ -128,7 +112,7 @@ impl XAPRequest for QMKBoardManufacturerQuery {
 pub struct QMKProductNameQuery;
 
 impl XAPRequest for QMKProductNameQuery {
-    type Response = CStringResponse;
+    type Response = UTF8StringResponse;
 
     fn id() -> &'static [u8] {
         &[0x1, 0x4]
@@ -138,7 +122,7 @@ impl XAPRequest for QMKProductNameQuery {
 // ==============================
 // 0x1 0x5
 #[derive(BinRead, Debug)]
-pub struct QMKConfigBlobLength(u16);
+pub struct QMKConfigBlobLength(pub u16);
 
 #[derive(BinWrite, Debug)]
 pub struct QMKConfigBlobLengthQuery;
@@ -154,14 +138,14 @@ impl XAPRequest for QMKConfigBlobLengthQuery {
 // ==============================
 // 0x1 0x6
 #[derive(BinRead, Debug)]
-pub struct ConfigBlobChunk([u8; 32]);
+pub struct ConfigBlobChunk(pub [u8; 32]);
 
 #[derive(BinWrite, BinRead, Debug, TS, Serialize, Deserialize)]
 #[ts(export)]
 pub struct ConfigBlobOffset(u16);
 
 #[derive(BinWrite, Debug)]
-pub struct ConfigBlobChunkQuery(u16);
+pub struct ConfigBlobChunkQuery(pub u16);
 
 impl XAPRequest for ConfigBlobChunkQuery {
     type Response = ConfigBlobChunk;
@@ -194,7 +178,14 @@ impl XAPRequest for QMKJumpToBootloaderQuery {
 // ==============================
 // 0x1 0x8
 #[derive(BinRead, Debug)]
-pub struct QMKHardwareIdentifier([u32; 4]);
+pub struct QMKHardwareIdentifier(pub [u32; 4]);
+
+impl Display for QMKHardwareIdentifier {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        // TODO implement proper formatting
+        write!(f, "{:?}", self.0)
+    }
+}
 
 #[derive(BinWrite, Debug)]
 pub struct QMKHardwareIdentifierQuery;

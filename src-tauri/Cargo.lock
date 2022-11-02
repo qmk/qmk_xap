@@ -2059,6 +2059,7 @@ dependencies = [
  "bitflags",
  "crossbeam-channel",
  "env_logger",
+ "flate2",
  "hidapi",
  "log",
  "once_cell",
