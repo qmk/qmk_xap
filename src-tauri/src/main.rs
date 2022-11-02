@@ -101,8 +101,14 @@ fn start_event_loop(
                 recv(new_device_ticker) -> msg => {
                     match msg {
                         Ok(_) => {
-                            if let Err(err) = state.lock().enumerate_xap_devices(){
+                            // TODO maybe this can be done in a more resource effective manner...
+                            let mut state = state.lock();
+                            if let Err(err) = state.enumerate_xap_devices() {
                                 error!("failed to enumerate XAP devices: {err}:\n {:#?}", err.source());
+                            }
+                            for device in state.get_devices() {
+                                let info = device.xap_info();
+                                app.emit_all("new-device", FrontendEvent::NewDevice{id: device.id().to_string(), device: info.clone()}).unwrap();
                             }
                         },
                         Err(err) => {
@@ -126,13 +132,10 @@ fn main() -> XAPResult<()> {
     tauri::Builder::default()
         .plugin(shutdown_event_loop(event_channel_tx.clone()))
         .invoke_handler(tauri::generate_handler![
-            get_xap_device,
             get_secure_status,
-            get_xap_version,
             get_rgblight_config,
             set_rgblight_config,
-            save_rgblight_config,
-            get_rgblight_effects
+            save_rgblight_config
         ])
         .setup(move |app| {
             app.manage(state.clone());

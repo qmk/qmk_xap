@@ -112,4 +112,8 @@ impl XAPClient {
     pub fn get_device(&self, id: &Uuid) -> Option<&XAPDevice> {
         self.devices.get(id)
     }
+
+    pub fn get_devices(&self) -> Vec<&XAPDevice>{
+        self.devices.values().collect()
+    }
 }
