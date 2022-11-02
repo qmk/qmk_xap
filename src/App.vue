@@ -6,7 +6,7 @@ import { listen } from '@tauri-apps/api/event'
 
 import { useXAPDeviceStore } from '@/stores/devices'
 import DeviceInfo from "@/components/DeviceInfo.vue"
-import RGB from "@/components/RGB.vue"
+import RGBLight from "@/components/RGBLight.vue"
 
 const store = useXAPDeviceStore()
 const { current_id, ids } = storeToRefs(store)
@@ -42,7 +42,7 @@ onMounted(async () => {
       <q-tabs align="left">
         <q-route-tab to="/page1" label="Device" />
         <q-route-tab to="/page2" label="Keymap" />
-        <q-route-tab to="/page3" label="RGB" />
+        <q-route-tab to="/page3" label="RGBLight" />
       </q-tabs>
     </q-header>
 
@@ -53,7 +53,7 @@ onMounted(async () => {
             <DeviceInfo />
           </div>
           <div class="col-6">
-            <RGB />
+            <RGBLight />
           </div>
         </div>
       </div>

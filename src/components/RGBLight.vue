@@ -83,7 +83,7 @@ async function changeMode(mode: number) {
 <template>
 
   <div class="q-gutter-md q-pa-md">
-    <h2>RGB</h2>
+    <h2>RGBLight</h2>
     <q-select v-model.lazy.number="currentConfig.mode" @update:modelValue="changeMode" :options="enabledEffects"
       label="Mode" emit-value />
     <q-color v-model.lazy="currentColor" default-view="palette" format-model="rgb" no-header class="rgbPicker" />
