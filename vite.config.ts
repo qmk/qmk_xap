@@ -16,6 +16,7 @@ export default defineConfig({
   resolve: {
     alias: [
       { find: '@', replacement: path.resolve(__dirname, 'src') },
+      { find: '@bindings', replacement: path.resolve(__dirname, 'src-tauri/bindings') },
     ],
   },
   // Vite optons tailored for Tauri development and only applied in `tauri dev` or `tauri build`

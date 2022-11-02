@@ -108,4 +108,8 @@ impl XAPClient {
 
         Ok(())
     }
+
+    pub fn get_device(&self, id: &Uuid) -> Option<&XAPDevice> {
+        self.devices.get(id)
+    }
 }

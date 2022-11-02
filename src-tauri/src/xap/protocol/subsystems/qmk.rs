@@ -54,7 +54,7 @@ impl XAPRequest for QMKCapabilitiesQuery {
 
 // ==============================
 // 0x1 0x2
-#[derive(BinRead, Debug, Serialize, TS)]
+#[derive(BinRead, Debug, Serialize, TS, Clone)]
 #[ts(export)]
 pub struct QMKBoardIdentifiers {
     pub vendor_id: u16,

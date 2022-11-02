@@ -14,17 +14,19 @@ use std::time::Duration;
 use crossbeam_channel::tick;
 use crossbeam_channel::{select, unbounded, Receiver, Sender};
 use env_logger::Env;
-use log::{error, info, LevelFilter};
+use log::{error, info};
 use parking_lot::Mutex;
+use serde::Serialize;
 use tauri::{
     plugin::{Builder, TauriPlugin},
     RunEvent, Runtime,
 };
 use tauri::{AppHandle, Manager};
+use ts_rs::TS;
 use uuid::Uuid;
 
 use commands::*;
-use xap::{ResponseRaw, XAPClient, XAPError, XAPResult};
+use xap::{ResponseRaw, XAPClient, XAPDeviceInfo, XAPError, XAPResult};
 
 fn shutdown_event_loop<R: Runtime>(sender: Sender<XAPEvent>) -> TauriPlugin<R> {
     Builder::new("event loop shutdown")
@@ -45,11 +47,12 @@ pub(crate) enum XAPEvent {
     Exit,
 }
 
-#[derive(Clone, serde::Serialize)]
+#[derive(Clone, Serialize, TS)]
 #[serde(untagged)]
+#[ts(export)]
 pub(crate) enum FrontendEvent {
-    NewDevice { id: Uuid },
-    RemovedDevice { id: Uuid },
+    NewDevice { id: String, device: XAPDeviceInfo },
+    RemovedDevice { id: String },
 }
 
 fn start_event_loop(
@@ -73,12 +76,15 @@ fn start_event_loop(
                             info!("received XAP broadcast - forwarding to frontend!");
                         },
                         Ok(XAPEvent::NewDevice(id)) => {
-                            info!("detected new device - notifying frontend!");
-                            app.emit_all("new-device", FrontendEvent::NewDevice{id});
+                            if let Some(device) = state.lock().get_device(&id){
+                                info!("detected new device - notifying frontend!");
+                                let info = device.xap_info();
+                                app.emit_all("new-device", FrontendEvent::NewDevice{id: id.to_string(), device: info.clone()}).unwrap();
+                            }
                         },
                         Ok(XAPEvent::RemovedDevice(id)) => {
                             info!("removed device - notifying frontend!");
-                            app.emit_all("removed-device", FrontendEvent::RemovedDevice{id});
+                            app.emit_all("removed-device", FrontendEvent::RemovedDevice{ id: id.to_string() }).unwrap();
                         }
                         Ok(XAPEvent::RxError{id, error}) => {
                             info!("error for device {id} in receive thread : {error}");

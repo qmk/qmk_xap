@@ -389,7 +389,7 @@ impl XAPDevice {
     }
 }
 
-#[derive(Debug, Serialize, TS)]
+#[derive(Debug, Serialize, TS, Clone)]
 #[ts(export)]
 pub struct XAPDeviceInfo {
     pub xap: XAPInfo,
@@ -399,7 +399,7 @@ pub struct XAPDeviceInfo {
     pub lighting: Option<LightingInfo>,
 }
 
-#[derive(Debug, Serialize, TS)]
+#[derive(Debug, Serialize, TS, Clone)]
 #[ts(export)]
 pub struct XAPInfo {
     version: String,
@@ -408,7 +408,7 @@ pub struct XAPInfo {
     secure_lock: bool,
 }
 
-#[derive(Debug, Serialize, TS)]
+#[derive(Debug, Serialize, TS, Clone)]
 #[ts(export)]
 pub struct QMKInfo {
     version: String,
@@ -421,7 +421,7 @@ pub struct QMKInfo {
     eeprom_reset: bool,
 }
 
-#[derive(Debug, Serialize, TS)]
+#[derive(Debug, Serialize, TS, Clone)]
 #[ts(export)]
 pub struct KeymapInfo {
     layer_count: Option<u8>,
@@ -429,7 +429,7 @@ pub struct KeymapInfo {
     get_encoder_keycode: bool,
 }
 
-#[derive(Debug, Serialize, TS)]
+#[derive(Debug, Serialize, TS, Clone)]
 #[ts(export)]
 pub struct RemapInfo {
     layer_count: Option<u8>,
@@ -437,7 +437,7 @@ pub struct RemapInfo {
     set_encoder_keycode: bool,
 }
 
-#[derive(Debug, Serialize, TS)]
+#[derive(Debug, Serialize, TS, Clone)]
 #[ts(export)]
 pub struct LightingInfo {
     backlight: Option<BacklightInfo>,
@@ -445,7 +445,7 @@ pub struct LightingInfo {
     rgbmatrix: Option<RGBMatrixInfo>,
 }
 
-#[derive(Debug, Serialize, TS)]
+#[derive(Debug, Serialize, TS, Clone)]
 #[ts(export)]
 pub struct BacklightInfo {
     effects: Option<Vec<u8>>,
@@ -454,7 +454,7 @@ pub struct BacklightInfo {
     save_config: bool,
 }
 
-#[derive(Debug, Serialize, TS)]
+#[derive(Debug, Serialize, TS, Clone)]
 #[ts(export)]
 pub struct RGBLightInfo {
     effects: Option<Vec<u8>>,
@@ -463,7 +463,7 @@ pub struct RGBLightInfo {
     save_config: bool,
 }
 
-#[derive(Debug, Serialize, TS)]
+#[derive(Debug, Serialize, TS, Clone)]
 #[ts(export)]
 pub struct RGBMatrixInfo {
     effects: Option<Vec<u8>>,

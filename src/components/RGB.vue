@@ -4,11 +4,12 @@ import { storeToRefs } from 'pinia'
 import { invoke } from "@tauri-apps/api/tauri"
 import { colord, HsvColor } from "colord"
 
-import { RGBConfig } from "RGBConfig"
+import { RGBConfig } from "@bindings/RGBConfig"
 import { useXAPDeviceStore } from '@/stores/devices'
+import { XAPDevice } from "@/stores/devices"
 
 const store = useXAPDeviceStore()
-const { current_id } = storeToRefs(store)
+const { currentDevice } = storeToRefs(store)
 
 interface RGB {
   r: number,
@@ -26,49 +27,39 @@ const currentConfig: ref<RGBConfig> = ref({
 })
 
 const currentColor: ref<RGB> = ref({ r: 33, g: 128, b: 255 })
-const enabledEffects: ref<Array<number>> = ref([])
 
-watch(currentColor, async (newColor: RGB) => {
-  let hsv = colord(newColor).toHsv()
+watch(currentColor, async (color: RGB) => {
+  let hsv = colord(color).toHsv()
   currentConfig.value.hue = Math.ceil(hsv.h / 360 * 255)
   currentConfig.value.sat = Math.ceil(hsv.s / 100 * 255)
   currentConfig.value.val = Math.ceil(hsv.v / 100 * 255)
   await setConfig()
 })
 
-watch(current_id, async (newId: String | null) => {
-  if (newId != null) {
+watch(currentDevice, async (device: XAPDevice | null) => {
+  if (device != null) {
     await getConfig()
-    await getRGBlightEffects()
     let hsv = colord({ h: Math.ceil(currentConfig.value.hue / 255 * 360), s: Math.ceil(currentConfig.value.sat / 255 * 100), v: Math.ceil(currentConfig.value.val / 255 * 100) })
     currentColor.value = hsv.toRgb()
     return;
   }
-
-  enabledEffects.value = [];
 })
 
 async function getConfig() {
-  await invoke('get_rgblight_config', { id: current_id.value })
+  await invoke('get_rgblight_config', { id: currentDevice.value.id })
     .then((config: RGBConfig) => { currentConfig.value = config })
-    .catch((error) => console.error(error))
-}
-
-async function getRGBlightEffects() {
-  await invoke('get_rgblight_effects', { id: current_id.value })
-    .then((effects: Array<number>) => { enabledEffects.value = effects })
     .catch((error) => console.error(error))
 }
 
 async function setConfig() {
   console.log("set config")
   console.log(currentConfig.value)
-  await invoke('set_rgblight_config', { id: current_id.value, arg: currentConfig.value })
+  await invoke('set_rgblight_config', { id: currentDevice.value.id, arg: currentConfig.value })
     .catch((error) => console.error(error))
 }
 
 async function saveConfig() {
-  await invoke('save_rgblight_config', { id: current_id.value })
+  await invoke('save_rgblight_config', { id: currentDevice.value.id })
     .catch((error) => console.error(error))
 }
 
@@ -84,7 +75,7 @@ async function changeMode(mode: number) {
 
   <div class="q-gutter-md q-pa-md">
     <h2>RGB</h2>
-    <q-select v-model.lazy.number="currentConfig.mode" @update:modelValue="changeMode" :options="enabledEffects"
+    <q-select v-model.lazy.number="currentConfig.mode" @update:modelValue="changeMode" :options="currentDevice?.info?.lighting?.rgblight?.effects"
       label="Mode" emit-value />
     <q-color v-model.lazy="currentColor" default-view="palette" format-model="rgb" no-header class="rgbPicker" />
     <q-btn color="white" text-color="black" label="Save" @click="saveConfig" />
