@@ -33,6 +33,11 @@ const { currentDevice } = storeToRefs(store)
         <div class="self-center full-width no-outline" tabindex="0">{{ currentDevice.info.qmk.version }}</div>
       </template>
     </q-field>
+    <q-field v-if="currentDevice.info.qmk.hardware_id != null" filled label="Hardware Id" stack-label>
+      <template v-slot:control>
+        <div class="self-center full-width no-outline" tabindex="0">{{ currentDevice.info.qmk.hardware_id }}</div>
+      </template>
+    </q-field>
     <q-field v-if="currentDevice.info.qmk.config != null" filled label="Config JSON" stack-label>
       <template v-slot:control>
         <div class="self-center full-width no-outline" tabindex="0">{{ currentDevice.info.qmk.config }}</div>
