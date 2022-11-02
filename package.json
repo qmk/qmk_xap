@@ -16,7 +16,8 @@
     "colord": "^2.9.3",
     "pinia": "^2.0.23",
     "quasar": "^2.10.0",
-    "vue": "^3.2.37"
+    "vue": "^3.2.37",
+    "vue-router": "4"
   },
   "devDependencies": {
     "@quasar/vite-plugin": "^1.2.3",

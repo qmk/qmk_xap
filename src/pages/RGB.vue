@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { ref, watch, onMounted } from "vue"
+import { ref, watch } from "vue"
 import { storeToRefs } from 'pinia'
 import { invoke } from "@tauri-apps/api/tauri"
-import { colord, HsvColor } from "colord"
+import { colord } from "colord"
 
 import { RGBConfig } from "@bindings/RGBConfig"
 import { useXAPDeviceStore } from '@/stores/devices'
@@ -72,12 +72,13 @@ async function changeMode(mode: number) {
 </script>
 
 <template>
-
-  <div class="q-gutter-md q-pa-md">
-    <h2>RGB</h2>
-    <q-select v-model.lazy.number="currentConfig.mode" @update:modelValue="changeMode" :options="currentDevice?.info?.lighting?.rgblight?.effects"
-      label="Mode" emit-value />
-    <q-color v-model.lazy="currentColor" default-view="palette" format-model="rgb" no-header class="rgbPicker" />
-    <q-btn color="white" text-color="black" label="Save" @click="saveConfig" />
-  </div>
+  <q-page>
+    <div class="q-gutter-md q-pa-md">
+      <h2>RGB</h2>
+      <q-select v-model.lazy.number="currentConfig.mode" @update:modelValue="changeMode"
+        :options="currentDevice?.info?.lighting?.rgblight?.effects" label="Mode" emit-value />
+      <q-color v-model.lazy="currentColor" default-view="palette" format-model="rgb" no-header class="rgbPicker" />
+      <q-btn color="white" text-color="black" label="Save" @click="saveConfig" />
+    </div>
+  </q-page>
 </template>

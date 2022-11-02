@@ -2,16 +2,17 @@
 
 import { storeToRefs } from 'pinia'
 import { onMounted, computed, ref, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import { listen, Event } from '@tauri-apps/api/event'
 
 import { useXAPDeviceStore, XAPDevice } from '@/stores/devices'
-import DeviceInfo from '@/components/DeviceInfo.vue'
-import RGB from '@/components/RGB.vue'
 import { FrontendEvent } from '@bindings/FrontendEvent'
+import router from '@/router/routes'
 
 const store = useXAPDeviceStore()
 const { currentDevice, devices } = storeToRefs(store)
 const devicesA: ref<Array<XAPDevice>> = computed(() => Array.from(devices.value.values()))
+const route = useRoute()
 
 onMounted(async () => {
   await listen('new-device', (event: Event<FrontendEvent>) => {
@@ -24,6 +25,14 @@ onMounted(async () => {
     console.log("removed device with id" + event.payload.id)
     store.removeDevice(event.payload.id)
   })
+})
+
+watch(currentDevice, async (device: XAPDevice) => {
+  if (device == null && devices.value.size == 0) {
+    router.push('/intermission')
+  } else if (device != null && route.path == '/intermission') {
+    router.push('/device')
+  }
 })
 
 </script>
@@ -39,40 +48,20 @@ onMounted(async () => {
           </q-avatar>
           QMK XAP GUI
         </q-toolbar-title>
-        <q-select filled v-model="currentDevice" :options="devicesA" :option-label="(device: XAPDevice) => (device.info.qmk.manufacturer ?? 'unknown manufacturer') + ': ' + (device.info.qmk.product_name ?? 'unknown product')" label="XAP Device" emit-value/>
+        <q-select label="XAP Device" v-if="currentDevice != null" filled v-model="currentDevice" :options="devicesA"
+          :option-label="(device: XAPDevice) => (device.info.qmk.manufacturer ?? 'unknown manufacturer') + ': ' + (device.info.qmk.product_name ?? 'unknown product')"
+          emit-value />
       </q-toolbar>
 
       <q-tabs align="left">
-        <q-route-tab v-if="currentDevice != null" to="/page1" label="Device" />
-        <q-route-tab v-if="currentDevice?.keymap != null" to="/page2" label="Keymap" />
-        <q-route-tab v-if="currentDevice?.info?.lighting?.rgblight != null" to="/page3" label="RGB" />
+        <q-route-tab label="Device" v-if="currentDevice != null" to="/device" exact />
+        <q-route-tab label="Keymap" v-if="currentDevice?.keymap != null" to="/keymap" exact />
+        <q-route-tab label="RGB" v-if="currentDevice?.info?.lighting?.rgblight != null" to="/rgb" exact />
       </q-tabs>
     </q-header>
 
     <q-page-container>
-      <div class="q-pa-md">
-        <div class="row">
-          <div class="col">
-            <DeviceInfo v-if="currentDevice != null"/>
-          </div>
-          <div class="col-6">
-            <RGB v-if="currentDevice?.info?.lighting?.rgblight != null"/>
-          </div>
-        </div>
-      </div>
-
       <router-view />
     </q-page-container>
-
-    <q-footer elevated class="bg-grey-8 text-white">
-      <q-toolbar>
-        <q-toolbar-title>
-          <q-avatar>
-            <img src="src/assets/qmk.svg">
-          </q-avatar>
-        </q-toolbar-title>
-      </q-toolbar>
-    </q-footer>
-
   </q-layout>
 </template>
