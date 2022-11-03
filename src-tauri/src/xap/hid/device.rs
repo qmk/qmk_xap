@@ -6,11 +6,11 @@ use std::{
 };
 
 use anyhow::anyhow;
-use binrw::BinWriterExt;
+use binrw::{BinRead, BinWriterExt};
 use crossbeam_channel::{unbounded, Receiver, Sender};
 use flate2::read::GzDecoder;
 use hidapi::{DeviceInfo, HidDevice};
-use log::{error, trace};
+use log::{error, info, trace};
 use serde::Serialize;
 use ts_rs::TS;
 use uuid::Uuid;
@@ -71,7 +71,7 @@ impl XAPDevice {
             xap_info: None,
             id,
             tx_device: tx,
-            rx_thread: Self::start_rx_thread(id, rx, event_channel, tx_channel),
+            rx_thread: start_rx_thread(id, rx, event_channel, tx_channel),
             rx_channel,
         };
         device.query_device_info()?;
@@ -139,9 +139,9 @@ impl XAPDevice {
 
         let xap_info = XAPInfo {
             version: self.do_query(XAPVersionQuery)?.0.to_string(),
-            secure_status: xap_caps.contains(XAPCapabilities::SECURE_STATUS),
-            secure_unlock: xap_caps.contains(XAPCapabilities::SECURE_UNLOCK),
-            secure_lock: xap_caps.contains(XAPCapabilities::SECURE_LOCK),
+            secure_status_enabled: xap_caps.contains(XAPCapabilities::SECURE_STATUS),
+            secure_unlock_enabled: xap_caps.contains(XAPCapabilities::SECURE_UNLOCK),
+            secure_lock_enabled: xap_caps.contains(XAPCapabilities::SECURE_LOCK),
         };
 
         let qmk_caps = self.do_query(QMKCapabilitiesQuery)?;
@@ -185,8 +185,8 @@ impl XAPDevice {
             product_name,
             config,
             hardware_id,
-            jump_to_bootloader: qmk_caps.contains(QMKCapabilities::JUMP_TO_BOOTLOADER),
-            eeprom_reset: qmk_caps.contains(QMKCapabilities::EEPROM_RESET),
+            jump_to_bootloader_enabled: qmk_caps.contains(QMKCapabilities::JUMP_TO_BOOTLOADER),
+            eeprom_reset_enabled: qmk_caps.contains(QMKCapabilities::EEPROM_RESET),
         };
 
         let keymap_info = if subsystems.contains(XAPEnabledSubsystems::KEYMAP) {
@@ -200,8 +200,9 @@ impl XAPDevice {
 
             Some(KeymapInfo {
                 layer_count,
-                get_keycode: keymap_caps.contains(KeymapCapabilities::GET_KEYCODE),
-                get_encoder_keycode: keymap_caps.contains(KeymapCapabilities::GET_ENCODER_KEYCODE),
+                get_keycode_enabled: keymap_caps.contains(KeymapCapabilities::GET_KEYCODE),
+                get_encoder_keycode_enabled: keymap_caps
+                    .contains(KeymapCapabilities::GET_ENCODER_KEYCODE),
             })
         } else {
             None
@@ -218,8 +219,9 @@ impl XAPDevice {
 
             Some(RemapInfo {
                 layer_count,
-                set_keycode: keymap_caps.contains(RemapCapabilities::SET_KEYCODE),
-                set_encoder_keycode: keymap_caps.contains(RemapCapabilities::SET_ENCODER_KEYCODE),
+                set_keycode_enabled: keymap_caps.contains(RemapCapabilities::SET_KEYCODE),
+                set_encoder_keycode_enabled: keymap_caps
+                    .contains(RemapCapabilities::SET_ENCODER_KEYCODE),
             })
         } else {
             None
@@ -239,9 +241,10 @@ impl XAPDevice {
 
                 Some(BacklightInfo {
                     effects,
-                    get_config: backlight_caps.contains(BacklightCapabilities::GET_CONFIG),
-                    set_config: backlight_caps.contains(BacklightCapabilities::SET_CONFIG),
-                    save_config: backlight_caps.contains(BacklightCapabilities::SAVE_CONFIG),
+                    get_config_enabled: backlight_caps.contains(BacklightCapabilities::GET_CONFIG),
+                    set_config_enabled: backlight_caps.contains(BacklightCapabilities::SET_CONFIG),
+                    save_config_enabled: backlight_caps
+                        .contains(BacklightCapabilities::SAVE_CONFIG),
                 })
             } else {
                 None
@@ -258,9 +261,9 @@ impl XAPDevice {
 
                 Some(RGBLightInfo {
                     effects,
-                    get_config: rgblight_caps.contains(RGBLightCapabilities::GET_CONFIG),
-                    set_config: rgblight_caps.contains(RGBLightCapabilities::SET_CONFIG),
-                    save_config: rgblight_caps.contains(RGBLightCapabilities::SAVE_CONFIG),
+                    get_config_enabled: rgblight_caps.contains(RGBLightCapabilities::GET_CONFIG),
+                    set_config_enabled: rgblight_caps.contains(RGBLightCapabilities::SET_CONFIG),
+                    save_config_enabled: rgblight_caps.contains(RGBLightCapabilities::SAVE_CONFIG),
                 })
             } else {
                 None
@@ -277,9 +280,10 @@ impl XAPDevice {
 
                 Some(RGBMatrixInfo {
                     effects,
-                    get_config: rgbmatrix_caps.contains(RGBMatrixCapabilities::GET_CONFIG),
-                    set_config: rgbmatrix_caps.contains(RGBMatrixCapabilities::SET_CONFIG),
-                    save_config: rgbmatrix_caps.contains(RGBMatrixCapabilities::SAVE_CONFIG),
+                    get_config_enabled: rgbmatrix_caps.contains(RGBMatrixCapabilities::GET_CONFIG),
+                    set_config_enabled: rgbmatrix_caps.contains(RGBMatrixCapabilities::SET_CONFIG),
+                    save_config_enabled: rgbmatrix_caps
+                        .contains(RGBMatrixCapabilities::SAVE_CONFIG),
                 })
             } else {
                 None
@@ -330,60 +334,79 @@ impl XAPDevice {
 
         Ok(string)
     }
+}
 
-    fn start_rx_thread(
-        device_id: Uuid,
-        rx: HidDevice,
-        event_channel: Sender<XAPEvent>,
-        tx_channel: Sender<ResponseRaw>,
-    ) -> std::thread::JoinHandle<()> {
-        std::thread::spawn(move || {
-            let result: XAPResult<()> = (|| {
-                let mut report = [0_u8; XAP_REPORT_SIZE];
-                loop {
-                    rx.read(&mut report)?;
-
-                    match ResponseRaw::from_raw_report(&report) {
-                        Ok(response) => {
-                            if *response.token() == Token::Broadcast {
-                                trace!(
-                                    "received XAP broadcast package with payload {:#?}",
-                                    response.payload()
-                                );
-                                event_channel
-                                    .send(XAPEvent::Broadcast {
-                                        id: device_id,
-                                        response,
-                                    })
-                                    .expect("failed to send broadcast event!");
-                            } else {
-                                trace!(
-                                    "
-                                received XAP package with token {:?} and payload {:#?}",
-                                    response.token(),
-                                    response.payload()
-                                );
-                                tx_channel
-                                    .send(response)
-                                    .expect("failed to forward received XAP report");
-                            }
-                        }
-                        Err(err) => error!("received malformed XAP HID report {err}"),
-                    }
-                }
-            })();
-
-            if let Err(err) = result {
-                // Terminate thread and notify state
+fn start_rx_thread(
+    device_id: Uuid,
+    rx: HidDevice,
+    event_channel: Sender<XAPEvent>,
+    tx_channel: Sender<ResponseRaw>,
+) -> std::thread::JoinHandle<()> {
+    std::thread::spawn(move || {
+        let mut report = [0_u8; XAP_REPORT_SIZE];
+        loop {
+            if let Err(err) = rx.read(&mut report) {
+                error!("failed to receive HID report: {err}");
                 event_channel
-                    .send(XAPEvent::RxError {
-                        id: device_id,
-                        error: err,
-                    })
-                    .expect("failed to send error event!");
+                    .send(XAPEvent::RxError)
+                    .expect("failed to send error event");
+                break;
             }
-        })
+            if let Err(err) = handle_report(device_id, report, &tx_channel, &event_channel) {
+                error!("handling response failed: {err}")
+            }
+        }
+        info!("terminating capture thread for {device_id}");
+    })
+}
+
+fn handle_report(
+    device_id: Uuid,
+    report: [u8; 64],
+    tx_channel: &Sender<ResponseRaw>,
+    event_channel: &Sender<XAPEvent>,
+) -> XAPResult<()> {
+    let mut reader = Cursor::new(&report);
+    let token = Token::read_le(&mut reader)?;
+
+    if let Token::Broadcast = token {
+        let broadcast = BroadcastRaw::from_raw_report(&report)?;
+
+        match broadcast.broadcast_type() {
+            BroadcastType::Log => {
+                let log: LogBroadcast = broadcast.into_xap_broadcast()?;
+                event_channel
+                    .send(XAPEvent::LogReceived {
+                        id: device_id,
+                        log: log.0,
+                    })
+                    .expect("failed to send broadcast event!");
+            }
+            BroadcastType::SecureStatus => {
+                let secure_status: SecureStatusBroadcast = broadcast.into_xap_broadcast()?;
+                event_channel
+                    .send(XAPEvent::SecureStatusChanged {
+                        id: device_id,
+                        status: secure_status.0,
+                    })
+                    .expect("failed to send broadcast event!");
+            }
+            BroadcastType::Keyboard => info!("keyboard broadcasts are not implemented!"),
+            BroadcastType::User => info!("keyboard broadcasts are not implemented!"),
+        }
+    } else {
+        let response = ResponseRaw::from_raw_report(&report)?;
+        trace!(
+            "received XAP package with token {:?} and payload {:#?}",
+            response.token(),
+            response.payload()
+        );
+        tx_channel
+            .send(response)
+            .expect("failed to forward received XAP report");
     }
+
+    Ok(())
 }
 
 #[derive(Debug, Serialize, TS, Clone)]
@@ -400,9 +423,9 @@ pub struct XAPDeviceInfo {
 #[ts(export)]
 pub struct XAPInfo {
     version: String,
-    secure_status: bool,
-    secure_unlock: bool,
-    secure_lock: bool,
+    secure_status_enabled: bool,
+    secure_unlock_enabled: bool,
+    secure_lock_enabled: bool,
 }
 
 #[derive(Debug, Serialize, TS, Clone)]
@@ -414,24 +437,24 @@ pub struct QMKInfo {
     product_name: Option<String>,
     config: Option<String>,
     hardware_id: Option<String>,
-    jump_to_bootloader: bool,
-    eeprom_reset: bool,
+    jump_to_bootloader_enabled: bool,
+    eeprom_reset_enabled: bool,
 }
 
 #[derive(Debug, Serialize, TS, Clone)]
 #[ts(export)]
 pub struct KeymapInfo {
     layer_count: Option<u8>,
-    get_keycode: bool,
-    get_encoder_keycode: bool,
+    get_keycode_enabled: bool,
+    get_encoder_keycode_enabled: bool,
 }
 
 #[derive(Debug, Serialize, TS, Clone)]
 #[ts(export)]
 pub struct RemapInfo {
     layer_count: Option<u8>,
-    set_keycode: bool,
-    set_encoder_keycode: bool,
+    set_keycode_enabled: bool,
+    set_encoder_keycode_enabled: bool,
 }
 
 #[derive(Debug, Serialize, TS, Clone)]
@@ -446,25 +469,25 @@ pub struct LightingInfo {
 #[ts(export)]
 pub struct BacklightInfo {
     effects: Option<Vec<u8>>,
-    get_config: bool,
-    set_config: bool,
-    save_config: bool,
+    get_config_enabled: bool,
+    set_config_enabled: bool,
+    save_config_enabled: bool,
 }
 
 #[derive(Debug, Serialize, TS, Clone)]
 #[ts(export)]
 pub struct RGBLightInfo {
     effects: Option<Vec<u8>>,
-    get_config: bool,
-    set_config: bool,
-    save_config: bool,
+    get_config_enabled: bool,
+    set_config_enabled: bool,
+    save_config_enabled: bool,
 }
 
 #[derive(Debug, Serialize, TS, Clone)]
 #[ts(export)]
 pub struct RGBMatrixInfo {
     effects: Option<Vec<u8>>,
-    get_config: bool,
-    set_config: bool,
-    save_config: bool,
+    get_config_enabled: bool,
+    set_config_enabled: bool,
+    save_config_enabled: bool,
 }

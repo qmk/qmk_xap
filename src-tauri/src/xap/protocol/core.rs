@@ -7,7 +7,7 @@ use std::{
 
 use anyhow::Result;
 use binrw::{prelude::*, ReadOptions};
-use log::debug;
+use log::trace;
 use serde::Serialize;
 
 use super::token::*;
@@ -105,19 +105,19 @@ pub struct ResponseRaw {
 impl ResponseRaw {
     pub fn from_raw_report(report: &[u8]) -> XAPResult<Self> {
         let mut reader = Cursor::new(report);
-        let raw_response = ResponseRaw::read_le(&mut reader)?;
+        let response = ResponseRaw::read_le(&mut reader)?;
 
-        debug!("received raw XAP response: {:#?}", raw_response);
+        trace!("received raw XAP response: {:#?}", response);
 
-        if !raw_response.flags.contains(ResponseFlags::SUCCESS) {
+        if !response.flags.contains(ResponseFlags::SUCCESS) {
             return Err(XAPError::Protocol(
                 "XAP responded with a failed transaction!".to_owned(),
             ));
-        } else if raw_response.flags.contains(ResponseFlags::SECURE_FAILURE) {
+        } else if response.flags.contains(ResponseFlags::SECURE_FAILURE) {
             return Err(XAPError::SecureLocked);
         }
 
-        Ok(raw_response)
+        Ok(response)
     }
 
     pub fn token(&self) -> &Token {

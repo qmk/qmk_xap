@@ -26,7 +26,7 @@ use ts_rs::TS;
 use uuid::Uuid;
 
 use commands::*;
-use xap::{ResponseRaw, XAPClient, XAPDeviceInfo, XAPError, XAPResult};
+use xap::{XAPClient, XAPDeviceInfo, XAPResult, XAPSecureStatus};
 
 fn shutdown_event_loop<R: Runtime>(sender: Sender<XAPEvent>) -> TauriPlugin<R> {
     Builder::new("event loop shutdown")
@@ -39,10 +39,11 @@ fn shutdown_event_loop<R: Runtime>(sender: Sender<XAPEvent>) -> TauriPlugin<R> {
 }
 
 pub(crate) enum XAPEvent {
-    Broadcast { id: Uuid, response: ResponseRaw },
+    LogReceived { id: Uuid, log: String },
+    SecureStatusChanged { id: Uuid, status: XAPSecureStatus },
     NewDevice(Uuid),
     RemovedDevice(Uuid),
-    RxError { id: Uuid, error: XAPError },
+    RxError,
     Exit,
 }
 
@@ -52,6 +53,8 @@ pub(crate) enum XAPEvent {
 pub(crate) enum FrontendEvent {
     NewDevice { id: String, device: XAPDeviceInfo },
     RemovedDevice { id: String },
+    SecureStatusChanged { id: String, status: XAPSecureStatus },
+    LogReceived { id: String, log: String },
 }
 
 fn start_event_loop(
@@ -71,8 +74,13 @@ fn start_event_loop(
                             info!("received shutdown signal, exiting!");
                             break 'event_loop;
                         },
-                        Ok(XAPEvent::Broadcast{..}) => {
-                            info!("received XAP broadcast - forwarding to frontend!");
+                        Ok(XAPEvent::LogReceived{id, log}) => {
+                            info!("LOG: {id} {log}");
+                                app.emit_all("log", FrontendEvent::LogReceived{id: id.to_string(), log}).unwrap();
+                        },
+                        Ok(XAPEvent::SecureStatusChanged{id, status}) => {
+                            info!("Secure status changed: {id} - {status}");
+                                app.emit_all("secure-status-changed", FrontendEvent::SecureStatusChanged{id: id.to_string(), status}).unwrap();
                         },
                         Ok(XAPEvent::NewDevice(id)) => {
                             if let Some(device) = state.lock().get_device(&id){
@@ -85,9 +93,8 @@ fn start_event_loop(
                             info!("removed device - notifying frontend!");
                             app.emit_all("removed-device", FrontendEvent::RemovedDevice{ id: id.to_string() }).unwrap();
                         }
-                        Ok(XAPEvent::RxError{id, error}) => {
-                            info!("error for device {id} in receive thread : {error}");
-                            if let Err(err) = state.lock().enumerate_xap_devices(){
+                        Ok(XAPEvent::RxError) => {
+                            if let Err(err) = state.lock().enumerate_xap_devices() {
                                 error!("failed to enumerate XAP devices: {err}:\n {:#?}", err.source());
                             }
                         },

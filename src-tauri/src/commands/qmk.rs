@@ -14,8 +14,7 @@ pub(crate) async fn jump_to_bootloader(
     id: Uuid,
     state: State<'_, Arc<Mutex<XAPClient>>>,
 ) -> XAPResult<()> {
-    let result = state.lock().query(id, QMKJumpToBootloaderQuery {})?;
-    result.into()
+    state.lock().query(id, QMKJumpToBootloaderQuery {})?.into()
 }
 
 #[tauri::command]
@@ -23,6 +22,8 @@ pub(crate) async fn reset_eeprom(
     id: Uuid,
     state: State<'_, Arc<Mutex<XAPClient>>>,
 ) -> XAPResult<()> {
-    let result = state.lock().query(id, QMKReinitializeEepromQuery {})?;
-    result.into()
+    state
+        .lock()
+        .query(id, QMKReinitializeEepromQuery {})?
+        .into()
 }

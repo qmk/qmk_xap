@@ -1,8 +1,9 @@
-
+use std::fmt::Display;
 
 use binrw::*;
 use bitflags::bitflags;
 use serde::Serialize;
+use ts_rs::TS;
 
 use crate::xap::XAPRequest;
 
@@ -75,10 +76,11 @@ impl XAPRequest for XAPEnabledSubsystemsQuery {
 
 // ==============================
 // 0x0 0x3
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, TS, Clone)]
+#[ts(export)]
 pub enum XAPSecureStatus {
     Disabled,
-    UnlockInitiated,
+    Unlocking,
     Unlocked,
 }
 
@@ -92,10 +94,20 @@ impl BinRead for XAPSecureStatus {
     ) -> BinResult<Self> {
         let raw_status: u8 = reader.read_le()?;
         Ok(match raw_status {
-            1 => Self::UnlockInitiated,
+            1 => Self::Unlocking,
             2 => Self::Unlocked,
             _ => Self::Disabled,
         })
+    }
+}
+
+impl Display for XAPSecureStatus {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            XAPSecureStatus::Disabled => write!(f, "Disabled"),
+            XAPSecureStatus::Unlocking => write!(f, "Unlocking"),
+            XAPSecureStatus::Unlocked => write!(f, "Unlocked"),
+        }
     }
 }
 
