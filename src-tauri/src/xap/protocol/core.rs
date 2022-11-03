@@ -1,7 +1,6 @@
 // This file defines the base structs and implements the needed traits for them
 
 use std::{
-    f32::consts::E,
     fmt::Debug,
     io::{self, Cursor, Seek, Write},
 };

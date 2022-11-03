@@ -46,7 +46,7 @@ watch(currentDevice, async (device: XAPDevice | null) => {
 })
 
 async function getConfig() {
-  await invoke('get_rgblight_config', { id: currentDevice.value.id })
+  await invoke('rgblight_config_get', { id: currentDevice.value.id })
     .then((config: RGBConfig) => { currentConfig.value = config })
     .catch((error) => console.error(error))
 }
@@ -54,12 +54,12 @@ async function getConfig() {
 async function setConfig() {
   console.log("set config")
   console.log(currentConfig.value)
-  await invoke('set_rgblight_config', { id: currentDevice.value.id, arg: currentConfig.value })
+  await invoke('rgblight_config_set', { id: currentDevice.value.id, arg: currentConfig.value })
     .catch((error) => console.error(error))
 }
 
 async function saveConfig() {
-  await invoke('save_rgblight_config', { id: currentDevice.value.id })
+  await invoke('rgblight_config_save', { id: currentDevice.value.id })
     .catch((error) => console.error(error))
 }
 
