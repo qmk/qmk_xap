@@ -28,7 +28,15 @@ impl Debug for XAPClient {
 }
 
 impl XAPClient {
-    pub fn do_action<T, F>(&self, id: Uuid, action: F) -> XAPResult<T>
+    pub fn new(event_channel: Sender<XAPEvent>) -> XAPResult<Self> {
+        Ok(Self {
+            devices: HashMap::new(),
+            hid: HidApi::new()?,
+            event_channel,
+        })
+    }
+
+    pub fn action<T, F>(&self, id: Uuid, action: F) -> XAPResult<T>
     where
         F: FnOnce(&XAPDevice) -> XAPResult<T>,
     {
@@ -38,21 +46,13 @@ impl XAPClient {
         }
     }
 
-    pub fn do_query<T>(&self, id: Uuid, request: T) -> XAPResult<T::Response>
+    pub fn query<T>(&self, id: Uuid, request: T) -> XAPResult<T::Response>
     where
         T: XAPRequest,
     {
         match self.devices.get(&id) {
             Some(device) => device.do_query(request),
             None => Err(XAPError::Other(anyhow!("device not available"))),
-        }
-    }
-
-    pub fn new(event_channel: Sender<XAPEvent>) -> Self {
-        Self {
-            devices: HashMap::new(),
-            hid: HidApi::new().unwrap(),
-            event_channel,
         }
     }
 
@@ -73,12 +73,12 @@ impl XAPClient {
             if known_device.is_running()
                 || xap_devices
                     .iter()
-                    .any(|candidate| known_device.is_device(candidate))
+                    .any(|candidate| known_device.is_hid_device(candidate))
             {
                 true
             } else {
                 self.event_channel
-                    .send(XAPEvent::RemovedDevice(id.clone()))
+                    .send(XAPEvent::RemovedDevice(*id))
                     .expect("failed to announce removal of xap device");
                 false
             }
@@ -88,7 +88,7 @@ impl XAPClient {
             if self
                 .devices
                 .iter()
-                .any(|(_, known_device)| known_device.is_device(&device))
+                .any(|(_, known_device)| known_device.is_hid_device(&device))
             {
                 continue;
             }
@@ -113,7 +113,7 @@ impl XAPClient {
         self.devices.get(id)
     }
 
-    pub fn get_devices(&self) -> Vec<&XAPDevice>{
+    pub fn get_devices(&self) -> Vec<&XAPDevice> {
         self.devices.values().collect()
     }
 }

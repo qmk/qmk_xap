@@ -3,5 +3,5 @@
 mod client;
 mod device;
 
-pub use client::*;
-pub use device::*;
+pub(crate) use client::*;
+pub(crate) use device::*;

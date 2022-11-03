@@ -21,7 +21,7 @@ pub enum XAPError {
     #[error("XAP communication failed")]
     Protocol(String),
     #[error("HID communication failed")]
-    HID(#[from] hidapi::HidError),
+    Hid(#[from] hidapi::HidError),
     #[error("an error occured")]
     Other(#[from] anyhow::Error),
 }

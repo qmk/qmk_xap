@@ -69,7 +69,7 @@ impl XAPDevice {
         let mut device = Self {
             info,
             xap_info: None,
-            id: id,
+            id,
             tx_device: tx,
             rx_thread: Self::start_rx_thread(id, rx, event_channel, tx_channel),
             rx_channel,
@@ -92,7 +92,7 @@ impl XAPDevice {
             .expect("XAP device wasn't properly initialized")
     }
 
-    pub fn is_device(&self, candidate: &DeviceInfo) -> bool {
+    pub fn is_hid_device(&self, candidate: &DeviceInfo) -> bool {
         candidate.path() == self.info.path()
             && candidate.product_id() == self.info.product_id()
             && candidate.vendor_id() == self.info.vendor_id()
@@ -133,11 +133,6 @@ impl XAPDevice {
     }
 
     fn query_device_info(&mut self) -> XAPResult<()> {
-        self.xap_info = Some(self.query_device_info_impl()?);
-        Ok(())
-    }
-
-    fn query_device_info_impl(&self) -> XAPResult<XAPDeviceInfo> {
         let subsystems = self.do_query(XAPEnabledSubsystemsQuery)?;
 
         let xap_caps = self.do_query(XAPCapabilitiesQuery)?;
@@ -299,13 +294,15 @@ impl XAPDevice {
             None
         };
 
-        Ok(XAPDeviceInfo {
+        self.xap_info = Some(XAPDeviceInfo {
             xap: xap_info,
             qmk: qmk_info,
             keymap: keymap_info,
             remap: remap_info,
             lighting: lighting_info,
-        })
+        });
+
+        Ok(())
     }
 
     fn query_config_blob(&self) -> XAPResult<String> {
@@ -356,7 +353,7 @@ impl XAPDevice {
                                 event_channel
                                     .send(XAPEvent::Broadcast {
                                         id: device_id,
-                                        response: response,
+                                        response,
                                     })
                                     .expect("failed to send broadcast event!");
                             } else {

@@ -30,11 +30,10 @@ use xap::{ResponseRaw, XAPClient, XAPDeviceInfo, XAPError, XAPResult};
 
 fn shutdown_event_loop<R: Runtime>(sender: Sender<XAPEvent>) -> TauriPlugin<R> {
     Builder::new("event loop shutdown")
-        .on_event(move |_, event| match event {
-            RunEvent::ExitRequested { .. } => {
+        .on_event(move |_, event| {
+            if let RunEvent::ExitRequested { .. } = event {
                 sender.send(XAPEvent::Exit).unwrap();
             }
-            _ => {}
         })
         .build()
 }
@@ -61,7 +60,7 @@ fn start_event_loop(
     event_channel: Receiver<XAPEvent>,
 ) {
     let _ = std::thread::spawn(move || {
-        let new_device_ticker = tick(Duration::from_millis(500));
+        let ticker = tick(Duration::from_millis(500));
         let state = state;
         info!("started event loop");
         'event_loop: loop {
@@ -98,7 +97,7 @@ fn start_event_loop(
                     }
 
                 },
-                recv(new_device_ticker) -> msg => {
+                recv(ticker) -> msg => {
                     match msg {
                         Ok(_) => {
                             // TODO maybe this can be done in a more resource effective manner...
@@ -127,10 +126,10 @@ fn main() -> XAPResult<()> {
         .init();
 
     let (event_channel_tx, event_channel_rx): (Sender<XAPEvent>, Receiver<XAPEvent>) = unbounded();
-    let state = Arc::new(Mutex::new(XAPClient::new(event_channel_tx.clone())));
+    let state = Arc::new(Mutex::new(XAPClient::new(event_channel_tx.clone())?));
 
     tauri::Builder::default()
-        .plugin(shutdown_event_loop(event_channel_tx.clone()))
+        .plugin(shutdown_event_loop(event_channel_tx))
         .invoke_handler(tauri::generate_handler![
             get_secure_status,
             get_rgblight_config,

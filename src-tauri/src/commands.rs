@@ -16,7 +16,7 @@ pub(crate) async fn get_secure_status(
     id: Uuid,
     state: State<'_, Arc<Mutex<XAPClient>>>,
 ) -> XAPResult<XAPSecureStatus> {
-    state.lock().do_query(id, XAPSecureStatusQuery {})
+    state.lock().query(id, XAPSecureStatusQuery {})
 }
 
 #[tauri::command]
@@ -24,7 +24,7 @@ pub(crate) async fn get_rgblight_config(
     id: Uuid,
     state: State<'_, Arc<Mutex<XAPClient>>>,
 ) -> XAPResult<RGBLightConfig> {
-    state.lock().do_query(id, RGBLightConfigGet {})
+    state.lock().query(id, RGBLightConfigGet {})
 }
 
 #[tauri::command]
@@ -33,7 +33,7 @@ pub(crate) async fn set_rgblight_config(
     arg: RGBLightConfig,
     state: State<'_, Arc<Mutex<XAPClient>>>,
 ) -> XAPResult<()> {
-    state.lock().do_query(id, RGBLightConfigSet { config: arg })
+    state.lock().query(id, RGBLightConfigSet { config: arg })
 }
 
 #[tauri::command]
@@ -41,5 +41,5 @@ pub(crate) async fn save_rgblight_config(
     id: Uuid,
     state: State<'_, Arc<Mutex<XAPClient>>>,
 ) -> XAPResult<()> {
-    state.lock().do_query(id, RGBLightConfigSave {})
+    state.lock().query(id, RGBLightConfigSave {})
 }
