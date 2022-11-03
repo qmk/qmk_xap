@@ -40,7 +40,7 @@ impl BacklightEffects {
 
         let bits = self.0;
 
-        for i in 0..64 {
+        for i in 0..8 {
             if ((bits >> i) & 1) == 1 {
                 effects.push(i)
             }

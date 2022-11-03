@@ -131,10 +131,24 @@ fn main() -> XAPResult<()> {
     tauri::Builder::default()
         .plugin(shutdown_event_loop(event_channel_tx))
         .invoke_handler(tauri::generate_handler![
-            get_secure_status,
-            get_rgblight_config,
-            set_rgblight_config,
-            save_rgblight_config
+            secure_lock,
+            secure_unlock,
+            secure_status_get,
+            jump_to_bootloader,
+            reset_eeprom,
+            keycode_get,
+            keycode_set,
+            encoder_keycode_get,
+            encoder_keycode_set,
+            backlight_config_get,
+            backlight_config_set,
+            backlight_config_save,
+            rgblight_config_get,
+            rgblight_config_set,
+            rgblight_config_save,
+            rgbmatrix_config_get,
+            rgbmatrix_config_set,
+            rgbmatrix_config_save,
         ])
         .setup(move |app| {
             app.manage(state.clone());

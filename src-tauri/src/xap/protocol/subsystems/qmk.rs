@@ -5,7 +5,7 @@ use bitflags::bitflags;
 use serde::{Deserialize, Serialize};
 use ts_rs::TS;
 
-use crate::xap::XAPRequest;
+use crate::xap::{XAPRequest, UTF8StringResponse, SecureActionResponse};
 
 // ==============================
 // 0x1 0x0
@@ -76,24 +76,6 @@ impl XAPRequest for QMKBoardIdentifiersQuery {
 
 // ==============================
 // 0x1 0x3
-#[derive(Debug)]
-pub struct UTF8StringResponse(pub String);
-
-impl BinRead for UTF8StringResponse {
-    type Args = ();
-
-    fn read_options<R: io::Read + io::Seek>(
-        reader: &mut R,
-        _options: &ReadOptions,
-        _args: Self::Args,
-    ) -> BinResult<Self> {
-        let mut string = String::new();
-        reader.read_to_string(&mut string)?;
-
-        Ok(Self(string))
-    }
-}
-
 #[derive(BinWrite, Debug)]
 pub struct QMKBoardManufacturerQuery;
 
@@ -157,14 +139,11 @@ impl XAPRequest for ConfigBlobChunkQuery {
 
 // ==============================
 // 0x1 0x7
-#[derive(BinRead, Debug)]
-pub struct QMKJumpToBootloader(u8);
-
 #[derive(BinWrite, Debug)]
 pub struct QMKJumpToBootloaderQuery;
 
 impl XAPRequest for QMKJumpToBootloaderQuery {
-    type Response = QMKJumpToBootloader;
+    type Response = SecureActionResponse;
 
     fn id() -> &'static [u8] {
         &[0x1, 0x7]
@@ -200,14 +179,11 @@ impl XAPRequest for QMKHardwareIdentifierQuery {
 
 // ==============================
 // 0x1 0x9
-#[derive(BinRead, Debug)]
-pub struct QMKReinitializeEeprom(u8);
-
 #[derive(BinWrite, Debug)]
 pub struct QMKReinitializeEepromQuery;
 
 impl XAPRequest for QMKReinitializeEepromQuery {
-    type Response = QMKReinitializeEeprom;
+    type Response = SecureActionResponse;
 
     fn id() -> &'static [u8] {
         &[0x1, 0x9]

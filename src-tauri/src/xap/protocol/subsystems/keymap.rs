@@ -1,7 +1,9 @@
 use binrw::*;
 use bitflags::bitflags;
+use serde::{Serialize, Deserialize};
+use ts_rs::TS;
 
-use crate::xap::XAPRequest;
+use crate::xap::{XAPRequest};
 
 // ==============================
 // 0x4 0x1
@@ -44,14 +46,23 @@ impl XAPRequest for KeymapLayerCountQuery {
 
 // ==============================
 // 0x4 0x3
-#[derive(BinRead, Debug)]
-pub struct Keycode(u16);
+#[derive(BinRead, Debug, TS, Serialize, Deserialize)]
+#[ts(export)]
+pub struct KeyCode(u16);
+
+#[derive(BinWrite, Debug, TS, Serialize, Deserialize)]
+#[ts(export)]
+pub struct KeyPosition {
+    layer: u8,
+    row: u8,
+    col: u8,
+}
 
 #[derive(BinWrite, Debug)]
-pub struct KeymapKeycodeQuery;
+pub struct KeymapKeycodeQuery(pub KeyPosition);
 
 impl XAPRequest for KeymapKeycodeQuery {
-    type Response = Keycode;
+    type Response = KeyCode;
 
     fn id() -> &'static [u8] {
         &[0x4, 0x3]
@@ -60,11 +71,19 @@ impl XAPRequest for KeymapKeycodeQuery {
 
 // ==============================
 // 0x4 0x4
+#[derive(BinWrite, Debug, TS, Serialize, Deserialize)]
+#[ts(export)]
+pub struct EncoderPosition {
+    layer: u8,
+    encoder: u8,
+    clockwise: u8,
+}
+
 #[derive(BinWrite, Debug)]
-pub struct KeymapEncoderQuery;
+pub struct KeymapEncoderQuery(pub EncoderPosition);
 
 impl XAPRequest for KeymapEncoderQuery {
-    type Response = Keycode;
+    type Response = KeyCode;
 
     fn id() -> &'static [u8] {
         &[0x4, 0x4]

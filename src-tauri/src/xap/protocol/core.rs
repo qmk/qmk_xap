@@ -1,12 +1,13 @@
 // This file defines the base structs and implements the needed traits for them
 
 use std::{
+    f32::consts::E,
     fmt::Debug,
-    io::{Cursor, Seek, Write},
+    io::{self, Cursor, Seek, Write},
 };
 
 use anyhow::Result;
-use binrw::prelude::*;
+use binrw::{prelude::*, ReadOptions};
 use log::debug;
 use serde::Serialize;
 
@@ -22,6 +23,8 @@ pub enum XAPError {
     Protocol(String),
     #[error("HID communication failed")]
     Hid(#[from] hidapi::HidError),
+    #[error("device is locked")]
+    SecureLocked,
     #[error("an error occured")]
     Other(#[from] anyhow::Error),
 }
@@ -107,11 +110,12 @@ impl ResponseRaw {
 
         debug!("received raw XAP response: {:#?}", raw_response);
 
-        // TODO add flag handling here
         if !raw_response.flags.contains(ResponseFlags::SUCCESS) {
             return Err(XAPError::Protocol(
                 "XAP responded with a failed transaction!".to_owned(),
             ));
+        } else if raw_response.flags.contains(ResponseFlags::SECURE_FAILURE) {
+            return Err(XAPError::SecureLocked);
         }
 
         Ok(raw_response)
@@ -142,5 +146,36 @@ pub trait XAPRequest: Sized + Debug + BinWrite<Args = ()> {
 
     fn is_secure() -> bool {
         false
+    }
+}
+
+#[derive(Debug)]
+pub struct UTF8StringResponse(pub String);
+
+impl BinRead for UTF8StringResponse {
+    type Args = ();
+
+    fn read_options<R: io::Read + io::Seek>(
+        reader: &mut R,
+        _options: &ReadOptions,
+        _args: Self::Args,
+    ) -> BinResult<Self> {
+        let mut string = String::new();
+        reader.read_to_string(&mut string)?;
+
+        Ok(Self(string))
+    }
+}
+
+#[derive(BinRead, Debug)]
+pub struct SecureActionResponse(u8);
+
+impl Into<XAPResult<()>> for SecureActionResponse {
+    fn into(self) -> XAPResult<()> {
+        if self.0 == 0 {
+            Err(XAPError::SecureLocked)
+        } else {
+            Ok(())
+        }
     }
 }
