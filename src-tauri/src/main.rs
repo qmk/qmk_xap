@@ -39,8 +39,14 @@ fn shutdown_event_loop<R: Runtime>(sender: Sender<XAPEvent>) -> TauriPlugin<R> {
 }
 
 pub(crate) enum XAPEvent {
-    LogReceived { id: Uuid, log: String },
-    SecureStatusChanged { id: Uuid, status: XAPSecureStatus },
+    LogReceived {
+        id: Uuid,
+        log: String,
+    },
+    SecureStatusChanged {
+        id: Uuid,
+        secure_status: XAPSecureStatus,
+    },
     NewDevice(Uuid),
     RemovedDevice(Uuid),
     RxError,
@@ -51,10 +57,21 @@ pub(crate) enum XAPEvent {
 #[serde(untagged)]
 #[ts(export)]
 pub(crate) enum FrontendEvent {
-    NewDevice { id: String, device: XAPDeviceInfo },
-    RemovedDevice { id: String },
-    SecureStatusChanged { id: String, status: XAPSecureStatus },
-    LogReceived { id: String, log: String },
+    NewDevice {
+        id: String,
+        device: XAPDeviceInfo,
+    },
+    RemovedDevice {
+        id: String,
+    },
+    SecureStatusChanged {
+        id: String,
+        secure_status: XAPSecureStatus,
+    },
+    LogReceived {
+        id: String,
+        log: String,
+    },
 }
 
 fn start_event_loop(
@@ -78,9 +95,9 @@ fn start_event_loop(
                             info!("LOG: {id} {log}");
                                 app.emit_all("log", FrontendEvent::LogReceived{id: id.to_string(), log}).unwrap();
                         },
-                        Ok(XAPEvent::SecureStatusChanged{id, status}) => {
-                            info!("Secure status changed: {id} - {status}");
-                                app.emit_all("secure-status-changed", FrontendEvent::SecureStatusChanged{id: id.to_string(), status}).unwrap();
+                        Ok(XAPEvent::SecureStatusChanged{id, secure_status}) => {
+                            info!("Secure status changed: {id} - {secure_status}");
+                            app.emit_all("secure-status-changed", FrontendEvent::SecureStatusChanged{id: id.to_string(), secure_status}).unwrap();
                         },
                         Ok(XAPEvent::NewDevice(id)) => {
                             if let Some(device) = state.lock().get_device(&id){

@@ -25,7 +25,7 @@ pub(crate) async fn secure_lock(
     id: Uuid,
     state: State<'_, Arc<Mutex<XAPClient>>>,
 ) -> XAPResult<()> {
-    state.lock().query(id, XAPSecureStatusUnlock {})
+    state.lock().query(id, XAPSecureStatusLock {})
 }
 
 #[tauri::command]
@@ -33,5 +33,5 @@ pub(crate) async fn secure_unlock(
     id: Uuid,
     state: State<'_, Arc<Mutex<XAPClient>>>,
 ) -> XAPResult<()> {
-    state.lock().query(id, XAPSecureStatusLock {})
+    state.lock().query(id, XAPSecureStatusUnlock {})
 }

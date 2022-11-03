@@ -2,4 +2,4 @@
 import type { XAPDeviceInfo } from "./XAPDeviceInfo";
 import type { XAPSecureStatus } from "./XAPSecureStatus";
 
-export type FrontendEvent = { id: string, device: XAPDeviceInfo, } | { id: string, } | { id: string, status: XAPSecureStatus, } | { id: string, log: string, };
+export type FrontendEvent = { id: string, device: XAPDeviceInfo, } | { id: string, } | { id: string, secure_status: XAPSecureStatus, } | { id: string, log: string, };

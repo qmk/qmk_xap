@@ -1,11 +1,11 @@
-use std::{fmt::Display};
+use std::fmt::Display;
 
 use binrw::*;
 use bitflags::bitflags;
 use serde::{Deserialize, Serialize};
 use ts_rs::TS;
 
-use crate::xap::{XAPRequest, UTF8StringResponse, SecureActionResponse};
+use crate::xap::{SecureActionResponse, UTF8StringResponse, XAPRequest};
 
 // ==============================
 // 0x1 0x0

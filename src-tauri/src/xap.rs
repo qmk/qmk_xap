@@ -3,5 +3,5 @@
 pub mod hid;
 pub mod protocol;
 
-pub (crate) use hid::*;
+pub(crate) use hid::*;
 pub use protocol::*;

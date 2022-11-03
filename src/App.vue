@@ -16,14 +16,21 @@ const route = useRoute()
 
 onMounted(async () => {
   await listen('new-device', (event: Event<FrontendEvent>) => {
-    console.log("new device with id" + event.payload.id)
+    let id = event.payload.id
+    // console.log("new device with id " + id)
 
-    let xapDevice: XAPDevice = { id: event.payload.id, info: event.payload.device };
-    store.addDevice(event.payload.id, xapDevice)
+    let xapDevice: XAPDevice = { id, info: event.payload.device, secure_status: "Disabled" };
+    store.addDevice(id, xapDevice)
   })
   await listen('removed-device', (event: Event<FrontendEvent>) => {
-    console.log("removed device with id" + event.payload.id)
-    store.removeDevice(event.payload.id)
+    let id = event.payload.id
+    console.log("removed device with id " + id)
+    store.removeDevice(id)
+  })
+  await listen('secure-status-changed', (event: Event<FrontendEvent>) => {
+    let id = event.payload.id
+    console.log("secure status changed for device " + id)
+    store.updateSecureStatus(id, event.payload.secure_status)
   })
 })
 

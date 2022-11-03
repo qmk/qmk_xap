@@ -1,9 +1,11 @@
 import { defineStore } from 'pinia'
 
-import { XAPDeviceInfo } from '@generated/XAPDeviceInfo'
+import { XAPDeviceInfo, XAPSecureStatus } from '@generated/XAPDeviceInfo'
+import { invoke } from "@tauri-apps/api/tauri"
 
 export interface XAPDevice {
     id: string,
+    secure_status: XAPSecureStatus,
     info: XAPDeviceInfo
 }
 
@@ -15,11 +17,13 @@ export const useXAPDeviceStore = defineStore('xap-device-store', {
     actions: {
         addDevice(id: string, device: XAPDevice) {
             if (!this.devices.has(id)) {
-                this.devices.set(id, device)
-            }
-
-            if (!this.currentDevice) {
-                this.currentDevice = device
+                getSecureStatus(id).then((secure_status) => {
+                    device.secure_status = secure_status
+                    this.devices.set(id, device)
+                    if (!this.currentDevice) {
+                        this.currentDevice = device
+                    }
+                })
             }
         },
         removeDevice(id: string) {
@@ -30,6 +34,21 @@ export const useXAPDeviceStore = defineStore('xap-device-store', {
             if (this.currentDevice?.id == id) {
                 this.currentDevice = this.devices.values().next().value ?? null
             }
+        },
+        updateSecureStatus(id: string, secure_status: XAPSecureStatus) {
+            if (this.devices.has(id)) {
+                this.devices.get(id).secure_status = secure_status
+            }
+            if (this.currentDevice?.id == id) {
+                this.currentDevice.secure_status = secure_status
+            }
         }
     },
 })
+
+
+async function getSecureStatus(id: string): Promise<XAPSecureStatus> {
+    return await invoke('secure_status_get', { id: id })
+        .then((secure_status: XAPSecureStatus) => { return secure_status })
+        .catch((error) => console.error(error))
+}

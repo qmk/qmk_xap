@@ -12,6 +12,7 @@ use flate2::read::GzDecoder;
 use hidapi::{DeviceInfo, HidDevice};
 use log::{error, info, trace};
 use serde::Serialize;
+use serde_json::{Map, Value};
 use ts_rs::TS;
 use uuid::Uuid;
 
@@ -135,55 +136,23 @@ impl XAPDevice {
     fn query_device_info(&mut self) -> XAPResult<()> {
         let subsystems = self.do_query(XAPEnabledSubsystemsQuery)?;
 
-        let xap_caps = self.do_query(XAPCapabilitiesQuery)?;
-
         let xap_info = XAPInfo {
             version: self.do_query(XAPVersionQuery)?.0.to_string(),
-            secure_status_enabled: xap_caps.contains(XAPCapabilities::SECURE_STATUS),
-            secure_unlock_enabled: xap_caps.contains(XAPCapabilities::SECURE_UNLOCK),
-            secure_lock_enabled: xap_caps.contains(XAPCapabilities::SECURE_LOCK),
         };
 
         let qmk_caps = self.do_query(QMKCapabilitiesQuery)?;
-
-        let board_ids = if qmk_caps.contains(QMKCapabilities::BOARD_IDS) {
-            Some(self.do_query(QMKBoardIdentifiersQuery)?)
-        } else {
-            None
-        };
-
-        let manufacturer = if qmk_caps.contains(QMKCapabilities::BOARD_MANUFACTURER) {
-            Some(self.do_query(QMKBoardManufacturerQuery)?.0)
-        } else {
-            None
-        };
-
-        let product_name = if qmk_caps.contains(QMKCapabilities::PRODUCT_NAME) {
-            Some(self.do_query(QMKProductNameQuery)?.0)
-        } else {
-            None
-        };
-
-        let config = if qmk_caps
-            .contains(QMKCapabilities::CONFIG_BLOB_CHUNK & QMKCapabilities::CONFIG_BLOB_LENGTH)
-        {
-            Some(self.query_config_blob()?)
-        } else {
-            None
-        };
-
-        let hardware_id = if qmk_caps.contains(QMKCapabilities::HARDWARE_ID) {
-            Some(self.do_query(QMKHardwareIdentifierQuery)?.to_string())
-        } else {
-            None
-        };
+        let board_ids = self.do_query(QMKBoardIdentifiersQuery)?;
+        let manufacturer = self.do_query(QMKBoardManufacturerQuery)?.0;
+        let product_name = self.do_query(QMKProductNameQuery)?.0;
+        let config = self.query_config_blob()?;
+        let hardware_id = self.do_query(QMKHardwareIdentifierQuery)?.to_string();
 
         let qmk_info = QMKInfo {
             version: self.do_query(QMKVersionQuery)?.0.to_string(),
             board_ids,
             manufacturer,
             product_name,
-            config,
+            config: serde_json::to_string_pretty(&config).unwrap(),
             hardware_id,
             jump_to_bootloader_enabled: qmk_caps.contains(QMKCapabilities::JUMP_TO_BOOTLOADER),
             eeprom_reset_enabled: qmk_caps.contains(QMKCapabilities::EEPROM_RESET),
@@ -309,7 +278,7 @@ impl XAPDevice {
         Ok(())
     }
 
-    fn query_config_blob(&self) -> XAPResult<String> {
+    fn query_config_blob(&self) -> XAPResult<Map<String, Value>> {
         // Query data size
         let size = self.do_query(QMKConfigBlobLengthQuery {})?.0;
 
@@ -327,12 +296,13 @@ impl XAPDevice {
 
         // Decompress data
         let mut decoder = GzDecoder::new(data);
-        let mut string = String::new();
+        let mut decompressed = String::new();
         decoder
-            .read_to_string(&mut string)
+            .read_to_string(&mut decompressed)
             .map_err(|err| anyhow!("failed to decompress config json blob: {}", err))?;
 
-        Ok(string)
+        Ok(serde_json::from_str(&decompressed)
+            .map_err(|err| anyhow!("config json is not valid json {err}"))?)
     }
 }
 
@@ -387,7 +357,7 @@ fn handle_report(
                 event_channel
                     .send(XAPEvent::SecureStatusChanged {
                         id: device_id,
-                        status: secure_status.0,
+                        secure_status: secure_status.0,
                     })
                     .expect("failed to send broadcast event!");
             }
@@ -423,20 +393,17 @@ pub struct XAPDeviceInfo {
 #[ts(export)]
 pub struct XAPInfo {
     version: String,
-    secure_status_enabled: bool,
-    secure_unlock_enabled: bool,
-    secure_lock_enabled: bool,
 }
 
 #[derive(Debug, Serialize, TS, Clone)]
 #[ts(export)]
 pub struct QMKInfo {
     version: String,
-    board_ids: Option<QMKBoardIdentifiers>,
-    manufacturer: Option<String>,
-    product_name: Option<String>,
-    config: Option<String>,
-    hardware_id: Option<String>,
+    board_ids: QMKBoardIdentifiers,
+    manufacturer: String,
+    product_name: String,
+    config: String,
+    hardware_id: String,
     jump_to_bootloader_enabled: bool,
     eeprom_reset_enabled: bool,
 }
