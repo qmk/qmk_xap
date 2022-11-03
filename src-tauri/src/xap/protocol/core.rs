@@ -159,10 +159,7 @@ impl BinRead for UTF8StringResponse {
         _options: &ReadOptions,
         _args: Self::Args,
     ) -> BinResult<Self> {
-        let mut string = String::new();
-        reader.read_to_string(&mut string)?;
-
-        Ok(Self(string))
+        Ok(Self(std::io::read_to_string(reader)?))
     }
 }
 
