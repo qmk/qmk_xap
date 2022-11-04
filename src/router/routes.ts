@@ -4,13 +4,11 @@ const routes: RouteRecordRaw[] = [
     {
         name: 'home',
         path: '/',
-        component: () => import('@/App.vue'),
+        redirect: 'device',
+        component: () => import('@/layouts/baseContainer.vue'),
         children: [
             {
-                path: '',
-                redirect: 'intermission',
-            },
-            {
+                name: 'device',
                 path: 'device',
                 component: () => import('@/pages/Device.vue'),
             },
@@ -19,9 +17,8 @@ const routes: RouteRecordRaw[] = [
                 component: () => import('@/pages/RGB.vue'),
             },
             {
-                name: 'intermission',
-                path: 'intermission',
-                component: () => import('@/pages/Intermission.vue'),
+                path: 'keymap',
+                component: () => import('@/pages/Keymap.vue'),
             },
         ]
     },
