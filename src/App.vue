@@ -4,6 +4,7 @@ import { storeToRefs } from 'pinia'
 import { onMounted, computed, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { listen, Event } from '@tauri-apps/api/event'
+import { Notify } from 'quasar'
 
 import { useXAPDeviceStore, XAPDevice } from '@/stores/devices'
 import { FrontendEvent } from '@bindings/FrontendEvent'
@@ -17,20 +18,42 @@ const route = useRoute()
 onMounted(async () => {
   await listen('new-device', (event: Event<FrontendEvent>) => {
     let id = event.payload.id
+    let device = event.payload.device
     // console.log("new device with id " + id)
 
-    let xapDevice: XAPDevice = { id, info: event.payload.device, secure_status: "Disabled" };
-    store.addDevice(id, xapDevice)
+    let xapDevice: XAPDevice = { id, info: device, secure_status: "Disabled" };
+    if (store.addDevice(id, xapDevice)) {
+      Notify.create({
+        group: true,
+        message: 'New Device ' + device.qmk.product_name,
+        icon: 'announcement'
+      })
+    }
   })
+
   await listen('removed-device', (event: Event<FrontendEvent>) => {
     let id = event.payload.id
     console.log("removed device with id " + id)
+
+    Notify.create({
+      group: true,
+      message: 'Removed Device ' + (devices.value.get(id)?.info.qmk.product_name ?? 'Unknown'),
+      icon: 'announcement'
+    })
+
     store.removeDevice(id)
   })
+
   await listen('secure-status-changed', (event: Event<FrontendEvent>) => {
     let id = event.payload.id
+    let secure_status = event.payload.secure_status
     console.log("secure status changed for device " + id)
-    store.updateSecureStatus(id, event.payload.secure_status)
+    // Notify.create({
+    //   group: true,
+    //   message: (devices.value.get(id)?.info.qmk.product_name ?? 'Unknown') + ' ' + secure_status,
+    //   icon: 'announcement'
+    // })
+    store.updateSecureStatus(id, secure_status)
   })
 })
 

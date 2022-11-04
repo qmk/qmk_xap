@@ -15,7 +15,7 @@ export const useXAPDeviceStore = defineStore('xap-device-store', {
     },
     getters: {},
     actions: {
-        addDevice(id: string, device: XAPDevice) {
+        addDevice(id: string, device: XAPDevice): Boolean {
             if (!this.devices.has(id)) {
                 getSecureStatus(id).then((secure_status) => {
                     device.secure_status = secure_status
@@ -24,7 +24,9 @@ export const useXAPDeviceStore = defineStore('xap-device-store', {
                         this.currentDevice = device
                     }
                 })
+                return true
             }
+            return false
         },
         removeDevice(id: string) {
             if (this.devices.has(id)) {
