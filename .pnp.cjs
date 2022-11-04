@@ -35,6 +35,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageDependencies": [\
             ["@quasar/extras", "npm:1.15.5"],\
             ["@quasar/vite-plugin", "virtual:b5fe18308d727450b156ed681b84c360e70c690b87adba99dbd11874bd16ecaf7398badf429fe739b68dcc51be06073308f22725320090349ef58cc4fa710558#npm:1.2.3"],\
+            ["@radial-color-picker/vue-color-picker", "virtual:b5fe18308d727450b156ed681b84c360e70c690b87adba99dbd11874bd16ecaf7398badf429fe739b68dcc51be06073308f22725320090349ef58cc4fa710558#npm:5.0.1"],\
             ["@tauri-apps/api", "npm:1.1.0"],\
             ["@tauri-apps/cli", "npm:1.1.1"],\
             ["@types/node", "npm:18.8.3"],\
@@ -649,6 +650,38 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             "@vitejs/plugin-vue",\
             "quasar",\
             "vite",\
+            "vue"\
+          ],\
+          "linkType": "HARD"\
+        }]\
+      ]],\
+      ["@radial-color-picker/rotator", [\
+        ["npm:3.0.2", {\
+          "packageLocation": "./.yarn/cache/@radial-color-picker-rotator-npm-3.0.2-7f2b2f0efd-0849a0f872.zip/node_modules/@radial-color-picker/rotator/",\
+          "packageDependencies": [\
+            ["@radial-color-picker/rotator", "npm:3.0.2"]\
+          ],\
+          "linkType": "HARD"\
+        }]\
+      ]],\
+      ["@radial-color-picker/vue-color-picker", [\
+        ["npm:5.0.1", {\
+          "packageLocation": "./.yarn/cache/@radial-color-picker-vue-color-picker-npm-5.0.1-91af141519-d33c2b4022.zip/node_modules/@radial-color-picker/vue-color-picker/",\
+          "packageDependencies": [\
+            ["@radial-color-picker/vue-color-picker", "npm:5.0.1"]\
+          ],\
+          "linkType": "SOFT"\
+        }],\
+        ["virtual:b5fe18308d727450b156ed681b84c360e70c690b87adba99dbd11874bd16ecaf7398badf429fe739b68dcc51be06073308f22725320090349ef58cc4fa710558#npm:5.0.1", {\
+          "packageLocation": "./.yarn/__virtual__/@radial-color-picker-vue-color-picker-virtual-8015acfc42/0/cache/@radial-color-picker-vue-color-picker-npm-5.0.1-91af141519-d33c2b4022.zip/node_modules/@radial-color-picker/vue-color-picker/",\
+          "packageDependencies": [\
+            ["@radial-color-picker/vue-color-picker", "virtual:b5fe18308d727450b156ed681b84c360e70c690b87adba99dbd11874bd16ecaf7398badf429fe739b68dcc51be06073308f22725320090349ef58cc4fa710558#npm:5.0.1"],\
+            ["@radial-color-picker/rotator", "npm:3.0.2"],\
+            ["@types/vue", null],\
+            ["vue", "npm:3.2.40"]\
+          ],\
+          "packagePeers": [\
+            "@types/vue",\
             "vue"\
           ],\
           "linkType": "HARD"\
@@ -2485,6 +2518,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["qmk-xap-gui", "workspace:."],\
             ["@quasar/extras", "npm:1.15.5"],\
             ["@quasar/vite-plugin", "virtual:b5fe18308d727450b156ed681b84c360e70c690b87adba99dbd11874bd16ecaf7398badf429fe739b68dcc51be06073308f22725320090349ef58cc4fa710558#npm:1.2.3"],\
+            ["@radial-color-picker/vue-color-picker", "virtual:b5fe18308d727450b156ed681b84c360e70c690b87adba99dbd11874bd16ecaf7398badf429fe739b68dcc51be06073308f22725320090349ef58cc4fa710558#npm:5.0.1"],\
             ["@tauri-apps/api", "npm:1.1.0"],\
             ["@tauri-apps/cli", "npm:1.1.1"],\
             ["@types/node", "npm:18.8.3"],\

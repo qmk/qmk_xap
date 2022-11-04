@@ -1,9 +1,8 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue'
 import { storeToRefs } from 'pinia'
 import { invoke } from '@tauri-apps/api/tauri'
 
-import { useXAPDeviceStore, XAPDevice } from '@/stores/devices'
+import { useXAPDeviceStore } from '@/stores/devices'
 
 const store = useXAPDeviceStore()
 const { currentDevice } = storeToRefs(store)

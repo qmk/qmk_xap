@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { ref, watch } from "vue"
+import { watch, reactive, computed, onMounted } from "vue"
 import { storeToRefs } from 'pinia'
 import { invoke } from "@tauri-apps/api/tauri"
-import { colord } from "colord"
+import ColorPicker from '@radial-color-picker/vue-color-picker'
+
 
 import { RGBConfig } from "@bindings/RGBConfig"
 import { useXAPDeviceStore } from '@/stores/devices'
@@ -11,73 +12,90 @@ import { XAPDevice } from "@/stores/devices"
 const store = useXAPDeviceStore()
 const { currentDevice } = storeToRefs(store)
 
-interface RGB {
-  r: number,
-  g: number,
-  b: number
-}
-
-const currentConfig: ref<RGBConfig> = ref({
+const currentConfig: reactive<RGBConfig> = reactive({
   enable: 1,
   mode: 1,
   hue: 255,
   sat: 255,
   val: 255,
-  speed: 60
+  speed: 255
 })
 
-const currentColor: ref<RGB> = ref({ r: 33, g: 128, b: 255 })
-
-watch(currentColor, async (color: RGB) => {
-  let hsv = colord(color).toHsv()
-  currentConfig.value.hue = Math.ceil(hsv.h / 360 * 255)
-  currentConfig.value.sat = Math.ceil(hsv.s / 100 * 255)
-  currentConfig.value.val = Math.ceil(hsv.v / 100 * 255)
-  await setConfig()
-})
-
-watch(currentDevice, async (device: XAPDevice | null) => {
-  if (device != null) {
-    await getConfig()
-    let hsv = colord({ h: Math.ceil(currentConfig.value.hue / 255 * 360), s: Math.ceil(currentConfig.value.sat / 255 * 100), v: Math.ceil(currentConfig.value.val / 255 * 100) })
-    currentColor.value = hsv.toRgb()
-    return;
+const hue = computed({
+  get() {
+    return Math.ceil(currentConfig.hue / 255 * 360)
+  },
+  set(h: number) {
+    currentConfig.hue = Math.ceil(h / 360 * 255)
   }
 })
 
-async function getConfig() {
-  await invoke('rgblight_config_get', { id: currentDevice.value.id })
-    .then((config: RGBConfig) => { currentConfig.value = config })
-    .catch((error) => console.error(error))
+const updateHue = async (h: number) => {
+  hue.value = h
 }
 
-async function setConfig() {
-  console.log("set config")
-  console.log(currentConfig.value)
-  await invoke('rgblight_config_set', { id: currentDevice.value.id, arg: currentConfig.value })
-    .catch((error) => console.error(error))
-}
 
-async function saveConfig() {
+const saveConfig = async () => {
   await invoke('rgblight_config_save', { id: currentDevice.value.id })
     .catch((error) => console.error(error))
 }
 
-// WTF - why is this even necessary
-async function changeMode(mode: number) {
-  console.log(mode)
-  currentConfig.value.mode = mode
-  await setConfig()
+const getConfig = async () => {
+  await invoke('rgblight_config_get', { id: currentDevice.value.id })
+    .then((config: RGBConfig) => {
+      Object.assign(currentConfig, config)
+    })
+    .catch((error) => console.error(error))
 }
+
+onMounted(async () => {
+  await getConfig()
+})
+
+watch(currentDevice, async (device: XAPDevice | null) => {
+  await getConfig()
+})
+
+watch(currentConfig, async (config: RGBConfig) => {
+  await invoke('rgblight_config_set', { id: currentDevice.value.id, arg: config })
+    .catch((error) => console.error(error))
+})
+
 </script>
 
 <template>
   <q-page>
     <div class="q-gutter-md q-pa-md">
-      <q-select v-model.lazy.number="currentConfig.mode" @update:modelValue="changeMode"
-        :options="currentDevice?.info?.lighting?.rgblight?.effects" label="Mode" emit-value />
-      <q-color v-model.lazy="currentColor" default-view="palette" format-model="rgb" no-header class="rgbPicker" />
-      <q-btn color="white" text-color="black" label="Save" @click="saveConfig" />
+      <div class="row flex-center">
+        <div class="col-4">
+          <color-picker :hue="hue" @input="updateHue" />
+        </div>
+        <div class="col q-gutter-y-sm">
+          <q-select v-model.number.lazy="currentConfig.mode" :options="currentDevice.info.lighting.rgblight.effects"
+            label="Mode" emit-value />
+          <q-badge>
+            Hue
+          </q-badge>
+          <q-slider v-model.number.lazy="currentConfig.hue" :min="0" :max="255" label marker-labels :markers="32" />
+          <q-badge>
+            Saturation
+          </q-badge>
+          <q-slider v-model.number.lazy="currentConfig.sat" :min="0" :max="255" label marker-labels :markers="32" />
+          <q-badge>
+            Value
+          </q-badge>
+          <q-slider v-model.number.lazy="currentConfig.val" :min="0" :max="255" label marker-labels :markers="32" />
+          <q-badge>
+            Speed
+          </q-badge>
+          <q-slider v-model.number.lazy="currentConfig.speed" :min="0" :max="255" label marker-labels :markers="32" />
+          <q-btn color="white" text-color="black" label="Save" @click="saveConfig" />
+        </div>
+      </div>
     </div>
   </q-page>
 </template>
+
+<style>
+@import '@radial-color-picker/vue-color-picker/dist/vue-color-picker.min.css';
+</style>
