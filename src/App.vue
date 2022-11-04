@@ -25,6 +25,7 @@ onMounted(async () => {
     if (store.addDevice(id, xapDevice)) {
       Notify.create({
         group: true,
+        type: 'positive',
         message: 'New Device ' + device.qmk.product_name,
         icon: 'announcement'
       })
@@ -37,6 +38,7 @@ onMounted(async () => {
 
     Notify.create({
       group: true,
+      type: 'info',
       message: 'Removed Device ' + (devices.value.get(id)?.info.qmk.product_name ?? 'Unknown'),
       icon: 'announcement'
     })

@@ -16,7 +16,9 @@ createApp(App)
             Notify
         },
         config: {
-            notify: {}
+            notify: {
+                position: 'top-right'
+            }
         }
     })
     .use(createPinia())
