@@ -49,6 +49,7 @@ pub(crate) enum XAPEvent {
     },
     NewDevice(Uuid),
     RemovedDevice(Uuid),
+    AnnounceAllDevices,
     RxError,
     Exit,
 }
@@ -93,23 +94,34 @@ fn start_event_loop(
                         },
                         Ok(XAPEvent::LogReceived{id, log}) => {
                             info!("LOG: {id} {log}");
-                                app.emit_all("log", FrontendEvent::LogReceived{id: id.to_string(), log}).unwrap();
+                                app.emit_all("log", FrontendEvent::LogReceived{ id: id.to_string(), log }).unwrap();
                         },
                         Ok(XAPEvent::SecureStatusChanged{id, secure_status}) => {
                             info!("Secure status changed: {id} - {secure_status}");
-                            app.emit_all("secure-status-changed", FrontendEvent::SecureStatusChanged{id: id.to_string(), secure_status}).unwrap();
+                            app.emit_all("secure-status-changed", FrontendEvent::SecureStatusChanged{ id: id.to_string(), secure_status }).unwrap();
                         },
                         Ok(XAPEvent::NewDevice(id)) => {
                             if let Some(device) = state.lock().get_device(&id){
                                 info!("detected new device - notifying frontend!");
-                                let info = device.xap_info();
-                                app.emit_all("new-device", FrontendEvent::NewDevice{id: id.to_string(), device: info.clone()}).unwrap();
+                                let device = device.xap_info().clone();
+                                app.emit_all("new-device", FrontendEvent::NewDevice{ id: id.to_string(), device }).unwrap();
                             }
                         },
                         Ok(XAPEvent::RemovedDevice(id)) => {
                             info!("removed device - notifying frontend!");
                             app.emit_all("removed-device", FrontendEvent::RemovedDevice{ id: id.to_string() }).unwrap();
-                        }
+                        },
+                        Ok(XAPEvent::AnnounceAllDevices) => {
+                            let mut state = state.lock();
+                            info!("announcing all xap devices to the frontend");
+                            if let Ok(()) = state.enumerate_xap_devices() {
+                                for device in state.get_devices() {
+                                    let id = device.id().to_string();
+                                    let device = device.xap_info().clone();
+                                    app.emit_all("new-device", FrontendEvent::NewDevice{ id, device }).unwrap();
+                                }
+                            }
+                        },
                         Ok(XAPEvent::RxError) => {
                             if let Err(err) = state.lock().enumerate_xap_devices() {
                                 error!("failed to enumerate XAP devices: {err}:\n {:#?}", err.source());
@@ -124,14 +136,8 @@ fn start_event_loop(
                 recv(ticker) -> msg => {
                     match msg {
                         Ok(_) => {
-                            // TODO maybe this can be done in a more resource effective manner...
-                            let mut state = state.lock();
-                            if let Err(err) = state.enumerate_xap_devices() {
+                            if let Err(err) = state.lock().enumerate_xap_devices() {
                                 error!("failed to enumerate XAP devices: {err}:\n {:#?}", err.source());
-                            }
-                            for device in state.get_devices() {
-                                let info = device.xap_info();
-                                app.emit_all("new-device", FrontendEvent::NewDevice{id: device.id().to_string(), device: info.clone()}).unwrap();
                             }
                         },
                         Err(err) => {
@@ -151,6 +157,7 @@ fn main() -> XAPResult<()> {
 
     let (event_channel_tx, event_channel_rx): (Sender<XAPEvent>, Receiver<XAPEvent>) = unbounded();
     let state = Arc::new(Mutex::new(XAPClient::new(event_channel_tx.clone())?));
+    let event_channel_tx_listen_frontend = event_channel_tx.clone();
 
     tauri::Builder::default()
         .plugin(shutdown_event_loop(event_channel_tx))
@@ -176,6 +183,11 @@ fn main() -> XAPResult<()> {
         ])
         .setup(move |app| {
             app.manage(state.clone());
+            app.listen_global("frontend-loaded", move |_| {
+                event_channel_tx_listen_frontend
+                    .send(XAPEvent::AnnounceAllDevices)
+                    .unwrap();
+            });
             start_event_loop(app.handle(), state, event_channel_rx);
             Ok(())
         })

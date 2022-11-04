@@ -2,7 +2,7 @@
 
 import { storeToRefs } from 'pinia'
 import { onMounted, onUnmounted, watchEffect } from 'vue'
-import { listen, Event } from '@tauri-apps/api/event'
+import { listen, emit, Event } from '@tauri-apps/api/event'
 import { Notify, Loading } from 'quasar'
 
 import { useXAPDeviceStore, XAPDevice } from '@/stores/devices'
@@ -48,6 +48,8 @@ onMounted(async () => {
     console.log("secure status " + secure_status + " for device " + id)
     store.updateSecureStatus(id, secure_status)
   })
+
+  await emit('frontend-loaded');
 })
 
 onUnmounted(async () => {
