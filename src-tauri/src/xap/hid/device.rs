@@ -11,7 +11,7 @@ use crossbeam_channel::{unbounded, Receiver, Sender};
 use flate2::read::GzDecoder;
 use hidapi::{DeviceInfo, HidDevice};
 use log::{error, info, trace};
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use serde_json::{Map, Value};
 use ts_rs::TS;
 use uuid::Uuid;
@@ -167,13 +167,25 @@ impl XAPDevice {
                 None
             };
 
+            // TODO ugly bodge
+            let matrix = if let Some(value) = config.get("matrix_size") {
+                serde_json::from_value(value.clone())
+                    .map_err(|err| XAPError::Other(anyhow!("malformed matrix_size entry {err}")))
+            } else {
+                return Err(XAPError::Other(anyhow!(
+                    "matrix size not found in JSON config"
+                )));
+            }?;
+
             Some(KeymapInfo {
+                matrix,
                 layer_count,
                 get_keycode_enabled: keymap_caps.contains(KeymapCapabilities::GET_KEYCODE),
                 get_encoder_keycode_enabled: keymap_caps
                     .contains(KeymapCapabilities::GET_ENCODER_KEYCODE),
             })
         } else {
+            info!("keymap subsystem not active!");
             None
         };
 
@@ -408,9 +420,17 @@ pub struct QMKInfo {
     eeprom_reset_enabled: bool,
 }
 
+#[derive(Deserialize, Debug, Serialize, TS, Clone)]
+#[ts(export)]
+pub struct Matrix {
+    cols: u8,
+    rows: u8,
+}
+
 #[derive(Debug, Serialize, TS, Clone)]
 #[ts(export)]
 pub struct KeymapInfo {
+    matrix: Matrix,
     layer_count: Option<u8>,
     get_keycode_enabled: bool,
     get_encoder_keycode_enabled: bool,

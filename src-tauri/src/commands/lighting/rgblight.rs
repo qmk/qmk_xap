@@ -25,7 +25,7 @@ pub(crate) async fn rgblight_config_set(
     arg: RGBLightConfig,
     state: State<'_, Arc<Mutex<XAPClient>>>,
 ) -> XAPResult<()> {
-    state.lock().query(id, RGBLightConfigSet { config: arg })
+    state.lock().query(id, RGBLightConfigSet { config: dbg!(arg) })
 }
 
 #[tauri::command]
@@ -33,5 +33,5 @@ pub(crate) async fn rgblight_config_save(
     id: Uuid,
     state: State<'_, Arc<Mutex<XAPClient>>>,
 ) -> XAPResult<()> {
-    state.lock().query(id, RGBLightConfigSave {})
+    state.lock().query(id, dbg!(RGBLightConfigSave {}))
 }

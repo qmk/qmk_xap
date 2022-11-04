@@ -23,7 +23,7 @@ const devicesA: ref<Array<XAPDevice>> = computed(() => Array.from(devices.value.
         </q-toolbar-title>
         <q-tabs align="left">
           <q-route-tab label="Device" :disable="currentDevice == null" to="/device" exact />
-          <q-route-tab label="Keymap" :disable="currentDevice?.keymap == null" to="/keymap" exact />
+          <q-route-tab label="Keymap" :disable="currentDevice?.info.keymap == null" to="/keymap" exact />
           <q-route-tab label="RGB" v-if="currentDevice?.info?.lighting?.rgblight != null" to="/rgb" exact />
         </q-tabs>
       </q-toolbar>

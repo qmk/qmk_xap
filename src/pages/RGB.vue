@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { watch, reactive, computed, onMounted } from "vue"
+import { watch, reactive, computed, onMounted, nextTick } from "vue"
+import { watchIgnorable, watchPausable } from '@vueuse/core'
 import { storeToRefs } from 'pinia'
 import { invoke } from "@tauri-apps/api/tauri"
 import ColorPicker from '@radial-color-picker/vue-color-picker'
@@ -43,7 +44,8 @@ const saveConfig = async () => {
 const getConfig = async () => {
   await invoke('rgblight_config_get', { id: currentDevice.value.id })
     .then((config: RGBConfig) => {
-      Object.assign(currentConfig, config)
+      ignore(() => currentConfig.value = config)
+      return nextTick() 
     })
     .catch((error) => console.error(error))
 }
@@ -52,11 +54,11 @@ onMounted(async () => {
   await getConfig()
 })
 
-watch(currentDevice, async (device: XAPDevice | null) => {
+watch(currentDevice, async (device: XAPDevice) => {
   await getConfig()
 })
 
-watch(currentConfig, async (config: RGBConfig) => {
+const { stop, ignore } = watchIgnorable(currentConfig, async (config: RGBConfig) => {
   await invoke('rgblight_config_set', { id: currentDevice.value.id, arg: config })
     .catch((error) => console.error(error))
 })
