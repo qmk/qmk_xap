@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { watch, reactive, computed, onMounted, nextTick } from "vue"
-import { watchIgnorable, watchPausable } from '@vueuse/core'
+import { watchPausable } from '@vueuse/core'
 import { storeToRefs } from 'pinia'
 import { invoke } from "@tauri-apps/api/tauri"
 import ColorPicker from '@radial-color-picker/vue-color-picker'
@@ -31,34 +31,40 @@ const hue = computed({
   }
 })
 
-const updateHue = async (h: number) => {
+async function updateHue(h: number) {
   hue.value = h
 }
 
 
-const saveConfig = async () => {
+async function saveConfig() {
   await invoke('rgblight_config_save', { id: currentDevice.value.id })
     .catch((error) => console.error(error))
 }
 
-const getConfig = async () => {
-  await invoke('rgblight_config_get', { id: currentDevice.value.id })
+async function getConfig(): Promise<RGBConfig> {
+  return await invoke('rgblight_config_get', { id: currentDevice.value.id })
     .then((config: RGBConfig) => {
-      ignore(() => currentConfig.value = config)
-      return nextTick() 
+      return config
     })
     .catch((error) => console.error(error))
 }
 
+
 onMounted(async () => {
-  await getConfig()
+  pause()
+  currentConfig.value = await getConfig()
+  await nextTick()
+  resume()
 })
 
-watch(currentDevice, async (device: XAPDevice) => {
-  await getConfig()
+watch(currentDevice, async ({ }) => {
+  pause()
+  currentConfig.value = await getConfig()
+  await nextTick()
+  resume()
 })
 
-const { stop, ignore } = watchIgnorable(currentConfig, async (config: RGBConfig) => {
+const { stop, pause, resume } = watchPausable(currentConfig, async (config: RGBConfig) => {
   await invoke('rgblight_config_set', { id: currentDevice.value.id, arg: config })
     .catch((error) => console.error(error))
 })
