@@ -6,7 +6,7 @@ import { computed, ref } from 'vue'
 import { useXAPDeviceStore, XAPDevice } from '@/stores/devices'
 
 const store = useXAPDeviceStore()
-const { currentDevice, devices } = storeToRefs(store)
+const { device, devices } = storeToRefs(store)
 const devicesA: ref<Array<XAPDevice>> = computed(() => Array.from(devices.value.values()))
 
 </script>
@@ -22,19 +22,19 @@ const devicesA: ref<Array<XAPDevice>> = computed(() => Array.from(devices.value.
           QMK XAP GUI
         </q-toolbar-title>
         <q-tabs align="left">
-          <q-route-tab label="Device" :disable="currentDevice == null" to="/device" exact />
-          <q-route-tab label="Keymap" :disable="currentDevice?.info.keymap == null" to="/keymap" exact />
-          <q-route-tab label="RGB" v-if="currentDevice?.info?.lighting?.rgblight != null" to="/rgb" exact />
+          <q-route-tab label="Device" :disable="device == null" to="/device" exact />
+          <q-route-tab label="Keymap" :disable="device?.info.keymap == null" to="/keymap" exact />
+          <q-route-tab label="RGB" v-if="device?.info?.lighting?.rgblight != null" to="/rgb" exact />
         </q-tabs>
       </q-toolbar>
       <div class="bg-white">
-      <q-select label="XAP device" :disable="currentDevice == null" filled v-model="currentDevice" :options="devicesA"
+      <q-select label="XAP device" :disable="device == null" filled v-model="device" :options="devicesA"
         :option-label="(device: XAPDevice) => (device.info.qmk.manufacturer ?? 'unknown manufacturer') + ' - ' + (device.info.qmk.product_name ?? 'unknown product')"
         emit-value />
       </div>
     </q-header>
     <q-page-container>
-      <router-view v-if="currentDevice != null" />
+      <router-view v-if="device != null" />
     </q-page-container>
   </q-layout>
 </template>

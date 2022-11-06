@@ -11,9 +11,9 @@ import { saveConfig, getConfig, setConfig } from '@/commands/lighting/rgblight'
 import { notifyError } from '@/utils/utils'
 
 const store = useXAPDeviceStore()
-const { currentDevice }: ref<XAPDeviceDTO> = storeToRefs(store)
+const { device }: ref<XAPDeviceDTO> = storeToRefs(store)
 
-const currentConfig: ref<RGBConfig> = ref({
+const config: ref<RGBConfig> = ref({
   enable: 1,
   mode: 1,
   hue: 255,
@@ -24,10 +24,10 @@ const currentConfig: ref<RGBConfig> = ref({
 
 const hue = computed({
   get() {
-    return Math.ceil(currentConfig.hue / 255 * 360)
+    return Math.ceil(config.value.hue / 255 * 360)
   },
   set(h: number) {
-    currentConfig.hue = Math.ceil(h / 360 * 255)
+    config.value.hue = Math.ceil(h / 360 * 255)
   }
 })
 
@@ -38,7 +38,7 @@ async function updateHue(h: number) {
 onMounted(async () => {
   pause()
   try {
-    currentConfig.value = await getConfig(currentDevice.value.id)
+    config.value = await getConfig(device.value.id)
   } catch (err) {
     notifyError(err)
   }
@@ -46,10 +46,10 @@ onMounted(async () => {
   resume()
 })
 
-watch(currentDevice, async (device: XAPDeviceDTO) => {
+watch(device, async (device: XAPDeviceDTO) => {
   pause()
   try {
-    currentConfig.value = await getConfig(device.id)
+    config.value = await getConfig(device.id)
   } catch (err) {
     notifyError(err)
   }
@@ -57,9 +57,9 @@ watch(currentDevice, async (device: XAPDeviceDTO) => {
   resume()
 })
 
-const { stop, pause, resume } = watchPausable(currentConfig, async (config: RGBConfig) => {
+const { stop, pause, resume } = watchPausable(config, async (newConfig: RGBConfig) => {
   try {
-    await setConfig(currentDevice.value.id, config)
+    await setConfig(device.value.id, newConfig)
   } catch (err) {
     notifyError(err)
   }
@@ -67,7 +67,7 @@ const { stop, pause, resume } = watchPausable(currentConfig, async (config: RGBC
 
 async function save() {
   try {
-    await saveConfig(currentDevice.value.id)
+    await saveConfig(device.value.id)
   } catch (err) {
     notifyError(err)
   }
@@ -83,24 +83,24 @@ async function save() {
           <color-picker :hue="hue" @input="updateHue" />
         </div>
         <div class="col q-gutter-y-sm">
-          <q-select v-model.number.lazy="currentConfig.mode" :options="currentDevice.info.lighting.rgblight.effects"
+          <q-select v-model.number.lazy="config.mode" :options="device.info.lighting.rgblight.effects"
             label="Mode" emit-value />
           <q-badge>
             Hue
           </q-badge>
-          <q-slider v-model.number.lazy="currentConfig.hue" :min="0" :max="255" label marker-labels :markers="32" />
+          <q-slider v-model.number.lazy="config.hue" :min="0" :max="255" label marker-labels :markers="32" />
           <q-badge>
             Saturation
           </q-badge>
-          <q-slider v-model.number.lazy="currentConfig.sat" :min="0" :max="255" label marker-labels :markers="32" />
+          <q-slider v-model.number.lazy="config.sat" :min="0" :max="255" label marker-labels :markers="32" />
           <q-badge>
             Value
           </q-badge>
-          <q-slider v-model.number.lazy="currentConfig.val" :min="0" :max="255" label marker-labels :markers="32" />
+          <q-slider v-model.number.lazy="config.val" :min="0" :max="255" label marker-labels :markers="32" />
           <q-badge>
             Speed
           </q-badge>
-          <q-slider v-model.number.lazy="currentConfig.speed" :min="0" :max="255" label marker-labels :markers="32" />
+          <q-slider v-model.number.lazy="config.speed" :min="0" :max="255" label marker-labels :markers="32" />
           <q-btn color="white" text-color="black" label="Save" @click="save" />
         </div>
       </div>

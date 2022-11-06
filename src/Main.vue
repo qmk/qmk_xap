@@ -10,7 +10,7 @@ import { FrontendEvent } from '@bindings/FrontendEvent'
 import router from '@/router/routes'
 
 const store = useXAPDeviceStore()
-const { currentDevice, devices } = storeToRefs(store)
+const { device, devices } = storeToRefs(store)
 
 let unlistenNewDevice
 let unlistenRemoveDevice
@@ -64,11 +64,11 @@ onUnmounted(async () => {
 })
 
 watchEffect(async () => {
-  if (currentDevice.value == null && devices.value.size == 0) {
+  if (device.value == null && devices.value.size == 0) {
     Loading.show({
       message: 'Searching for XAP devices'
     })
-  } else if (currentDevice.value != null && Loading.isActive) {
+  } else if (device.value != null && Loading.isActive) {
     router.push('/')
     Loading.hide()
   }

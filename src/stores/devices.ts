@@ -6,7 +6,7 @@ import { XAPDeviceDTO } from '@bindings/XAPDeviceDTO'
 
 export const useXAPDeviceStore = defineStore('xap-device-store', {
     state: () => {
-        return { currentDevice: null as XAPDeviceDTO | null, devices: new Map<string, XAPDeviceDTO>() }
+        return { device: null as XAPDeviceDTO | null, devices: new Map<string, XAPDeviceDTO>() }
     },
     getters: {},
     actions: {
@@ -21,8 +21,8 @@ export const useXAPDeviceStore = defineStore('xap-device-store', {
                         device.secure_status = 'Disabled'
                     }).then(() => {
                         this.devices.set(device.id, device)
-                        if (!this.currentDevice) {
-                            this.currentDevice = device
+                        if (!this.device) {
+                            this.device = device
                         }
                     })
                 return true
@@ -34,8 +34,8 @@ export const useXAPDeviceStore = defineStore('xap-device-store', {
                 this.devices.delete(id)
             }
 
-            if (this.currentDevice?.id == id) {
-                this.currentDevice = this.devices.values().next().value ?? null
+            if (this.device?.id == id) {
+                this.device = this.devices.values().next().value ?? null
             }
         },
         updateSecureStatus(id: string, secure_status: XAPSecureStatus) {
