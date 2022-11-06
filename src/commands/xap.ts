@@ -11,5 +11,5 @@ export async function secureUnlock(id: string) {
 
 
 export async function getSecureStatus(id: string): Promise<XAPSecureStatus> {
-    return await queryBackend('secure_status_get', id)
+    return await queryBackend('secure_status_get', id, null)
 }

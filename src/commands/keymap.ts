@@ -7,5 +7,5 @@ export async function getKeycode(id: string, position: KeyPosition): Promise<num
 }
 
 export async function getKeyMap(id: string): Promise<Array<Array<KeyPositionConfig>>> {
-    return await queryBackend('keymap_get', id)
+    return await queryBackend('keymap_get', id, null)
 }

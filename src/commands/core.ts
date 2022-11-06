@@ -1,6 +1,6 @@
 import { invoke } from "@tauri-apps/api/tauri"
 
-export async function queryBackend<T, R>(handler: string, id: string, arg: T): Promise<R> {
+export async function queryBackend<T, R>(handler: string, id: string, arg: T | null): Promise<R> {
     let prettyArg = (arg != null || arg != undefined) ? JSON.stringify(arg) : '()'
     let truncatedId = "(" + id.substring(0, 4) + ")"
     return await invoke(handler, { id: id, arg: arg }).then(

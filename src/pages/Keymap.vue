@@ -63,7 +63,7 @@ const keyCodes: ref<Array<KeyCodeCategory>> = ref([
 )
 
 async function set(code: number) {
-  if (selectedKey) {
+  if (selectedKey.value) {
     try {
       const config: KeyPositionConfig = { layer: selectedKey.value.layer, row: selectedKey.value.row, col: selectedKey.value.col, keycode: code, }
       // attempt to set keycode
@@ -140,7 +140,7 @@ watch(device, async (device: XAPDeviceDTO) => {
                 <q-responsive v-for="code in category.codes" class="col" style="max-width:3rem" :ratio="1">
                   <q-btn color="white" :disable="device.secure_status != 'Unlocked'" square text-color="black"
                     @click="set(code.code)" :label="code.name" />
-                  <q-tooltip v-if="device.secure_status != 'Unlocked'" class="bg-red">
+                  <q-tooltip v-if="device.secure_status != 'Unlocked'" icon="block" class="bg-red">
                     Device is locked
                   </q-tooltip>
                 </q-responsive>

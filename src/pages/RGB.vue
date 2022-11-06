@@ -4,7 +4,7 @@ import { watchPausable } from '@vueuse/core'
 import { storeToRefs } from 'pinia'
 import ColorPicker from '@radial-color-picker/vue-color-picker'
 
-import { RGBConfig } from '@bindings/RGBConfig'
+import { RGBLightConfig } from '@bindings/RGBLightConfig'
 import { XAPDeviceDTO } from '@bindings/XAPDeviceDTO'
 import { useXAPDeviceStore } from '@/stores/devices'
 import { saveConfig, getConfig, setConfig } from '@/commands/lighting/rgblight'
@@ -13,7 +13,7 @@ import { notifyError } from '@/utils/utils'
 const store = useXAPDeviceStore()
 const { device }: ref<XAPDeviceDTO> = storeToRefs(store)
 
-const config: ref<RGBConfig> = ref({
+const config: ref<RGBLightConfig> = ref({
   enable: 1,
   mode: 1,
   hue: 255,
@@ -57,7 +57,7 @@ watch(device, async (device: XAPDeviceDTO) => {
   resume()
 })
 
-const { stop, pause, resume } = watchPausable(config, async (newConfig: RGBConfig) => {
+const { stop, pause, resume } = watchPausable(config, async (newConfig: RGBLightConfig) => {
   try {
     await setConfig(device.value.id, newConfig)
   } catch (err) {

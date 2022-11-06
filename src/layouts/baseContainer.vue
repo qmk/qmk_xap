@@ -3,11 +3,20 @@
 import { storeToRefs } from 'pinia'
 import { computed, ref } from 'vue'
 
+import { secureUnlock, secureLock } from '@/commands/xap'
 import { useXAPDeviceStore, XAPDevice } from '@/stores/devices'
 
 const store = useXAPDeviceStore()
 const { device, devices } = storeToRefs(store)
 const devicesA: ref<Array<XAPDevice>> = computed(() => Array.from(devices.value.values()))
+
+async function lock() {
+  await secureLock(device.value.id)
+}
+
+async function unlock() {
+  await secureUnlock(device.value.id)
+}
 
 </script>
 
@@ -28,13 +37,19 @@ const devicesA: ref<Array<XAPDevice>> = computed(() => Array.from(devices.value.
         </q-tabs>
       </q-toolbar>
       <div class="bg-white">
-      <q-select label="XAP device" :disable="device == null" filled v-model="device" :options="devicesA"
-        :option-label="(device: XAPDevice) => (device.info.qmk.manufacturer ?? 'unknown manufacturer') + ' - ' + (device.info.qmk.product_name ?? 'unknown product')"
-        emit-value />
+        <q-select label="XAP device" :disable="device == null" filled v-model="device" :options="devicesA"
+          :option-label="(device: XAPDevice) => (device.info.qmk.manufacturer ?? 'unknown manufacturer') + ' - ' + (device.info.qmk.product_name ?? 'unknown product')"
+          emit-value />
       </div>
     </q-header>
     <q-page-container>
       <router-view v-if="device != null" />
     </q-page-container>
+    <q-page-sticky position="bottom-right" :offset="[24, 24]">
+      <q-btn fab icon="lock_open" v-if="device?.secure_status != 'Unlocked'"
+        :loading="device?.secure_status == 'Unlocking'" color="secondary" text-color="white" @click="unlock" />
+      <q-btn fab v-else :loading="device?.secure_status == 'Unlocking'" color="secondary" text-color="white" icon="lock"
+        @click="lock" />
+    </q-page-sticky>
   </q-layout>
 </template>
