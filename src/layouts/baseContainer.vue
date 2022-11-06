@@ -26,7 +26,7 @@ async function unlock() {
       <q-toolbar>
         <q-toolbar-title>
           <q-avatar>
-            <img src="src/assets/qmk.svg">
+            <img src="qmk.svg">
           </q-avatar>
           QMK XAP GUI
         </q-toolbar-title>
