@@ -1,14 +1,14 @@
 <script setup lang="ts">
-import { watch, reactive, computed, onMounted, nextTick } from "vue"
+import { watch, reactive, computed, onMounted, nextTick } from 'vue'
 import { watchPausable } from '@vueuse/core'
 import { storeToRefs } from 'pinia'
-import { invoke } from "@tauri-apps/api/tauri"
 import ColorPicker from '@radial-color-picker/vue-color-picker'
 
-
-import { RGBConfig } from "@bindings/RGBConfig"
+import { RGBConfig } from '@bindings/RGBConfig'
 import { useXAPDeviceStore } from '@/stores/devices'
-import { XAPDevice } from "@/stores/devices"
+import { XAPDevice } from '@/stores/devices'
+import { saveConfig, getConfig, setConfig } from '@/commands/lighting/rgblight'
+import { notifyError } from '@/utils/utils'
 
 const store = useXAPDeviceStore()
 const { currentDevice } = storeToRefs(store)
@@ -35,39 +35,47 @@ async function updateHue(h: number) {
   hue.value = h
 }
 
-
-async function saveConfig() {
-  await invoke('rgblight_config_save', { id: currentDevice.value.id })
-    .catch((error) => console.error(error))
-}
-
-async function getConfig(): Promise<RGBConfig> {
-  return await invoke('rgblight_config_get', { id: currentDevice.value.id })
-    .then((config: RGBConfig) => {
-      return config
-    })
-    .catch((error) => console.error(error))
-}
-
-
 onMounted(async () => {
   pause()
-  currentConfig.value = await getConfig()
+  if (currentDevice.value) {
+    try {
+      currentConfig.value = await getConfig(currentDevice.value.id)
+    } catch (err) {
+      notifyError(err)
+    }
+  }
   await nextTick()
   resume()
 })
 
-watch(currentDevice, async ({ }) => {
+watch(currentDevice, async (device: XAPDevice) => {
   pause()
-  currentConfig.value = await getConfig()
+  try {
+    if (currentDevice.value) {
+      currentConfig.value = await getConfig(device.id)
+    }
+  } catch (err) {
+    notifyError(err)
+  }
   await nextTick()
   resume()
 })
 
 const { stop, pause, resume } = watchPausable(currentConfig, async (config: RGBConfig) => {
-  await invoke('rgblight_config_set', { id: currentDevice.value.id, arg: config })
-    .catch((error) => console.error(error))
+  try {
+    await setConfig(currentDevice.value.id, config)
+  } catch (err) {
+    notifyError(err)
+  }
 })
+
+async function save() {
+  try {
+    await saveConfig(currentDevice.value.id)
+  } catch (err) {
+    notifyError(err)
+  }
+}
 
 </script>
 
@@ -97,7 +105,7 @@ const { stop, pause, resume } = watchPausable(currentConfig, async (config: RGBC
             Speed
           </q-badge>
           <q-slider v-model.number.lazy="currentConfig.speed" :min="0" :max="255" label marker-labels :markers="32" />
-          <q-btn color="white" text-color="black" label="Save" @click="saveConfig" />
+          <q-btn color="white" text-color="black" label="Save" @click="save" />
         </div>
       </div>
     </div>

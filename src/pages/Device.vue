@@ -1,30 +1,27 @@
 <script setup lang="ts">
 import { storeToRefs } from 'pinia'
-import { invoke } from '@tauri-apps/api/tauri'
 
 import { useXAPDeviceStore } from '@/stores/devices'
+import { secureUnlock, secureLock } from '@/commands/xap'
+import { resetEEPROM, jumpToBootloader } from '@/commands/qmk'
 
 const store = useXAPDeviceStore()
 const { currentDevice } = storeToRefs(store)
 
 async function lock() {
-  await invoke('secure_lock', { id: currentDevice.value.id })
-    .catch((error) => console.error(error))
+  await secureLock(currentDevice.value.id)
 }
 
 async function unlock() {
-  await invoke('secure_unlock', { id: currentDevice.value.id })
-    .catch((error) => console.error(error))
+  await secureUnlock(currentDevice.value.id)
 }
 
-async function jumpToBootloader() {
-  await invoke('jump_to_bootloader', { id: currentDevice.value.id })
-    .catch((error) => console.error(error))
+async function bootloader() {
+  await jumpToBootloader(currentDevice.value.id)
 }
 
-async function resetEEPROM() {
-  await invoke('reset_eeprom', { id: currentDevice.value.id })
-    .catch((error) => console.error(error))
+async function reset() {
+  await resetEEPROM(currentDevice.value.id)
 }
 
 </script>
@@ -77,12 +74,13 @@ async function resetEEPROM() {
           text-color="white" label="Lock" @click="lock" />
       </div>
       <div>
-        <q-btn v-if="currentDevice?.info.qmk.jump_to_bootloader_enabled" :disable="currentDevice?.secure_status != 'Unlocked'" class="full-width" color="primary"
-          text-color="white" label="Jump to Bootloader" @click="jumpToBootloader" />
+        <q-btn v-if="currentDevice?.info.qmk.jump_to_bootloader_enabled"
+          :disable="currentDevice?.secure_status != 'Unlocked'" class="full-width" color="primary" text-color="white"
+          label="Jump to Bootloader" @click="bootloader" />
       </div>
       <div>
-        <q-btn v-if="currentDevice?.info.qmk.eeprom_reset_enabled" :disable="currentDevice?.secure_status != 'Unlocked'" class="full-width" color="primary" text-color="white"
-          label="Reset EEPROM" @click="resetEEPROM" />
+        <q-btn v-if="currentDevice?.info.qmk.eeprom_reset_enabled" :disable="currentDevice?.secure_status != 'Unlocked'"
+          class="full-width" color="primary" text-color="white" label="Reset EEPROM" @click="reset" />
       </div>
     </div>
   </q-page>

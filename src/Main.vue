@@ -7,6 +7,7 @@ import { Notify, Loading } from 'quasar'
 
 import { useXAPDeviceStore, XAPDevice } from '@/stores/devices'
 import { FrontendEvent } from '@bindings/FrontendEvent'
+import router from '@/router/routes'
 
 const store = useXAPDeviceStore()
 const { currentDevice, devices } = storeToRefs(store)
@@ -70,9 +71,11 @@ watchEffect(async () => {
       message: 'Searching for XAP devices'
     })
   } else if (currentDevice.value != null && Loading.isActive) {
+    router.push('/')
     Loading.hide()
   }
 })
+
 </script>
 
 <template>
