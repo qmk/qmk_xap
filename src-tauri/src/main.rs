@@ -26,7 +26,7 @@ use ts_rs::TS;
 use uuid::Uuid;
 
 use commands::*;
-use xap::{XAPClient, XAPDeviceInfo, XAPResult, XAPSecureStatus};
+use xap::{XAPClient, XAPDeviceDTO, XAPResult, XAPSecureStatus};
 
 fn shutdown_event_loop<R: Runtime>(sender: Sender<XAPEvent>) -> TauriPlugin<R> {
     Builder::new("event loop shutdown")
@@ -59,8 +59,7 @@ pub(crate) enum XAPEvent {
 #[ts(export)]
 pub(crate) enum FrontendEvent {
     NewDevice {
-        id: String,
-        device: XAPDeviceInfo,
+        device: XAPDeviceDTO,
     },
     RemovedDevice {
         id: String,
@@ -103,8 +102,8 @@ fn start_event_loop(
                         Ok(XAPEvent::NewDevice(id)) => {
                             if let Some(device) = state.lock().get_device(&id){
                                 info!("detected new device - notifying frontend!");
-                                let device = device.xap_info().clone();
-                                app.emit_all("new-device", FrontendEvent::NewDevice{ id: id.to_string(), device }).unwrap();
+
+                                app.emit_all("new-device", FrontendEvent::NewDevice{ device: device.into() }).unwrap();
                             }
                         },
                         Ok(XAPEvent::RemovedDevice(id)) => {
@@ -116,9 +115,7 @@ fn start_event_loop(
                             info!("announcing all xap devices to the frontend");
                             if let Ok(()) = state.enumerate_xap_devices() {
                                 for device in state.get_devices() {
-                                    let id = device.id().to_string();
-                                    let device = device.xap_info().clone();
-                                    app.emit_all("new-device", FrontendEvent::NewDevice{ id, device }).unwrap();
+                                    app.emit_all("new-device", FrontendEvent::NewDevice{ device: device.into() }).unwrap();
                                 }
                             }
                         },
@@ -169,6 +166,7 @@ fn main() -> XAPResult<()> {
             reset_eeprom,
             keycode_get,
             keycode_set,
+            keymap_get,
             encoder_keycode_get,
             encoder_keycode_set,
             backlight_config_get,

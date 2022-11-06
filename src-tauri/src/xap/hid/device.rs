@@ -22,8 +22,9 @@ const XAP_REPORT_SIZE: usize = 64;
 
 pub struct XAPDevice {
     id: Uuid,
-    info: DeviceInfo,
+    hid_info: DeviceInfo,
     xap_info: Option<XAPDeviceInfo>,
+    keymap: Vec<Vec<Vec<KeyPositionConfig>>>,
     tx_device: HidDevice,
     rx_thread: JoinHandle<()>,
     rx_channel: Receiver<ResponseRaw>,
@@ -40,17 +41,17 @@ impl Display for XAPDevice {
         write!(
             f,
             "VID: {:04x}, PID: {:04x}, Serial: {}, Product name: {}, Manufacturer: {}",
-            self.info.vendor_id(),
-            self.info.product_id(),
-            match self.info.serial_number() {
+            self.hid_info.vendor_id(),
+            self.hid_info.product_id(),
+            match self.hid_info.serial_number() {
                 Some(s) => s,
                 _ => "<COULD NOT FETCH>",
             },
-            match self.info.product_string() {
+            match self.hid_info.product_string() {
                 Some(s) => s,
                 _ => "<COULD NOT FETCH>",
             },
-            match self.info.manufacturer_string() {
+            match self.hid_info.manufacturer_string() {
                 Some(s) => s,
                 _ => "<COULD_NOT_FETCH>",
             }
@@ -68,14 +69,16 @@ impl XAPDevice {
         let (tx_channel, rx_channel) = unbounded();
         let id = Uuid::new_v4();
         let mut device = Self {
-            info,
+            hid_info: info,
             xap_info: None,
+            keymap: Default::default(),
             id,
             tx_device: tx,
             rx_thread: start_rx_thread(id, rx, event_channel, tx_channel),
             rx_channel,
         };
         device.query_device_info()?;
+        device.query_keymap()?;
         Ok(device)
     }
 
@@ -93,12 +96,20 @@ impl XAPDevice {
             .expect("XAP device wasn't properly initialized")
     }
 
+    pub fn keymap(&self) -> &Vec<Vec<Vec<KeyPositionConfig>>> {
+        &self.keymap
+    }
+
     pub fn is_hid_device(&self, candidate: &DeviceInfo) -> bool {
-        candidate.path() == self.info.path()
-            && candidate.product_id() == self.info.product_id()
-            && candidate.vendor_id() == self.info.vendor_id()
-            && candidate.usage_page() == self.info.usage_page()
-            && candidate.usage() == self.info.usage()
+        candidate.path() == self.hid_info.path()
+            && candidate.product_id() == self.hid_info.product_id()
+            && candidate.vendor_id() == self.hid_info.vendor_id()
+            && candidate.usage_page() == self.hid_info.usage_page()
+            && candidate.usage() == self.hid_info.usage()
+    }
+
+    pub fn query_keycode(&self, position: KeyPosition) -> XAPResult<KeyCode> {
+        self.do_query(KeymapKeycodeQuery(position))
     }
 
     pub fn do_query<T: XAPRequest>(&self, request: T) -> XAPResult<T::Response> {
@@ -316,6 +327,46 @@ impl XAPDevice {
         Ok(serde_json::from_str(&decompressed)
             .map_err(|err| anyhow!("config json is not valid json {err}"))?)
     }
+
+    fn query_keymap(&mut self) -> XAPResult<()> {
+        // Reset keymap
+        self.keymap = Default::default();
+
+        if let Some(keymap) = &self.xap_info().keymap {
+            let layers = keymap.layer_count.unwrap_or_default();
+            let cols = keymap.matrix.cols;
+            let rows = keymap.matrix.rows;
+
+            let keymap: Result<Vec<Vec<Vec<KeyPositionConfig>>>, XAPError> = (0..layers)
+                .map(|layer| {
+                    (0..rows)
+                        .map(|row| {
+                            (0..cols)
+                                .map(|col| {
+                                    let keycode = self.query_keycode(KeyPosition {
+                                        layer: layer,
+                                        row: row,
+                                        col: col,
+                                    })?;
+
+                                    Ok(KeyPositionConfig {
+                                        layer: layer,
+                                        row: row,
+                                        column: col,
+                                        keycode: keycode.0,
+                                    })
+                                })
+                                .collect()
+                        })
+                        .collect()
+                })
+                .collect();
+
+            self.keymap = keymap?;
+        }
+
+        Ok(())
+    }
 }
 
 fn start_rx_thread(
@@ -389,6 +440,27 @@ fn handle_report(
     }
 
     Ok(())
+}
+
+#[derive(Clone, Serialize, TS)]
+#[ts(export)]
+pub struct XAPDeviceDTO {
+    id: String,
+    info: XAPDeviceInfo,
+    keymap: Vec<Vec<Vec<KeyPositionConfig>>>,
+    secure_status: XAPSecureStatus
+}
+
+impl From<&XAPDevice> for XAPDeviceDTO {
+    fn from(device: &XAPDevice) -> Self {
+        Self {
+            id: device.id.to_string(),
+            info: device.xap_info().clone(),
+            keymap: device.keymap.clone(),
+            // TODO
+            secure_status: XAPSecureStatus::Disabled
+        }
+    }
 }
 
 #[derive(Debug, Serialize, TS, Clone)]

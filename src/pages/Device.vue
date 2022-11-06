@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import { storeToRefs } from 'pinia'
 
+import { ref } from 'vue'
 import { useXAPDeviceStore } from '@/stores/devices'
 import { secureUnlock, secureLock } from '@/commands/xap'
 import { resetEEPROM, jumpToBootloader } from '@/commands/qmk'
+import { XAPDeviceDTO } from '@bindings/XAPDeviceDTO';
 
 const store = useXAPDeviceStore()
-const { currentDevice } = storeToRefs(store)
+const { currentDevice }: ref<XAPDeviceDTO> = storeToRefs(store)
 
 async function lock() {
   await secureLock(currentDevice.value.id)

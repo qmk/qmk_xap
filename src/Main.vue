@@ -18,14 +18,12 @@ let unlistenSecureStatusChanged
 
 onMounted(async () => {
   unlistenNewDevice = await listen('new-device', (event: Event<FrontendEvent>) => {
-    let id = event.payload.id
     let device = event.payload.device
-    console.log("new device with id " + id + Date.now())
+    console.log("new device with id " + device.id + Date.now())
 
-    let xapDevice: XAPDevice = { id, info: device, secure_status: "Disabled" };
-    if (store.addDevice(id, xapDevice)) {
+    if (store.addDevice(device)) {
       Notify.create({
-        message: 'New Device ' + device.qmk.product_name,
+        message: 'New Device ' + device.info.qmk.product_name,
         icon: 'announcement'
       })
     }

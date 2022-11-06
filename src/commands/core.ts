@@ -5,7 +5,7 @@ export async function queryBackend<T, R>(handler: string, id: string, arg: T): P
     let truncatedId = "(" + id.substring(0, 4) + ")"
     return await invoke(handler, { id: id, arg: arg }).then(
         (ok: R) => {
-            let prettyOk = (arg != null || arg != undefined) ? JSON.stringify(ok) : '()'
+            let prettyOk = (ok != null || ok != undefined) ? JSON.stringify(ok) : '()'
             console.log(truncatedId + " ok: " + handler + " arg: " + prettyArg + " response: " + prettyOk)
             return ok
         },

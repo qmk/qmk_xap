@@ -1,19 +1,19 @@
 <script setup lang="ts">
-import { watch, reactive, computed, onMounted, nextTick } from 'vue'
+import { watch, reactive, computed, onMounted, nextTick, ref } from 'vue'
 import { watchPausable } from '@vueuse/core'
 import { storeToRefs } from 'pinia'
 import ColorPicker from '@radial-color-picker/vue-color-picker'
 
 import { RGBConfig } from '@bindings/RGBConfig'
+import { XAPDeviceDTO } from '@bindings/XAPDeviceDTO'
 import { useXAPDeviceStore } from '@/stores/devices'
-import { XAPDevice } from '@/stores/devices'
 import { saveConfig, getConfig, setConfig } from '@/commands/lighting/rgblight'
 import { notifyError } from '@/utils/utils'
 
 const store = useXAPDeviceStore()
-const { currentDevice } = storeToRefs(store)
+const { currentDevice }: ref<XAPDeviceDTO> = storeToRefs(store)
 
-const currentConfig: reactive<RGBConfig> = reactive({
+const currentConfig: ref<RGBConfig> = ref({
   enable: 1,
   mode: 1,
   hue: 255,
@@ -37,23 +37,19 @@ async function updateHue(h: number) {
 
 onMounted(async () => {
   pause()
-  if (currentDevice.value) {
-    try {
-      currentConfig.value = await getConfig(currentDevice.value.id)
-    } catch (err) {
-      notifyError(err)
-    }
+  try {
+    currentConfig.value = await getConfig(currentDevice.value.id)
+  } catch (err) {
+    notifyError(err)
   }
   await nextTick()
   resume()
 })
 
-watch(currentDevice, async (device: XAPDevice) => {
+watch(currentDevice, async (device: XAPDeviceDTO) => {
   pause()
   try {
-    if (currentDevice.value) {
-      currentConfig.value = await getConfig(device.id)
-    }
+    currentConfig.value = await getConfig(device.id)
   } catch (err) {
     notifyError(err)
   }
@@ -67,7 +63,7 @@ const { stop, pause, resume } = watchPausable(currentConfig, async (config: RGBC
   } catch (err) {
     notifyError(err)
   }
-})
+}, { deep: true })
 
 async function save() {
   try {
