@@ -18,7 +18,7 @@ createApp(Main)
         ],
         config: {
             notify: {
-                position: 'bottom-right'
+                position: 'top-right'
             }
         }
     })

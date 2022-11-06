@@ -24,7 +24,7 @@ onMounted(async () => {
     if (store.addDevice(device)) {
       Notify.create({
         message: 'New Device ' + device.info.qmk.product_name,
-        icon: 'announcement'
+        icon: 'power'
       })
     }
   })
@@ -35,7 +35,7 @@ onMounted(async () => {
 
     Notify.create({
       message: 'Removed Device ' + (devices.value.get(id)?.info.qmk.product_name ?? 'Unknown'),
-      icon: 'announcement'
+      icon: 'power_off'
     })
 
     store.removeDevice(id)
