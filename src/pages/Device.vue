@@ -75,14 +75,19 @@ async function reset() {
         <q-btn v-else class="full-width" :loading="device?.secure_status == 'Unlocking'" color="primary"
           text-color="white" label="Lock" @click="lock" />
       </div>
-      <div>
-        <q-btn v-if="device?.info.qmk.jump_to_bootloader_enabled"
-          :disable="device?.secure_status != 'Unlocked'" class="full-width" color="primary" text-color="white"
+      <div v-if="device?.info.qmk.jump_to_bootloader_enabled">
+        <q-btn :disable="device?.secure_status != 'Unlocked'" class="full-width" color="primary" text-color="white"
           label="Jump to Bootloader" @click="bootloader" />
+        <q-tooltip v-if="device.secure_status != 'Unlocked'" class="bg-red">
+          Device is locked
+        </q-tooltip>
       </div>
-      <div>
-        <q-btn v-if="device?.info.qmk.eeprom_reset_enabled" :disable="device?.secure_status != 'Unlocked'"
-          class="full-width" color="primary" text-color="white" label="Reset EEPROM" @click="reset" />
+      <div v-if="device?.info.qmk.eeprom_reset_enabled">
+        <q-btn :disable="device?.secure_status != 'Unlocked'" class="full-width" color="primary" text-color="white"
+          label="Reset EEPROM" @click="reset" />
+        <q-tooltip v-if="device.secure_status != 'Unlocked'" class="bg-red">
+          Device is locked
+        </q-tooltip>
       </div>
     </div>
   </q-page>

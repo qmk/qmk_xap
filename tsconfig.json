@@ -14,7 +14,15 @@
       "ESNext",
       "DOM"
     ],
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "paths": {
+      "@/*": [
+        "./src/*"
+      ],
+      "@bindings/*": [
+        "./src-tauri/bindings/*"
+      ]
+    },
   },
   "include": [
     "src/**/*.ts",

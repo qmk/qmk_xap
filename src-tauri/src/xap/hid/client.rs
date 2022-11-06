@@ -113,6 +113,10 @@ impl XAPClient {
         self.devices.get(id)
     }
 
+    pub fn get_device_mut(&mut self, id: &Uuid) -> Option<&mut XAPDevice> {
+        self.devices.get_mut(id)
+    }
+
     pub fn get_devices(&self) -> Vec<&XAPDevice> {
         self.devices.values().collect()
     }

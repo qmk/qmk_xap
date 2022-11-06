@@ -9,6 +9,7 @@ use anyhow::Result;
 use binrw::{prelude::*, ReadOptions};
 use log::trace;
 use serde::Serialize;
+use uuid::Uuid;
 
 use super::token::*;
 
@@ -24,7 +25,9 @@ pub enum XAPError {
     Hid(#[from] hidapi::HidError),
     #[error("device is locked")]
     SecureLocked,
-    #[error("an error occured")]
+    #[error("unkown device")]
+    UnknownDevice(Uuid),
+    #[error(transparent)]
     Other(#[from] anyhow::Error),
 }
 

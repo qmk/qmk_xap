@@ -108,6 +108,13 @@ impl XAPDevice {
             && candidate.usage() == self.hid_info.usage()
     }
 
+    pub fn set_keycode(&mut self, config: KeyPositionConfig) -> XAPResult<()> {
+        self.do_query(RemapKeycodeQuery(config.clone()))?;
+        let (layer, row, col) = (config.layer, config.row, config.col);
+        self.keymap[layer as usize][row as usize][col as usize] = config;
+        Ok(())
+    }
+
     pub fn query_keycode(&self, position: KeyPosition) -> XAPResult<KeyCode> {
         self.do_query(KeymapKeycodeQuery(position))
     }
@@ -352,7 +359,7 @@ impl XAPDevice {
                                     Ok(KeyPositionConfig {
                                         layer: layer,
                                         row: row,
-                                        column: col,
+                                        col,
                                         keycode: keycode.0,
                                     })
                                 })
@@ -448,7 +455,7 @@ pub struct XAPDeviceDTO {
     id: String,
     info: XAPDeviceInfo,
     keymap: Vec<Vec<Vec<KeyPositionConfig>>>,
-    secure_status: XAPSecureStatus
+    secure_status: XAPSecureStatus,
 }
 
 impl From<&XAPDevice> for XAPDeviceDTO {
@@ -458,7 +465,7 @@ impl From<&XAPDevice> for XAPDeviceDTO {
             info: device.xap_info().clone(),
             keymap: device.keymap.clone(),
             // TODO
-            secure_status: XAPSecureStatus::Disabled
+            secure_status: XAPSecureStatus::Disabled,
         }
     }
 }

@@ -51,7 +51,7 @@ impl XAPRequest for RemapLayerCountQuery {
 pub struct KeyPositionConfig {
     pub layer: u8,
     pub row: u8,
-    pub column: u8,
+    pub col: u8,
     pub keycode: u16,
 }
 
