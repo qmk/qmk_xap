@@ -77,14 +77,14 @@ async function save() {
 
 <template>
   <q-page>
-    <div class="q-gutter-md q-pa-md">
+    <div class="">
       <div class="row flex-center">
-        <div class="col-4">
+        <div class="col-3 q-pa-md q-ma-md">
           <color-picker :hue="hue" @input="updateHue" />
         </div>
-        <div class="col q-gutter-y-sm">
-          <q-select v-model.number.lazy="config.mode" :options="device.info.lighting.rgblight.effects"
-            label="Mode" emit-value />
+        <div class="col q-pa-md q-ma-md q-gutter-md">
+          <q-select v-model.number.lazy="config.mode" :options="device.info.lighting.rgblight.effects" label="Mode"
+            emit-value />
           <q-badge>
             Hue
           </q-badge>
@@ -101,6 +101,11 @@ async function save() {
             Speed
           </q-badge>
           <q-slider v-model.number.lazy="config.speed" :min="0" :max="255" label marker-labels :markers="32" />
+          <q-btn-toggle v-model="config.enable" spread no-caps toggle-color="primary" color="white" text-color="black"
+            :options="[
+              { label: 'Enable', value: 1 },
+              { label: 'Disable', value: 0 }
+            ]" />
           <q-btn color="white" text-color="black" label="Save" @click="save" />
         </div>
       </div>
