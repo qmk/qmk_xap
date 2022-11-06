@@ -160,8 +160,18 @@ impl XAPDevice {
 
         let qmk_caps = self.do_query(QMKCapabilitiesQuery)?;
         let board_ids = self.do_query(QMKBoardIdentifiersQuery)?;
-        let manufacturer = self.do_query(QMKBoardManufacturerQuery)?.0;
-        let product_name = self.do_query(QMKProductNameQuery)?.0;
+        // TODO: why do these strings have leading and trailing " characters -
+        // should be removed in QMK
+        let manufacturer = self
+            .do_query(QMKBoardManufacturerQuery)?
+            .0
+            .trim_matches('"')
+            .to_owned();
+        let product_name = self
+            .do_query(QMKProductNameQuery)?
+            .0
+            .trim_matches('"')
+            .to_owned();
         let config = self.query_config_blob()?;
         let hardware_id = self.do_query(QMKHardwareIdentifierQuery)?.to_string();
 
