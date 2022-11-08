@@ -23,7 +23,7 @@ All serialization from Rust structs into JSON objects is done automatically with
 
 In order to keep the backend structs and frontend TS types in synchronization and automatically propagate changes in the datatype [ts-rs](https://github.com/Aleph-Alpha/ts-rs) is used to generate matching Typescript interface definitions from the Rust structs.
 
-As an example the `RGBMatrixConfig` and `RGBMatrixInfo` structs are annotated with the [`derive`](https://doc.rust-lang.org/book/appendix-03-derivable-traits.html) attribute and specifically shall derive serde's `Serialize` and ts-rs's `TS` Trait.
+As an example the `RGBMatrixConfig` struct is annotated with the [`derive`](https://doc.rust-lang.org/book/appendix-03-derivable-traits.html) attribute and specifically derive serde's `Serialize` and ts-rs's `TS` Trait.
 
 ```Rust
 #[derive(BinWrite, BinRead, Debug, TS, Serialize, Deserialize)]
@@ -73,7 +73,7 @@ export async function getConfig(id: string): Promise<RGBMatrixConfig> {
 }
 ```
 
-Both the backend and frontend handler have to written manually at this point, but should ideally be auto generated where it makes sense e.g. whenever data is passed directly from the XAP device to the frontend. Other handlers that involve aggregation and processing of data from the XAP device at least need to be implemented by hand in the backend.
+Both the backend and frontend handler have to be written manually at this point, but should ideally be auto generated where it makes sense e.g. whenever data is passed directly from the XAP device to the frontend. Other handlers that involve aggregation and processing of data from the XAP device at least need to be implemented by hand in the backend.
 
 **(2) USB HID:** 
 
@@ -81,8 +81,8 @@ To communicate with attached XAP devices over USB RAW HID the backend uses the [
 
 The two main structs two mention here are:
 
-* `XAPDevice` represents exactly on physically attached XAP device. Every device spawns an capturing thread that reacts to incoming responses for requests or passes broadcast messages to an event loop.
-* `XAPClient` manages and forwards Request to the individual devices.
+* `XAPDevice` represents exactly one physically attached XAP device. Every device spawns a capturing thread that reacts to incoming responses for requests or passes broadcast messages to an event loop.
+* `XAPClient` detects new XAP devices and manages existing ones. It also forwards requests to the individual devices with the help of an UUID identifier.
 
 The parsing of the RAW XAP HID packets into Rust structs is done with the help of the [binrw](https://binrw.rs/) crate which derives C-ABI compatible binary readers and writers from the Rust struct layout or can be implemented by hand for special cases like the XAP `Token` and `String` types.
 
