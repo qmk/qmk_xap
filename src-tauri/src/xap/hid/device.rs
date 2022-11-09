@@ -123,10 +123,10 @@ impl XAPDevice {
         let request = RequestRaw::new(request);
         let mut report = [0; XAP_REPORT_SIZE];
 
-        let mut writer = Cursor::new(&mut report[1..]);
+        let mut writer = Cursor::new(&mut report[..]);
         writer.write_le(&request)?;
 
-        trace!("send XAP report with payload {:?}", &report[1..]);
+        trace!("send XAP report with payload {:?}", &report[..]);
         self.tx_device.write(&report)?;
 
         let start = Instant::now();
