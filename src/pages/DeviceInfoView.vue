@@ -38,14 +38,24 @@
     <q-page>
         <div class="q-gutter-md q-pa-md">
             <h5>Device Information</h5>
-            <q-field v-if="device?.info.qmk.manufacturer != null" filled label="Manufacturer" stack-label>
+            <q-field
+                v-if="device?.info.qmk.manufacturer != null"
+                filled
+                label="Manufacturer"
+                stack-label
+            >
                 <template #control>
                     <div class="self-center full-width no-outline" tabindex="0">
                         {{ device?.info.qmk.manufacturer }}
                     </div>
                 </template>
             </q-field>
-            <q-field v-if="device?.info.qmk.product_name != null" filled label="Product" stack-label>
+            <q-field
+                v-if="device?.info.qmk.product_name != null"
+                filled
+                label="Product"
+                stack-label
+            >
                 <template #control>
                     <div class="self-center full-width no-outline" tabindex="0">
                         {{ device?.info.qmk.product_name }}
@@ -66,7 +76,12 @@
                     </div>
                 </template>
             </q-field>
-            <q-field v-if="device?.info.qmk.hardware_id != null" filled label="Hardware Id" stack-label>
+            <q-field
+                v-if="device?.info.qmk.hardware_id != null"
+                filled
+                label="Hardware Id"
+                stack-label
+            >
                 <template #control>
                     <div class="self-center full-width no-outline" tabindex="0">
                         {{ device?.info.qmk.hardware_id }}
@@ -117,7 +132,9 @@
                     label="Jump to Bootloader"
                     @click="bootloader"
                 />
-                <q-tooltip v-if="device.secure_status != 'Unlocked'" class="bg-red"> Device is locked </q-tooltip>
+                <q-tooltip v-if="device.secure_status != 'Unlocked'" class="bg-red">
+                    Device is locked
+                </q-tooltip>
             </div>
             <div v-if="device?.info.qmk.eeprom_reset_enabled">
                 <q-btn
@@ -128,7 +145,9 @@
                     label="Reset EEPROM"
                     @click="reset"
                 />
-                <q-tooltip v-if="device.secure_status != 'Unlocked'" class="bg-red"> Device is locked </q-tooltip>
+                <q-tooltip v-if="device.secure_status != 'Unlocked'" class="bg-red">
+                    Device is locked
+                </q-tooltip>
             </div>
         </div>
     </q-page>

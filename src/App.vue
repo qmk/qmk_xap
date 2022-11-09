@@ -41,22 +41,26 @@
             console.log('removed device with id ' + id)
 
             Notify.create({
-                message: 'Removed Device ' + (devices.value.get(id)?.info.qmk.product_name ?? 'Unknown'),
+                message:
+                    'Removed Device ' + (devices.value.get(id)?.info.qmk.product_name ?? 'Unknown'),
                 icon: 'power_off',
             })
 
             store.removeDevice(id)
         })
 
-        unlistenSecureStatusChanged = await listen('secure-status-changed', (event: Event<FrontendEvent>) => {
-            if (event.payload.kind != 'SecureStatusChanged') {
-                return
-            }
+        unlistenSecureStatusChanged = await listen(
+            'secure-status-changed',
+            (event: Event<FrontendEvent>) => {
+                if (event.payload.kind != 'SecureStatusChanged') {
+                    return
+                }
 
-            const { id, secure_status } = event.payload.data
-            console.log('secure status ' + secure_status + ' for device ' + id)
-            store.updateSecureStatus(id, secure_status)
-        })
+                const { id, secure_status } = event.payload.data
+                console.log('secure status ' + secure_status + ' for device ' + id)
+                store.updateSecureStatus(id, secure_status)
+            }
+        )
 
         await emit('frontend-loaded')
     })

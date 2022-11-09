@@ -17,7 +17,13 @@
             "@bindings/*": ["./src-tauri/bindings/*"]
         }
     },
-    "include": ["src/**/*.ts", "src/**/*.d.ts", "src/**/*.tsx", "src/**/*.vue", "src-tauri/**/*.ts"],
+    "include": [
+        "src/**/*.ts",
+        "src/**/*.d.ts",
+        "src/**/*.tsx",
+        "src/**/*.vue",
+        "src-tauri/**/*.ts"
+    ],
     "references": [
         {
             "path": "./tsconfig.node.json"

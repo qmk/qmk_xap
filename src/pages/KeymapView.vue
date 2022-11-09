@@ -88,7 +88,11 @@
     }
 
     function colorButton(layer: number, row: number, col: number): string {
-        if (selectedKey.value?.layer == layer && selectedKey.value?.row == row && selectedKey.value?.col == col) {
+        if (
+            selectedKey.value?.layer == layer &&
+            selectedKey.value?.row == row &&
+            selectedKey.value?.col == col
+        ) {
             return 'grey'
         }
         return 'white'
@@ -108,7 +112,11 @@
                     <q-tabs v-model="layerTab" vertical class="text-primary text-center">
                         <h5>Layer</h5>
                         <!-- eslint-disable-next-line vue/valid-v-for -->
-                        <q-tab v-for="(layer, index) in device?.keymap" :name="index" :label="index" />
+                        <q-tab
+                            v-for="(layer, index) in device?.keymap"
+                            :name="index"
+                            :label="index"
+                        />
                     </q-tabs>
                 </template>
 
@@ -193,7 +201,11 @@
                                         :label="code.name"
                                         @click="set(code.code)"
                                     />
-                                    <q-tooltip v-if="device?.secure_status != 'Unlocked'" icon="block" class="bg-red">
+                                    <q-tooltip
+                                        v-if="device?.secure_status != 'Unlocked'"
+                                        icon="block"
+                                        class="bg-red"
+                                    >
                                         Device is locked
                                     </q-tooltip>
                                 </q-responsive>

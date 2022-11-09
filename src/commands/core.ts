@@ -6,11 +6,15 @@ export async function queryBackend<T, R>(handler: string, id: string, arg: T | n
     return await invoke<R>(handler, { id: id, arg: arg }).then(
         (ok: R) => {
             const prettyOk = ok != null || ok != undefined ? JSON.stringify(ok) : '()'
-            console.log(truncatedId + ' ok: ' + handler + ' arg: ' + prettyArg + ' response: ' + prettyOk)
+            console.log(
+                truncatedId + ' ok: ' + handler + ' arg: ' + prettyArg + ' response: ' + prettyOk
+            )
             return ok
         },
         (err: string) => {
-            console.error(truncatedId + 'error: ' + handler + ' arg: ' + prettyArg + ' error: ' + err)
+            console.error(
+                truncatedId + 'error: ' + handler + ' arg: ' + prettyArg + ' error: ' + err
+            )
             throw err
         }
     )

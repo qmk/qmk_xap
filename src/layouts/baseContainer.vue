@@ -37,8 +37,18 @@
                 </q-toolbar-title>
                 <q-tabs align="left">
                     <q-route-tab label="Device" :disable="device == null" to="/device" exact />
-                    <q-route-tab label="Keymap" :disable="device?.info.keymap == null" to="/keymap" exact />
-                    <q-route-tab v-if="device?.info?.lighting?.rgblight != null" label="RGB" to="/rgb" exact />
+                    <q-route-tab
+                        label="Keymap"
+                        :disable="device?.info.keymap == null"
+                        to="/keymap"
+                        exact
+                    />
+                    <q-route-tab
+                        v-if="device?.info?.lighting?.rgblight != null"
+                        label="RGB"
+                        to="/rgb"
+                        exact
+                    />
                 </q-tabs>
             </q-toolbar>
             <div class="bg-white">
@@ -48,11 +58,7 @@
                     :disable="device == null"
                     filled
                     :options="devicesA"
-                    :option-label="(device: XAPDeviceDTO) =>
-            device?.info.qmk.manufacturer +
-            ' - ' +
-            device?.info.qmk.product_name
-          "
+                    :option-label="(device:XAPDeviceDTO) => device?.info.qmk.manufacturer + ' - ' + device?.info.qmk.product_name "
                     emit-value
                 />
             </div>

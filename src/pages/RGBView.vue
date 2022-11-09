@@ -101,11 +101,32 @@
                         emit-value
                     />
                     <q-badge> Hue </q-badge>
-                    <q-slider v-model.number.lazy="config.hue" :min="0" :max="255" label marker-labels :markers="32" />
+                    <q-slider
+                        v-model.number.lazy="config.hue"
+                        :min="0"
+                        :max="255"
+                        label
+                        marker-labels
+                        :markers="32"
+                    />
                     <q-badge> Saturation </q-badge>
-                    <q-slider v-model.number.lazy="config.sat" :min="0" :max="255" label marker-labels :markers="32" />
+                    <q-slider
+                        v-model.number.lazy="config.sat"
+                        :min="0"
+                        :max="255"
+                        label
+                        marker-labels
+                        :markers="32"
+                    />
                     <q-badge> Value </q-badge>
-                    <q-slider v-model.number.lazy="config.val" :min="0" :max="255" label marker-labels :markers="32" />
+                    <q-slider
+                        v-model.number.lazy="config.val"
+                        :min="0"
+                        :max="255"
+                        label
+                        marker-labels
+                        :markers="32"
+                    />
                     <q-badge> Speed </q-badge>
                     <q-slider
                         v-model.number.lazy="config.speed"
