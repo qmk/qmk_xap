@@ -12,7 +12,18 @@
         "tauri": "tauri",
         "lint:script": "eslint --ext .ts,vue --ignore-path .gitignore .",
         "lint:markup": "vue-tsc --noEmit",
+        "lint:style": "stylelint src/**/*.{css,scss,vue}",
         "format": " prettier -w -u ."
+    },
+    "husky": {
+        "hooks": {
+            "pre-commit": "lint-staged"
+        }
+    },
+    "lint-staged": {
+        "*.{ts,tsx}": "eslint --fix",
+        "*.{css,scss,vue}": "stylelint --fix",
+        "*": "prettier -w -u"
     },
     "dependencies": {
         "@quasar/extras": "^1.15.5",
@@ -39,8 +50,13 @@
         "eslint": "^8.27.0",
         "eslint-plugin-prettier": "^4.2.1",
         "eslint-plugin-vue": "^9.7.0",
+        "husky": "^8.0.2",
+        "lint-staged": "^13.0.3",
         "prettier": "^2.7.1",
         "sass": "1.56.1",
+        "stylelint": "^14.14.1",
+        "stylelint-config-recommended": "^9.0.0",
+        "stylelint-config-standard": "^29.0.0",
         "typescript": "^4.8.4",
         "vite": "^3.2.3",
         "vite-plugin-eslint": "^1.8.1",
