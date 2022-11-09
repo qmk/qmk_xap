@@ -7,20 +7,17 @@ import '@quasar/extras/material-icons/material-icons.css'
 import '@quasar/extras/fontawesome-v6/fontawesome-v6.css'
 import 'quasar/src/css/index.sass'
 
-import Main from '@/Main.vue'
+import App from '@/App.vue'
 import router from '@/router/routes'
 
-createApp(Main)
+createApp(App)
     .use(Quasar, {
-        plugins: [
-            Notify,
-            Loading
-        ],
+        plugins: [Notify, Loading],
         config: {
             notify: {
-                position: 'top-right'
-            }
-        }
+                position: 'top-right',
+            },
+        },
     })
     .use(createPinia())
     .use(router)

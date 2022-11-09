@@ -10,17 +10,17 @@ const routes: RouteRecordRaw[] = [
             {
                 name: 'device',
                 path: 'device',
-                component: () => import('@/pages/Device.vue'),
+                component: () => import('@/pages/DeviceInfoView.vue'),
             },
             {
                 path: 'rgb',
-                component: () => import('@/pages/RGB.vue'),
+                component: () => import('@/pages/RGBView.vue'),
             },
             {
                 path: 'keymap',
-                component: () => import('@/pages/Keymap.vue'),
+                component: () => import('@/pages/KeymapView.vue'),
             },
-        ]
+        ],
     },
 ]
 

@@ -3,23 +3,30 @@ import { defineStore } from 'pinia'
 import { getSecureStatus } from '@/commands/xap'
 import { notifyError } from '@/utils/utils'
 import { XAPDeviceDTO } from '@bindings/XAPDeviceDTO'
+import { XAPSecureStatus } from '@bindings/XAPSecureStatus'
 
 export const useXAPDeviceStore = defineStore('xap-device-store', {
     state: () => {
-        return { device: null as XAPDeviceDTO | null, devices: new Map<string, XAPDeviceDTO>() }
+        return {
+            device: null as XAPDeviceDTO | null,
+            devices: new Map<string, XAPDeviceDTO>(),
+        }
     },
     getters: {},
     actions: {
-        addDevice(device: XAPDeviceDTO): Boolean {
+        addDevice(device: XAPDeviceDTO): boolean {
             if (!this.devices.has(device.id)) {
-                getSecureStatus(device.id).then(
-                    (status) => {
-                        device.secure_status = status
-                    },
-                    (err: any) => {
-                        notifyError(err)
-                        device.secure_status = 'Locked'
-                    }).then(() => {
+                getSecureStatus(device.id)
+                    .then(
+                        (status) => {
+                            device.secure_status = status
+                        },
+                        (err: any) => {
+                            notifyError(err)
+                            device.secure_status = 'Locked'
+                        }
+                    )
+                    .then(() => {
                         this.devices.set(device.id, device)
                         if (!this.device) {
                             this.device = device
@@ -39,9 +46,10 @@ export const useXAPDeviceStore = defineStore('xap-device-store', {
             }
         },
         updateSecureStatus(id: string, secure_status: XAPSecureStatus) {
-            if (this.devices.has(id)) {
-                this.devices.get(id).secure_status = secure_status
+            const device = this.devices.get(id)
+            if (device) {
+                device.secure_status = secure_status
             }
-        }
+        },
     },
 })

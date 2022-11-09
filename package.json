@@ -1,35 +1,49 @@
 {
-  "name": "qmk-xap-gui",
-  "private": true,
-  "version": "0.0.0",
-  "type": "module",
-  "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview",
-    "tauri": "tauri"
-  },
-  "dependencies": {
-    "@quasar/extras": "^1.15.5",
-    "@radial-color-picker/vue-color-picker": "^5.0.1",
-    "@tauri-apps/api": "^1.2.0",
-    "@vitejs/plugin-vue-jsx": "^2.0.1",
-    "@vueuse/core": "^9.4.0",
-    "colord": "^2.9.3",
-    "pinia": "^2.0.23",
-    "quasar": "^2.10.0",
-    "vue": "^3.2.37",
-    "vue-router": "4"
-  },
-  "devDependencies": {
-    "@quasar/vite-plugin": "^1.2.3",
-    "@tauri-apps/cli": "^1.1.0",
-    "@types/node": "^18.7.10",
-    "@vitejs/plugin-vue": "^3.1.2",
-    "@vue/runtime-dom": "^3.2.40",
-    "sass": "1.32.12",
-    "typescript": "^4.6.4",
-    "vite": "^3.0.2",
-    "vue-tsc": "^0.40.0"
-  }
+    "name": "qmk-xap-gui",
+    "private": true,
+    "version": "0.0.0",
+    "type": "module",
+    "scripts": {
+        "dev": "vite",
+        "dev-app": "tauri dev",
+        "build": "vue-tsc --noEmit && vite build",
+        "build-app": "tauri build",
+        "preview": "vite preview",
+        "tauri": "tauri",
+        "lint:script": "eslint --ext .ts,vue --ignore-path .gitignore .",
+        "lint:markup": "vue-tsc --noEmit",
+        "format": " prettier -w -u ."
+    },
+    "dependencies": {
+        "@quasar/extras": "^1.15.5",
+        "@radial-color-picker/vue-color-picker": "^5.0.1",
+        "@tauri-apps/api": "^1.2.0",
+        "@vitejs/plugin-vue-jsx": "^2.1.1",
+        "@vueuse/core": "^9.5.0",
+        "colord": "^2.9.3",
+        "pinia": "^2.0.23",
+        "quasar": "^2.10.0",
+        "vue": "^3.2.37",
+        "vue-router": "4"
+    },
+    "devDependencies": {
+        "@quasar/vite-plugin": "^1.2.3",
+        "@tauri-apps/cli": "^1.2.0",
+        "@types/node": "^18.11.9",
+        "@typescript-eslint/eslint-plugin": "^5.42.1",
+        "@typescript-eslint/parser": "^5.42.1",
+        "@vitejs/plugin-vue": "^3.2.0",
+        "@vue/eslint-config-prettier": "^7.0.0",
+        "@vue/eslint-config-typescript": "^11.0.2",
+        "@vue/runtime-dom": "^3.2.43",
+        "eslint": "^8.27.0",
+        "eslint-plugin-prettier": "^4.2.1",
+        "eslint-plugin-vue": "^9.7.0",
+        "prettier": "^2.7.1",
+        "sass": "1.56.1",
+        "typescript": "^4.8.4",
+        "vite": "^3.2.3",
+        "vite-plugin-eslint": "^1.8.1",
+        "vue-tsc": "^1.0.9"
+    }
 }

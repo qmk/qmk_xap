@@ -55,21 +55,21 @@ pub(crate) enum XAPEvent {
 }
 
 #[derive(Clone, Serialize, TS)]
-#[serde(untagged)]
+#[serde(tag = "kind", content = "data")]
 #[ts(export)]
 pub(crate) enum FrontendEvent {
     NewDevice {
         device: XAPDeviceDTO,
     },
     RemovedDevice {
-        id: String,
+        id: Uuid,
     },
     SecureStatusChanged {
-        id: String,
+        id: Uuid,
         secure_status: XAPSecureStatus,
     },
     LogReceived {
-        id: String,
+        id: Uuid,
         log: String,
     },
 }
@@ -93,11 +93,11 @@ fn start_event_loop(
                         },
                         Ok(XAPEvent::LogReceived{id, log}) => {
                             info!("LOG: {id} {log}");
-                                app.emit_all("log", FrontendEvent::LogReceived{ id: id.to_string(), log }).unwrap();
+                                app.emit_all("log", FrontendEvent::LogReceived{ id, log }).unwrap();
                         },
                         Ok(XAPEvent::SecureStatusChanged{id, secure_status}) => {
                             info!("Secure status changed: {id} - {secure_status}");
-                            app.emit_all("secure-status-changed", FrontendEvent::SecureStatusChanged{ id: id.to_string(), secure_status }).unwrap();
+                            app.emit_all("secure-status-changed", FrontendEvent::SecureStatusChanged{ id, secure_status }).unwrap();
                         },
                         Ok(XAPEvent::NewDevice(id)) => {
                             if let Some(device) = state.lock().get_device(&id){
@@ -108,7 +108,7 @@ fn start_event_loop(
                         },
                         Ok(XAPEvent::RemovedDevice(id)) => {
                             info!("removed device - notifying frontend!");
-                            app.emit_all("removed-device", FrontendEvent::RemovedDevice{ id: id.to_string() }).unwrap();
+                            app.emit_all("removed-device", FrontendEvent::RemovedDevice{ id }).unwrap();
                         },
                         Ok(XAPEvent::AnnounceAllDevices) => {
                             let mut state = state.lock();
