@@ -18,7 +18,7 @@ export const useXAPDeviceStore = defineStore('xap-device-store', {
                     },
                     (err: any) => {
                         notifyError(err)
-                        device.secure_status = 'Disabled'
+                        device.secure_status = 'Locked'
                     }).then(() => {
                         this.devices.set(device.id, device)
                         if (!this.device) {

@@ -475,7 +475,7 @@ impl From<&XAPDevice> for XAPDeviceDTO {
             info: device.xap_info().clone(),
             keymap: device.keymap.clone(),
             // TODO
-            secure_status: XAPSecureStatus::Disabled,
+            secure_status: XAPSecureStatus::Locked,
         }
     }
 }

@@ -79,7 +79,7 @@ impl XAPRequest for XAPEnabledSubsystemsQuery {
 #[derive(Debug, Serialize, TS, Clone)]
 #[ts(export)]
 pub enum XAPSecureStatus {
-    Disabled,
+    Locked,
     Unlocking,
     Unlocked,
 }
@@ -96,7 +96,7 @@ impl BinRead for XAPSecureStatus {
         Ok(match raw_status {
             1 => Self::Unlocking,
             2 => Self::Unlocked,
-            _ => Self::Disabled,
+            _ => Self::Locked,
         })
     }
 }
@@ -104,7 +104,7 @@ impl BinRead for XAPSecureStatus {
 impl Display for XAPSecureStatus {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            XAPSecureStatus::Disabled => write!(f, "Disabled"),
+            XAPSecureStatus::Locked => write!(f, "Locked"),
             XAPSecureStatus::Unlocking => write!(f, "Unlocking"),
             XAPSecureStatus::Unlocked => write!(f, "Unlocked"),
         }
