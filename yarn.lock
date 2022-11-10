@@ -984,7 +984,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@vue/compiler-sfc@npm:3.2.43, @vue/compiler-sfc@npm:^3.2.37, @vue/compiler-sfc@npm:^3.2.40":
+"@vue/compiler-sfc@npm:3.2.43, @vue/compiler-sfc@npm:^3.2.40":
   version: 3.2.43
   resolution: "@vue/compiler-sfc@npm:3.2.43"
   dependencies:
@@ -2051,18 +2051,6 @@ __metadata:
   bin:
     eslint-config-prettier: bin/cli.js
   checksum: 0d0f5c32e7a0ad91249467ce71ca92394ccd343178277d318baf32063b79ea90216f4c81d1065d60f96366fdc60f151d4d68ae7811a58bd37228b84c2083f893
-  languageName: node
-  linkType: hard
-
-"eslint-plugin-prettier-vue@npm:^4.2.0":
-  version: 4.2.0
-  resolution: "eslint-plugin-prettier-vue@npm:4.2.0"
-  dependencies:
-    "@vue/compiler-sfc": ^3.2.37
-    chalk: ^4.0.0
-    prettier: ^2.7.1
-    prettier-linter-helpers: ^1.0.0
-  checksum: 478de835518133fb0559356a519e04f6684b3c58f175159bc47d967f850c499d7708c480599bc773295647ea6098721ad82f455261dcc01315dd88c5fc459409
   languageName: node
   linkType: hard
 
@@ -3807,7 +3795,6 @@ __metadata:
     colord: ^2.9.3
     eslint: ^8.27.0
     eslint-config-prettier: ^8.5.0
-    eslint-plugin-prettier-vue: ^4.2.0
     eslint-plugin-vue: ^9.7.0
     husky: ^8.0.2
     lint-staged: ^13.0.3
