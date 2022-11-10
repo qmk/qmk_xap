@@ -123,10 +123,17 @@ impl XAPDevice {
         let request = RequestRaw::new(request);
         let mut report = [0; XAP_REPORT_SIZE];
 
-        let mut writer = Cursor::new(&mut report[..]);
+        // Add trailing zero byte to HID report for Windows
+        let report_content = if cfg!(target_os = "windows") {
+            &mut report[1..]
+        } else {
+            &mut report[..]
+        };
+
+        trace!("send XAP report with payload {:?}", report_content);
+        let mut writer = Cursor::new(report_content);
         writer.write_le(&request)?;
 
-        trace!("send XAP report with payload {:?}", &report[..]);
         self.tx_device.write(&report)?;
 
         let start = Instant::now();
