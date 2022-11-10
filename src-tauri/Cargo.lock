@@ -1106,8 +1106,7 @@ dependencies = [
 [[package]]
 name = "hidapi"
 version = "1.4.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9d26e1151deaab68f34fbfd16d491a2a0170cf98d69d3efa23873b567a4199e1"
+source = "git+https://github.com/KarlK90/hidapi-rs.git?branch=feature/bump-hidapi#251e7dffc123ee35318528bf93efd7dfba3ded8d"
 dependencies = [
  "cc",
  "libc",

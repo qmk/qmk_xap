@@ -18,7 +18,7 @@ bitflags = "1.3"
 flate2 = "1.0"
 crossbeam-channel = "0.5"
 env_logger = "0.9"
-hidapi = { version = "1.4", features = [
+hidapi = { git = "https://github.com/KarlK90/hidapi-rs.git", branch = "feature/bump-hidapi", features = [
     "linux-static-hidraw",
 ], default-features = false }
 log = "0.4"

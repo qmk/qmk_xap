@@ -121,7 +121,7 @@ fn start_event_loop(
                         },
                         Ok(XAPEvent::RxError) => {
                             if let Err(err) = state.lock().enumerate_xap_devices() {
-                                error!("failed to enumerate XAP devices: {err}:\n {:#?}", err.source());
+                                error!("failed to enumerate XAP devices: {err}");
                             }
                         },
                         Err(err) => {
@@ -134,7 +134,7 @@ fn start_event_loop(
                     match msg {
                         Ok(_) => {
                             if let Err(err) = state.lock().enumerate_xap_devices() {
-                                error!("failed to enumerate XAP devices: {err}:\n {:#?}", err.source());
+                                error!("failed to enumerate XAP devices: {err}");
                             }
                         },
                         Err(err) => {

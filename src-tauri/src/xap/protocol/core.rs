@@ -17,17 +17,17 @@ pub type XAPResult<T> = core::result::Result<T, XAPError>;
 
 #[derive(thiserror::Error, Debug)]
 pub enum XAPError {
-    #[error("bit marshalling failed")]
+    #[error("bit marshalling failed {0}")]
     BitHandling(#[from] binrw::Error),
-    #[error("XAP communication failed")]
+    #[error("XAP communication failed {0}")]
     Protocol(String),
-    #[error("HID communication failed")]
+    #[error("HID communication failed {0}")]
     Hid(#[from] hidapi::HidError),
     #[error("device is locked")]
     SecureLocked,
-    #[error("unkown device")]
+    #[error("unkown device {0}")]
     UnknownDevice(Uuid),
-    #[error(transparent)]
+    #[error("unknown error {0}")]
     Other(#[from] anyhow::Error),
 }
 
