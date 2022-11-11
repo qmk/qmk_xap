@@ -1106,11 +1106,12 @@ dependencies = [
 [[package]]
 name = "hidapi"
 version = "1.4.2"
-source = "git+https://github.com/KarlK90/hidapi-rs.git?branch=feature/bump-hidapi#447dcb0ff0477f8f0d20d7f665349eb4a92c3017"
+source = "git+https://github.com/KarlK90/hidapi-rs.git?branch=feature/hidapi-0.12-apis#4807f47b4d01f6534bbf467e5248cd090f34d56a"
 dependencies = [
  "cc",
  "libc",
  "pkg-config",
+ "winapi",
 ]
 
 [[package]]
