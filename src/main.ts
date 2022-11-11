@@ -15,7 +15,7 @@ createApp(App)
         plugins: [Notify, Loading],
         config: {
             notify: {
-                position: 'top-right',
+                position: 'bottom',
             },
         },
     })
