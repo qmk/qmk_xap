@@ -1106,7 +1106,7 @@ dependencies = [
 [[package]]
 name = "hidapi"
 version = "1.4.2"
-source = "git+https://github.com/KarlK90/hidapi-rs.git?branch=feature/bump-hidapi#251e7dffc123ee35318528bf93efd7dfba3ded8d"
+source = "git+https://github.com/KarlK90/hidapi-rs.git?branch=feature/bump-hidapi#c8ba82943302f766fbf8e320d2d3c7f630630d04"
 dependencies = [
  "cc",
  "libc",

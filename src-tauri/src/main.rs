@@ -7,7 +7,6 @@
 mod commands;
 mod xap;
 
-use std::error::Error;
 use std::sync::Arc;
 use std::time::Duration;
 

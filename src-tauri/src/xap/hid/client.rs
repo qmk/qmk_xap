@@ -36,6 +36,7 @@ impl XAPClient {
         })
     }
 
+    #[allow(dead_code)]
     pub fn action<T, F>(&self, id: Uuid, action: F) -> XAPResult<T>
     where
         F: FnOnce(&XAPDevice) -> XAPResult<T>,
@@ -96,8 +97,8 @@ impl XAPClient {
             let new_device = XAPDevice::new(
                 device.clone(),
                 self.event_channel.clone(),
-                device.open_device(&self.hid)?,
-                device.open_device(&self.hid)?,
+                dbg!(device.open_device(&self.hid))?,
+                dbg!(device.open_device(&self.hid))?,
             )?;
             let id = new_device.id();
             self.devices.insert(id, new_device);
