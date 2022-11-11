@@ -41,12 +41,12 @@ impl Serialize for XAPError {
     }
 }
 
-pub struct RequestRaw<T: XAPRequest> {
+pub struct RawRequest<T: XAPRequest> {
     token: Token,
     payload: T,
 }
 
-impl<T> RequestRaw<T>
+impl<T> RawRequest<T>
 where
     T: XAPRequest,
 {
@@ -62,7 +62,7 @@ where
     }
 }
 
-impl<T> BinWrite for RequestRaw<T>
+impl<T> BinWrite for RawRequest<T>
 where
     T: XAPRequest,
 {
@@ -96,7 +96,7 @@ where
 
 #[binread]
 #[derive(Debug)]
-pub struct ResponseRaw {
+pub struct RawResponse {
     token: Token,
     flags: ResponseFlags,
     #[br(temp)]
@@ -105,10 +105,10 @@ pub struct ResponseRaw {
     payload: Vec<u8>,
 }
 
-impl ResponseRaw {
+impl RawResponse {
     pub fn from_raw_report(report: &[u8]) -> XAPResult<Self> {
         let mut reader = Cursor::new(report);
-        let response = ResponseRaw::read_le(&mut reader)?;
+        let response = RawResponse::read_le(&mut reader)?;
 
         trace!("received raw XAP response: {:#?}", response);
 

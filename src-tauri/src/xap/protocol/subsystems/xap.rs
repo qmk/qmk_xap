@@ -76,12 +76,18 @@ impl XAPRequest for XAPEnabledSubsystemsQuery {
 
 // ==============================
 // 0x0 0x3
-#[derive(Debug, Serialize, TS, Clone)]
+#[derive(Debug, Serialize, TS, Clone, Copy)]
 #[ts(export)]
 pub enum XAPSecureStatus {
     Locked,
     Unlocking,
     Unlocked,
+}
+
+impl Default for XAPSecureStatus {
+    fn default() -> Self {
+        Self::Locked
+    }
 }
 
 impl BinRead for XAPSecureStatus {

@@ -6,7 +6,6 @@ use uuid::Uuid;
 
 use crate::xap::{
     protocol::XAPResult, EncoderPositionConfig, KeyPositionConfig, RemapEncoderQuery, XAPClient,
-    XAPError,
 };
 
 #[tauri::command]
@@ -15,11 +14,7 @@ pub(crate) async fn keycode_set(
     arg: KeyPositionConfig,
     state: State<'_, Arc<Mutex<XAPClient>>>,
 ) -> XAPResult<()> {
-    if let Some(device) = state.lock().get_device_mut(&id) {
-        device.set_keycode(arg)
-    } else {
-        Err(XAPError::UnknownDevice(id))
-    }
+    state.lock().get_device_mut(&id)?.set_keycode(arg)
 }
 
 #[tauri::command]

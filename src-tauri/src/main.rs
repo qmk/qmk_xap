@@ -5,6 +5,7 @@
 
 #[macro_use]
 mod commands;
+mod aggregation;
 mod xap;
 
 use std::sync::Arc;
@@ -24,8 +25,9 @@ use tauri::{AppHandle, Manager};
 use ts_rs::TS;
 use uuid::Uuid;
 
+use aggregation::XAPDevice as XAPDeviceDTO;
 use commands::*;
-use xap::{XAPClient, XAPDeviceDTO, XAPResult, XAPSecureStatus};
+use xap::{XAPClient, XAPResult, XAPSecureStatus};
 
 fn shutdown_event_loop<R: Runtime>(sender: Sender<XAPEvent>) -> TauriPlugin<R> {
     Builder::new("event loop shutdown")
@@ -99,10 +101,10 @@ fn start_event_loop(
                             app.emit_all("secure-status-changed", FrontendEvent::SecureStatusChanged{ id, secure_status }).unwrap();
                         },
                         Ok(XAPEvent::NewDevice(id)) => {
-                            if let Some(device) = state.lock().get_device(&id){
+                            if let Ok(device) = state.lock().get_device(&id){
                                 info!("detected new device - notifying frontend!");
 
-                                app.emit_all("new-device", FrontendEvent::NewDevice{ device: device.into() }).unwrap();
+                                app.emit_all("new-device", FrontendEvent::NewDevice{ device: device.as_dto() }).unwrap();
                             }
                         },
                         Ok(XAPEvent::RemovedDevice(id)) => {
@@ -114,7 +116,7 @@ fn start_event_loop(
                             info!("announcing all xap devices to the frontend");
                             if let Ok(()) = state.enumerate_xap_devices() {
                                 for device in state.get_devices() {
-                                    app.emit_all("new-device", FrontendEvent::NewDevice{ device: device.into() }).unwrap();
+                                    app.emit_all("new-device", FrontendEvent::NewDevice{ device: device.as_dto() }).unwrap();
                                 }
                             }
                         },

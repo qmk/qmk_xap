@@ -5,10 +5,7 @@ use tauri::State;
 use uuid::Uuid;
 
 use crate::xap::{
-    protocol::{
-        XAPResult, XAPSecureStatus, XAPSecureStatusLock, XAPSecureStatusQuery,
-        XAPSecureStatusUnlock,
-    },
+    protocol::{XAPResult, XAPSecureStatus, XAPSecureStatusLock, XAPSecureStatusUnlock},
     XAPClient,
 };
 
@@ -17,7 +14,7 @@ pub(crate) async fn secure_status_get(
     id: Uuid,
     state: State<'_, Arc<Mutex<XAPClient>>>,
 ) -> XAPResult<XAPSecureStatus> {
-    state.lock().query(id, XAPSecureStatusQuery {})
+    state.lock().get_device(&id)?.query_secure_status()
 }
 
 #[tauri::command]

@@ -31,7 +31,7 @@ impl XAPClient {
     pub fn new(event_channel: Sender<XAPEvent>) -> XAPResult<Self> {
         Ok(Self {
             devices: HashMap::new(),
-            hid: HidApi::new()?,
+            hid: HidApi::new_without_enumerate()?,
             event_channel,
         })
     }
@@ -97,8 +97,8 @@ impl XAPClient {
             let new_device = XAPDevice::new(
                 device.clone(),
                 self.event_channel.clone(),
-                dbg!(device.open_device(&self.hid))?,
-                dbg!(device.open_device(&self.hid))?,
+                device.open_device(&self.hid)?,
+                device.open_device(&self.hid)?,
             )?;
             let id = new_device.id();
             self.devices.insert(id, new_device);
@@ -110,12 +110,12 @@ impl XAPClient {
         Ok(())
     }
 
-    pub fn get_device(&self, id: &Uuid) -> Option<&XAPDevice> {
-        self.devices.get(id)
+    pub fn get_device(&self, id: &Uuid) -> XAPResult<&XAPDevice> {
+        self.devices.get(id).ok_or(XAPError::UnknownDevice(*id))
     }
 
-    pub fn get_device_mut(&mut self, id: &Uuid) -> Option<&mut XAPDevice> {
-        self.devices.get_mut(id)
+    pub fn get_device_mut(&mut self, id: &Uuid) -> XAPResult<&mut XAPDevice> {
+        self.devices.get_mut(id).ok_or(XAPError::UnknownDevice(*id))
     }
 
     pub fn get_devices(&self) -> Vec<&XAPDevice> {

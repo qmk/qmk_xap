@@ -1,7 +1,5 @@
 import { defineStore } from 'pinia'
 
-import { getSecureStatus } from '@/commands/xap'
-import { notifyError } from '@/utils/utils'
 import { XAPDeviceDTO } from '@bindings/XAPDeviceDTO'
 import { XAPSecureStatus } from '@bindings/XAPSecureStatus'
 
@@ -16,22 +14,10 @@ export const useXAPDeviceStore = defineStore('xap-device-store', {
     actions: {
         addDevice(device: XAPDeviceDTO): boolean {
             if (!this.devices.has(device.id)) {
-                getSecureStatus(device.id)
-                    .then(
-                        (status) => {
-                            device.secure_status = status
-                        },
-                        (err: any) => {
-                            notifyError(err)
-                            device.secure_status = 'Locked'
-                        }
-                    )
-                    .then(() => {
-                        this.devices.set(device.id, device)
-                        if (!this.device) {
-                            this.device = device
-                        }
-                    })
+                this.devices.set(device.id, device)
+                if (!this.device) {
+                    this.device = device
+                }
                 return true
             }
             return false
