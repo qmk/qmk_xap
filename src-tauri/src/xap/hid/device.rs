@@ -12,7 +12,7 @@ use crossbeam_channel::{unbounded, Receiver, Sender};
 use flate2::read::GzDecoder;
 use hidapi::{DeviceInfo, HidDevice};
 use log::{error, info, trace};
-use parking_lot::Mutex;
+use parking_lot::RwLock;
 use serde_json::{Map, Value};
 use uuid::Uuid;
 
@@ -41,7 +41,7 @@ pub struct XAPDevice {
     rx_thread: JoinHandle<()>,
     tx_device: HidDevice,
     rx_channel: Receiver<RawResponse>,
-    state: Arc<Mutex<XAPDeviceState>>,
+    state: Arc<RwLock<XAPDeviceState>>,
 }
 
 impl XAPDevice {
@@ -53,8 +53,8 @@ impl XAPDevice {
     ) -> XAPResult<Self> {
         let (tx_channel, rx_channel) = unbounded();
         let id = Uuid::new_v4();
-        let state = Arc::new(Mutex::new(XAPDeviceState::default()));
-        let mut device = Self {
+        let state = Arc::new(RwLock::new(XAPDeviceState::default()));
+        let device = Self {
             info,
             id,
             tx_device,
@@ -84,18 +84,18 @@ impl XAPDevice {
 
     pub fn xap_info(&self) -> XAPDeviceInfo {
         self.state
-            .lock()
+            .read()
             .xap_info
             .clone()
             .expect("XAP device wasn't properly initialized")
     }
 
     pub fn keymap(&self) -> Vec<Vec<Vec<KeyPositionConfig>>> {
-        self.state.lock().keymap.clone()
+        self.state.read().keymap.clone()
     }
 
     pub fn as_dto(&self) -> XAPDeviceDto {
-        let state = self.state.lock();
+        let state = self.state.read();
         XAPDeviceDto {
             id: self.id,
             info: state
@@ -116,10 +116,10 @@ impl XAPDevice {
             && candidate.usage() == self.info.usage()
     }
 
-    pub fn set_keycode(&mut self, config: KeyPositionConfig) -> XAPResult<()> {
+    pub fn set_keycode(&self, config: KeyPositionConfig) -> XAPResult<()> {
         self.do_query(RemapKeycodeQuery(config.clone()))?;
         let (layer, row, col) = (config.layer, config.row, config.col);
-        self.state.lock().keymap[layer as usize][row as usize][col as usize] = config;
+        self.state.write().keymap[layer as usize][row as usize][col as usize] = config;
         Ok(())
     }
 
@@ -162,11 +162,11 @@ impl XAPDevice {
 
     pub fn query_secure_status(&self) -> XAPResult<XAPSecureStatus> {
         let status = self.do_query(XAPSecureStatusQuery {})?;
-        self.state.lock().secure_status = status;
+        self.state.write().secure_status = status;
         Ok(status)
     }
 
-    fn query_device_info(&mut self) -> XAPResult<()> {
+    fn query_device_info(&self) -> XAPResult<()> {
         let subsystems = self.do_query(XAPEnabledSubsystemsQuery)?;
 
         let xap_info = XAPInfo {
@@ -322,7 +322,7 @@ impl XAPDevice {
             None
         };
 
-        self.state.lock().xap_info = Some(XAPDeviceInfo {
+        self.state.write().xap_info = Some(XAPDeviceInfo {
             xap: xap_info,
             qmk: qmk_info,
             keymap: keymap_info,
@@ -360,9 +360,9 @@ impl XAPDevice {
             .map_err(|err| anyhow!("config json is not valid json {err}"))?)
     }
 
-    fn query_keymap(&mut self) -> XAPResult<()> {
+    fn query_keymap(&self) -> XAPResult<()> {
         // Reset keymap
-        self.state.lock().keymap = Default::default();
+        self.state.write().keymap = Default::default();
 
         if let Some(keymap) = &self.xap_info().keymap {
             let layers = keymap.layer_count.unwrap_or_default();
@@ -391,7 +391,7 @@ impl XAPDevice {
                 })
                 .collect();
 
-            self.state.lock().keymap = keymap?;
+            self.state.write().keymap = keymap?;
         }
 
         Ok(())
@@ -400,7 +400,7 @@ impl XAPDevice {
 
 fn start_rx_thread(
     id: Uuid,
-    state: Arc<Mutex<XAPDeviceState>>,
+    state: Arc<RwLock<XAPDeviceState>>,
     rx: HidDevice,
     event_channel: Sender<XAPEvent>,
     tx_channel: Sender<RawResponse>,
@@ -425,7 +425,7 @@ fn start_rx_thread(
 
 fn handle_report(
     id: Uuid,
-    state: &Arc<Mutex<XAPDeviceState>>,
+    state: &Arc<RwLock<XAPDeviceState>>,
     report: [u8; XAP_REPORT_SIZE],
     tx_channel: &Sender<RawResponse>,
     event_channel: &Sender<XAPEvent>,
@@ -445,7 +445,7 @@ fn handle_report(
             }
             BroadcastType::SecureStatus => {
                 let secure_status: SecureStatusBroadcast = broadcast.into_xap_broadcast()?;
-                state.lock().secure_status = secure_status.0;
+                state.write().secure_status = secure_status.0;
                 event_channel
                     .send(XAPEvent::SecureStatusChanged {
                         id,
