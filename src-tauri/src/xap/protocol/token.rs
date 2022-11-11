@@ -3,14 +3,13 @@
 use anyhow::anyhow;
 use binrw::{prelude::*, ReadOptions};
 use bitflags::bitflags;
+use rand::distributions::{Distribution, Uniform};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 #[binwrite]
 #[br(repr = u16)]
 pub enum Token {
-    WithResponse {
-        token: u16,
-    },
+    WithResponse(u16),
     #[br(magic = 0xFFFE)]
     WithoutResponse,
     #[br(magic = 0xFFFF)]
@@ -19,26 +18,7 @@ pub enum Token {
 
 impl Token {
     pub(crate) fn regular_token() -> Token {
-        Self::WithResponse {
-            token: Self::random_xap_token_value(),
-        }
-    }
-
-    // pub(crate) fn broadcast_token() -> Token {
-    //     Self::Broadcast
-    // }
-
-    // pub(crate) fn without_response_token() -> Token {
-    //     Self::WithoutResponse
-    // }
-
-    fn random_xap_token_value() -> u16 {
-        loop {
-            match rand::random() {
-                token @ 0x0100..=0xFFFD => break token,
-                _ => continue,
-            }
-        }
+        Self::WithResponse(Uniform::from(0x0100..=0xFFFD).sample(&mut rand::thread_rng()))
     }
 }
 
@@ -50,15 +30,15 @@ impl BinRead for Token {
         _options: &ReadOptions,
         _args: Self::Args,
     ) -> BinResult<Self> {
-        let raw_token: u16 = reader.read_le()?;
+        let raw: u16 = reader.read_le()?;
 
-        match raw_token {
-            0x0100..=0xFFFD => Ok(Token::WithResponse { token: raw_token }),
+        match raw {
+            0x0100..=0xFFFD => Ok(Token::WithResponse(raw)),
             0xFFFE => Ok(Token::WithoutResponse),
             0xFFFF => Ok(Token::Broadcast),
             _ => Err(binrw::Error::Custom {
                 pos: 0,
-                err: Box::new(anyhow!("XAP token has invalid value of {}", raw_token)),
+                err: Box::new(anyhow!("XAP token has invalid value of {}", raw)),
             }),
         }
     }

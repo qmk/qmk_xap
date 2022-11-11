@@ -123,7 +123,7 @@ impl XAPDevice {
         let request = RequestRaw::new(request);
         let mut report = [0; XAP_REPORT_SIZE + 1];
 
-        // Add trailing zero byte to HID report
+        // Add trailing zero byte for the report Id to HID report
         trace!("send XAP report with payload {:?}", &report[1..]);
         let mut writer = Cursor::new(&mut report[1..]);
         writer.write_le(&request)?;
