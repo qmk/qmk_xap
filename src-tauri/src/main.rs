@@ -6,6 +6,7 @@
 #[macro_use]
 mod commands;
 mod aggregation;
+mod events;
 mod xap;
 
 use std::sync::Arc;
@@ -16,18 +17,19 @@ use crossbeam_channel::{select, unbounded, Receiver, Sender};
 use env_logger::Env;
 use log::{error, info};
 use parking_lot::Mutex;
-use serde::Serialize;
+
 use tauri::{
     plugin::{Builder, TauriPlugin},
     RunEvent, Runtime,
 };
 use tauri::{AppHandle, Manager};
-use ts_rs::TS;
-use uuid::Uuid;
 
-use aggregation::XAPDevice as XAPDeviceDTO;
+
+
+
 use commands::*;
-use xap::{XAPClient, XAPResult, XAPSecureStatus};
+use events::{FrontendEvent, XAPEvent};
+use xap::{XAPClient, XAPResult};
 
 fn shutdown_event_loop<R: Runtime>(sender: Sender<XAPEvent>) -> TauriPlugin<R> {
     Builder::new("event loop shutdown")
@@ -37,42 +39,6 @@ fn shutdown_event_loop<R: Runtime>(sender: Sender<XAPEvent>) -> TauriPlugin<R> {
             }
         })
         .build()
-}
-
-pub(crate) enum XAPEvent {
-    LogReceived {
-        id: Uuid,
-        log: String,
-    },
-    SecureStatusChanged {
-        id: Uuid,
-        secure_status: XAPSecureStatus,
-    },
-    NewDevice(Uuid),
-    RemovedDevice(Uuid),
-    AnnounceAllDevices,
-    RxError,
-    Exit,
-}
-
-#[derive(Clone, Serialize, TS)]
-#[serde(tag = "kind", content = "data")]
-#[ts(export)]
-pub(crate) enum FrontendEvent {
-    NewDevice {
-        device: XAPDeviceDTO,
-    },
-    RemovedDevice {
-        id: Uuid,
-    },
-    SecureStatusChanged {
-        id: Uuid,
-        secure_status: XAPSecureStatus,
-    },
-    LogReceived {
-        id: Uuid,
-        log: String,
-    },
 }
 
 fn start_event_loop(
