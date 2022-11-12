@@ -356,8 +356,7 @@ impl XAPDevice {
             .read_to_string(&mut decompressed)
             .map_err(|err| anyhow!("failed to decompress config json blob: {}", err))?;
 
-        Ok(serde_json::from_str(&decompressed)
-            .map_err(|err| anyhow!("config json is not valid json {err}"))?)
+        Ok(serde_json::from_str(&decompressed)?)
     }
 
     fn query_keymap(&self) -> XAPResult<()> {

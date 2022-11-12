@@ -27,6 +27,12 @@ pub enum XAPError {
     SecureLocked,
     #[error("unkown device {0}")]
     UnknownDevice(Uuid),
+    #[error("io error {0}")]
+    IO(#[from] std::io::Error),
+    #[error("JSON (de)serialization error {0}")]
+    JSONError(#[from] serde_json::Error),
+    #[error("HJSON (de)serialization error {0}")]
+    HJSONError(#[from] deser_hjson::Error),
     #[error("unknown error {0}")]
     Other(#[from] anyhow::Error),
 }

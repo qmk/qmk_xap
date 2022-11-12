@@ -6,7 +6,7 @@ use hidapi::{DeviceInfo, HidApi};
 use uuid::Uuid;
 
 use crate::{
-    xap::{XAPDevice, XAPError, XAPRequest, XAPResult},
+    xap::{XAPDevice, XAPError, XAPKeyCode, XAPRequest, XAPResult, read_xap_keycodes},
     XAPEvent,
 };
 
@@ -17,6 +17,7 @@ pub(crate) struct XAPClient {
     hid: HidApi,
     devices: HashMap<Uuid, XAPDevice>,
     event_channel: Sender<XAPEvent>,
+    keycodes: HashMap<u16, XAPKeyCode>,
 }
 
 impl Debug for XAPClient {
@@ -33,6 +34,7 @@ impl XAPClient {
             devices: HashMap::new(),
             hid: HidApi::new_without_enumerate()?,
             event_channel,
+            keycodes: read_xap_keycodes()?,
         })
     }
 
