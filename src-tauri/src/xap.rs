@@ -2,6 +2,8 @@
 
 pub mod hid;
 pub mod protocol;
+pub mod keycode;
 
 pub(crate) use hid::*;
-pub use protocol::*;
+pub(crate) use protocol::*;
+pub(crate) use keycode::*;
