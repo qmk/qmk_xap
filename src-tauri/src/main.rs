@@ -126,6 +126,7 @@ fn main() -> XAPResult<()> {
     tauri::Builder::default()
         .plugin(shutdown_event_loop(event_channel_tx))
         .invoke_handler(tauri::generate_handler![
+            xap_constants_get,
             secure_lock,
             secure_unlock,
             secure_status_get,

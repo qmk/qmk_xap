@@ -5,23 +5,38 @@ use std::{
 
 use log::error;
 use serde::{de::Error, Deserialize, Deserializer, Serialize};
-use serde_with::{serde_as, NoneAsEmptyString};
+use serde_with::{serde_as, skip_serializing_none, NoneAsEmptyString};
+use ts_rs::TS;
 
-use super::XAPResult;
+use crate::xap::XAPResult;
 
 #[serde_as]
-#[derive(Deserialize, Serialize, Default, Debug, PartialEq, Eq)]
-pub(crate) struct XAPKeyCode {
+#[skip_serializing_none]
+#[derive(Deserialize, Clone, Serialize, Default, Debug, PartialEq, Eq, TS)]
+#[ts(export)]
+pub struct XAPKeyCode {
     #[serde(default)]
-    code: u16,
-    key: String,
+    pub code: u16,
+    pub key: String,
     #[serde(default)]
-    group: Option<String>,
+    pub group: Option<String>,
     #[serde(default)]
     #[serde_as(as = "NoneAsEmptyString")]
-    label: Option<String>,
+    pub label: Option<String>,
     #[serde(default)]
-    aliases: Vec<String>,
+    pub aliases: Vec<String>,
+}
+
+impl XAPKeyCode {
+    pub fn new_custom(code: u16) -> Self {
+        Self {
+            code,
+            key: format!("USER-CUSTOM-{code}"),
+            group: Some("USER-CUSTOM".to_owned()),
+            label: Some(format!("{code}")),
+            aliases: vec![],
+        }
+    }
 }
 
 #[derive(Deserialize, Debug)]
@@ -48,7 +63,6 @@ pub(crate) fn read_xap_keycodes() -> XAPResult<HashMap<u16, XAPKeyCode>> {
                         "failed to deserialize keycodes from file {} with error: {err}",
                         path.to_string_lossy()
                     );
-                    return Err(err.into());
                 }
             }
         }
@@ -125,7 +139,7 @@ mod test {
             codes.keycodes.get(&0),
             Some(&XAPKeyCode {
                 code: 0,
-                group: "internal".to_owned(),
+                group: Some("internal".to_owned()),
                 key: "KC_NO".to_owned(),
                 label: None,
                 aliases: vec!["XXXXXXX".to_owned()]
@@ -136,7 +150,7 @@ mod test {
             codes.keycodes.get(&1),
             Some(&XAPKeyCode {
                 code: 1,
-                group: "internal".to_owned(),
+                group: Some("internal".to_owned()),
                 key: "KC_TRANSPARENT".to_owned(),
                 label: None,
                 aliases: vec!["_______".to_owned(), "KC_TRNS".to_owned()]
@@ -147,7 +161,7 @@ mod test {
             codes.keycodes.get(&4),
             Some(&XAPKeyCode {
                 code: 4,
-                group: "basic".to_owned(),
+                group: Some("basic".to_owned()),
                 key: "KC_A".to_owned(),
                 label: Some("A".to_owned()),
                 aliases: vec![]
@@ -158,7 +172,7 @@ mod test {
             codes.keycodes.get(&5),
             Some(&XAPKeyCode {
                 code: 5,
-                group: "basic".to_owned(),
+                group: Some("basic".to_owned()),
                 key: "KC_B".to_owned(),
                 label: Some("B".to_owned()),
                 aliases: vec![]

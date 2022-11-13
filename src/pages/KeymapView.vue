@@ -1,14 +1,16 @@
 <script setup lang="ts">
     import { storeToRefs } from 'pinia'
-    import { ref, watch } from 'vue'
+    import { ref, watch, onMounted } from 'vue'
     import type { Ref } from 'vue'
 
     import { useXAPDeviceStore } from '@/stores/devices'
     import { KeyPosition } from '@bindings/KeyPosition'
     import { KeyPositionConfig } from '@bindings/KeyPositionConfig'
+    import { XAPConstants } from '@bindings/XAPConstants'
     import { setKeyCode } from '@/commands/remap'
     import { getKeyMap } from '@/commands/keymap'
     import { notifyError } from '@/utils/utils'
+    import { getXapConstants } from '../commands/constants'
 
     const store = useXAPDeviceStore()
     const { device } = storeToRefs(store)
@@ -19,47 +21,7 @@
 
     const selectedKey: Ref<KeyPosition | null> = ref(null)
 
-    // TODO - move to backend and generate from Rust struct
-    interface KeyCodeCategory {
-        name: string
-        codes: Array<KeyCode>
-    }
-
-    // TODO - move to backend and generate from Rust struct
-    interface KeyCode {
-        code: number
-        name: string
-    }
-
-    // TODO totally made-up - construction has to happen in the backend
-    const keyCodes: Ref<Array<KeyCodeCategory>> = ref([
-        {
-            name: 'basic',
-            codes: [
-                {
-                    code: 4,
-                    name: 'A',
-                },
-                {
-                    code: 5,
-                    name: 'B',
-                },
-            ],
-        },
-        {
-            name: 'quantum',
-            codes: [
-                {
-                    code: 4,
-                    name: 'A',
-                },
-                {
-                    code: 5,
-                    name: 'B',
-                },
-            ],
-        },
-    ])
+    const xapConstants: Ref<XAPConstants | null> = ref(null)
 
     async function set(code: number) {
         if (selectedKey.value) {
@@ -101,6 +63,15 @@
     watch(device, async () => {
         selectedKey.value = null
     })
+
+    onMounted(async () => {
+        try {
+            xapConstants.value = await getXapConstants()
+            console.log(xapConstants.value)
+        } catch (err) {
+            notifyError(err)
+        }
+    })
 </script>
 
 <template>
@@ -129,23 +100,36 @@
                         transition-next="jump-up"
                     >
                         <!-- eslint-disable-next-line vue/valid-v-for -->
-                        <q-tab-panel v-for="(layer, layerid) in device?.keymap" :name="layerid">
+                        <q-tab-panel v-for="(layer, layer_idx) in device?.keymap" :name="layer_idx">
                             <!-- eslint-disable-next-line vue/require-v-for-key -->
-                            <div v-for="(row, rowid) in layer" class="row q-gutter-x-md q-ma-md">
+                            <div v-for="row in layer" class="row q-gutter-x-md q-ma-md">
                                 <!--  TODO create proper Key and Keycode components -->
                                 <!-- eslint-disable-next-line vue/valid-v-for -->
                                 <q-responsive
-                                    v-for="(key, colid) in row"
+                                    v-for="col in row"
                                     class="col"
                                     style="max-width: 3rem"
                                     :ratio="1"
                                 >
                                     <q-btn
-                                        :color="colorButton(layerid, rowid, colid)"
+                                        :color="
+                                            colorButton(
+                                                col.position.layer,
+                                                col.position.row,
+                                                col.position.col
+                                            )
+                                        "
                                         text-color="black"
-                                        :label="key.keycode"
+                                        :label="col.code.label ?? col.code.key"
                                         square
-                                        @click="() => selectKey(layerid, rowid, colid)"
+                                        @click="
+                                            () =>
+                                                selectKey(
+                                                    col.position.layer,
+                                                    col.position.row,
+                                                    col.position.col
+                                                )
+                                        "
                                     />
                                 </q-responsive>
                             </div>
@@ -161,11 +145,12 @@
                 <template #before>
                     <q-tabs v-model="keycodeTab" vertical class="text-primary text-center">
                         <h5>Keycodes</h5>
+                        <!-- eslint-disable vue/no-unused-vars -->
                         <q-tab
-                            v-for="category in keyCodes"
+                            v-for="category in xapConstants?.keycodes"
                             :key="category.name"
-                            :name="category.name"
                             :label="category.name"
+                            :name="category.name"
                         />
                     </q-tabs>
                 </template>
@@ -179,26 +164,20 @@
                         transition-next="jump-up"
                     >
                         <q-tab-panel
-                            v-for="category in keyCodes"
+                            v-for="category in xapConstants?.keycodes"
                             :key="category.name"
                             :name="category.name"
                             :label="category.name"
+                            class="row q-gutter-md"
                         >
-                            <!--  TODO create proper Key and Keycode components -->
-                            <div class="row q-gutter-x-md q-ma-md">
-                                <q-responsive
-                                    v-for="code in category.codes"
-                                    :key="code.code"
-                                    class="col"
-                                    style="max-width: 3rem"
-                                    :ratio="1"
-                                >
+                            <div v-for="code in category.codes" :key="code.code" class="col-1">
+                                <q-responsive style="max-width: 4rem" :ratio="1">
                                     <q-btn
                                         color="white"
                                         :disable="device?.secure_status != 'Unlocked'"
                                         square
                                         text-color="black"
-                                        :label="code.name"
+                                        :label="code.label ?? code.key"
                                         @click="set(code.code)"
                                     />
                                     <q-tooltip

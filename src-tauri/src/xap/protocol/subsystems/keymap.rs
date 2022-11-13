@@ -50,7 +50,7 @@ impl XAPRequest for KeymapLayerCountQuery {
 #[ts(export)]
 pub struct KeyCode(pub u16);
 
-#[derive(BinWrite, Debug, TS, Serialize, Deserialize)]
+#[derive(BinWrite, Debug, Default, Clone, TS, Serialize, Deserialize)]
 #[ts(export)]
 pub struct KeyPosition {
     pub layer: u8,

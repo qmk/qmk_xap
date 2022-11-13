@@ -13,7 +13,9 @@ use flate2::read::GzDecoder;
 use hidapi::{DeviceInfo, HidDevice};
 use log::{error, info, trace};
 use parking_lot::RwLock;
+use serde::Serialize;
 use serde_json::{Map, Value};
+use ts_rs::TS;
 use uuid::Uuid;
 
 use crate::{
@@ -21,16 +23,36 @@ use crate::{
         BacklightInfo, KeymapInfo, LightingInfo, QMKInfo, RGBLightInfo, RGBMatrixInfo, RemapInfo,
         XAPDevice as XAPDeviceDto, XAPDeviceInfo, XAPInfo,
     },
-    xap::*,
+    xap::{
+        keycode::XAPKeyCode, BacklightCapabilities, BacklightCapabilitiesQuery,
+        BacklightEffectsQuery, BroadcastRaw, BroadcastType, ConfigBlobChunkQuery, KeyCode,
+        KeyPosition, KeyPositionConfig, KeymapCapabilities, KeymapCapabilitiesQuery,
+        KeymapKeycodeQuery, KeymapLayerCountQuery, LightingCapabilities, LightingCapabilitiesQuery,
+        LogBroadcast, QMKBoardIdentifiersQuery, QMKBoardManufacturerQuery, QMKCapabilities,
+        QMKCapabilitiesQuery, QMKConfigBlobLengthQuery, QMKHardwareIdentifierQuery,
+        QMKProductNameQuery, QMKVersionQuery, RGBLightCapabilities, RGBLightCapabilitiesQuery,
+        RGBLightEffectsQuery, RGBMatrixCapabilities, RGBMatrixCapabilitiesQuery,
+        RGBMatrixEffectsQuery, RawRequest, RawResponse, RemapCapabilities, RemapCapabilitiesQuery,
+        RemapKeycodeQuery, RemapLayerCountQuery, SecureStatusBroadcast, Token, XAPConstants,
+        XAPEnabledSubsystems, XAPEnabledSubsystemsQuery, XAPError, XAPRequest, XAPResult,
+        XAPSecureStatus, XAPSecureStatusQuery, XAPVersionQuery,
+    },
     XAPEvent,
 };
 
 const XAP_REPORT_SIZE: usize = 64;
 
+#[derive(Debug, Default, Clone, Serialize, TS)]
+#[ts(export)]
+pub struct XAPKeyCodeConfig {
+    code: XAPKeyCode,
+    position: KeyPosition,
+}
+
 #[derive(Debug, Default)]
 struct XAPDeviceState {
     xap_info: Option<XAPDeviceInfo>,
-    keymap: Vec<Vec<Vec<KeyPositionConfig>>>,
+    keymap: Vec<Vec<Vec<XAPKeyCodeConfig>>>,
     secure_status: XAPSecureStatus,
 }
 
@@ -41,12 +63,14 @@ pub struct XAPDevice {
     rx_thread: JoinHandle<()>,
     tx_device: HidDevice,
     rx_channel: Receiver<RawResponse>,
+    constants: Arc<XAPConstants>,
     state: Arc<RwLock<XAPDeviceState>>,
 }
 
 impl XAPDevice {
     pub(crate) fn new(
         info: DeviceInfo,
+        constants: Arc<XAPConstants>,
         event_channel: Sender<XAPEvent>,
         rx_device: HidDevice,
         tx_device: HidDevice,
@@ -67,6 +91,7 @@ impl XAPDevice {
                 tx_channel,
             ),
             state,
+            constants,
         };
         device.query_device_info()?;
         device.query_keymap()?;
@@ -90,7 +115,7 @@ impl XAPDevice {
             .expect("XAP device wasn't properly initialized")
     }
 
-    pub fn keymap(&self) -> Vec<Vec<Vec<KeyPositionConfig>>> {
+    pub fn keymap(&self) -> Vec<Vec<Vec<XAPKeyCodeConfig>>> {
         self.state.read().keymap.clone()
     }
 
@@ -117,17 +142,26 @@ impl XAPDevice {
     }
 
     pub fn set_keycode(&self, config: KeyPositionConfig) -> XAPResult<()> {
-        self.do_query(RemapKeycodeQuery(config.clone()))?;
+        self.query(RemapKeycodeQuery(config.clone()))?;
         let (layer, row, col) = (config.layer, config.row, config.col);
-        self.state.write().keymap[layer as usize][row as usize][col as usize] = config;
+
+        self.state.write().keymap[layer as usize][row as usize][col as usize] = XAPKeyCodeConfig {
+            code: self.constants.get_keycode(config.keycode),
+            position: KeyPosition {
+                layer: config.layer,
+                row: config.row,
+                col: config.col,
+            },
+        };
+
         Ok(())
     }
 
     pub fn query_keycode(&self, position: KeyPosition) -> XAPResult<KeyCode> {
-        self.do_query(KeymapKeycodeQuery(position))
+        self.query(KeymapKeycodeQuery(position))
     }
 
-    pub fn do_query<T: XAPRequest>(&self, request: T) -> XAPResult<T::Response> {
+    pub fn query<T: XAPRequest>(&self, request: T) -> XAPResult<T::Response> {
         let request = RawRequest::new(request);
         let mut report = [0; XAP_REPORT_SIZE + 1];
 
@@ -161,37 +195,37 @@ impl XAPDevice {
     }
 
     pub fn query_secure_status(&self) -> XAPResult<XAPSecureStatus> {
-        let status = self.do_query(XAPSecureStatusQuery {})?;
+        let status = self.query(XAPSecureStatusQuery {})?;
         self.state.write().secure_status = status;
         Ok(status)
     }
 
     fn query_device_info(&self) -> XAPResult<()> {
-        let subsystems = self.do_query(XAPEnabledSubsystemsQuery)?;
+        let subsystems = self.query(XAPEnabledSubsystemsQuery)?;
 
         let xap_info = XAPInfo {
-            version: self.do_query(XAPVersionQuery)?.0.to_string(),
+            version: self.query(XAPVersionQuery)?.0.to_string(),
         };
 
-        let qmk_caps = self.do_query(QMKCapabilitiesQuery)?;
-        let board_ids = self.do_query(QMKBoardIdentifiersQuery)?;
+        let qmk_caps = self.query(QMKCapabilitiesQuery)?;
+        let board_ids = self.query(QMKBoardIdentifiersQuery)?;
         // TODO: why do these strings have leading and trailing " characters -
         // should be removed in QMK
         let manufacturer = self
-            .do_query(QMKBoardManufacturerQuery)?
+            .query(QMKBoardManufacturerQuery)?
             .0
             .trim_matches('"')
             .to_owned();
         let product_name = self
-            .do_query(QMKProductNameQuery)?
+            .query(QMKProductNameQuery)?
             .0
             .trim_matches('"')
             .to_owned();
         let config = self.query_config_blob()?;
-        let hardware_id = self.do_query(QMKHardwareIdentifierQuery)?.to_string();
+        let hardware_id = self.query(QMKHardwareIdentifierQuery)?.to_string();
 
         let qmk_info = QMKInfo {
-            version: self.do_query(QMKVersionQuery)?.0.to_string(),
+            version: self.query(QMKVersionQuery)?.0.to_string(),
             board_ids,
             manufacturer,
             product_name,
@@ -202,10 +236,10 @@ impl XAPDevice {
         };
 
         let keymap_info = if subsystems.contains(XAPEnabledSubsystems::KEYMAP) {
-            let keymap_caps = self.do_query(KeymapCapabilitiesQuery)?;
+            let keymap_caps = self.query(KeymapCapabilitiesQuery)?;
 
             let layer_count = if keymap_caps.contains(KeymapCapabilities::LAYER_COUNT) {
-                Some(self.do_query(KeymapLayerCountQuery)?.0)
+                Some(self.query(KeymapLayerCountQuery)?.0)
             } else {
                 None
             };
@@ -233,10 +267,10 @@ impl XAPDevice {
         };
 
         let remap_info = if subsystems.contains(XAPEnabledSubsystems::REMAPPING) {
-            let keymap_caps = self.do_query(RemapCapabilitiesQuery)?;
+            let keymap_caps = self.query(RemapCapabilitiesQuery)?;
 
             let layer_count = if keymap_caps.contains(RemapCapabilities::LAYER_COUNT) {
-                Some(self.do_query(RemapLayerCountQuery)?.0)
+                Some(self.query(RemapLayerCountQuery)?.0)
             } else {
                 None
             };
@@ -252,13 +286,13 @@ impl XAPDevice {
         };
 
         let lighting_info = if subsystems.contains(XAPEnabledSubsystems::LIGHTING) {
-            let lighting_caps = self.do_query(LightingCapabilitiesQuery)?;
+            let lighting_caps = self.query(LightingCapabilitiesQuery)?;
 
             let backlight_info = if lighting_caps.contains(LightingCapabilities::BACKLIGHT) {
-                let backlight_caps = self.do_query(BacklightCapabilitiesQuery)?;
+                let backlight_caps = self.query(BacklightCapabilitiesQuery)?;
 
                 let effects = if backlight_caps.contains(BacklightCapabilities::ENABLED_EFFECTS) {
-                    Some(self.do_query(BacklightEffectsQuery)?.enabled_effect_list())
+                    Some(self.query(BacklightEffectsQuery)?.enabled_effect_list())
                 } else {
                     None
                 };
@@ -275,10 +309,10 @@ impl XAPDevice {
             };
 
             let rgblight_info = if lighting_caps.contains(LightingCapabilities::RGBLIGHT) {
-                let rgblight_caps = self.do_query(RGBLightCapabilitiesQuery)?;
+                let rgblight_caps = self.query(RGBLightCapabilitiesQuery)?;
 
                 let effects = if rgblight_caps.contains(RGBLightCapabilities::ENABLED_EFFECTS) {
-                    Some(self.do_query(RGBLightEffectsQuery)?.enabled_effect_list())
+                    Some(self.query(RGBLightEffectsQuery)?.enabled_effect_list())
                 } else {
                     None
                 };
@@ -294,10 +328,10 @@ impl XAPDevice {
             };
 
             let rgbmatrix_info = if lighting_caps.contains(LightingCapabilities::RGBMATRIX) {
-                let rgbmatrix_caps = self.do_query(RGBMatrixCapabilitiesQuery)?;
+                let rgbmatrix_caps = self.query(RGBMatrixCapabilitiesQuery)?;
 
                 let effects = if rgbmatrix_caps.contains(RGBMatrixCapabilities::ENABLED_EFFECTS) {
-                    Some(self.do_query(RGBMatrixEffectsQuery)?.enabled_effect_list())
+                    Some(self.query(RGBMatrixEffectsQuery)?.enabled_effect_list())
                 } else {
                     None
                 };
@@ -335,13 +369,13 @@ impl XAPDevice {
 
     fn query_config_blob(&self) -> XAPResult<Map<String, Value>> {
         // Query data size
-        let size = self.do_query(QMKConfigBlobLengthQuery {})?.0;
+        let size = self.query(QMKConfigBlobLengthQuery {})?.0;
 
         // Query all chunks and merge them in a Vec
         let mut data: Vec<u8> = Vec::with_capacity(size as usize);
         let mut offset: u16 = 0;
         while offset < size {
-            let chunk = self.do_query(ConfigBlobChunkQuery(offset))?;
+            let chunk = self.query(ConfigBlobChunkQuery(offset))?;
             data.extend(chunk.0.into_iter());
             offset += chunk.0.len() as u16;
         }
@@ -368,7 +402,7 @@ impl XAPDevice {
             let cols = keymap.matrix.cols;
             let rows = keymap.matrix.rows;
 
-            let keymap: Result<Vec<Vec<Vec<KeyPositionConfig>>>, XAPError> = (0..layers)
+            let keymap: Result<Vec<Vec<Vec<XAPKeyCodeConfig>>>, XAPError> = (0..layers)
                 .map(|layer| {
                     (0..rows)
                         .map(|row| {
@@ -377,12 +411,12 @@ impl XAPDevice {
                                     let keycode =
                                         self.query_keycode(KeyPosition { layer, row, col })?;
 
-                                    Ok(KeyPositionConfig {
-                                        layer,
-                                        row,
-                                        col,
-                                        keycode: keycode.0,
-                                    })
+                                    let xap = XAPKeyCodeConfig {
+                                        code: self.constants.get_keycode(keycode.0),
+                                        position: KeyPosition { layer, row, col },
+                                    };
+
+                                    Ok(xap)
                                 })
                                 .collect()
                         })
