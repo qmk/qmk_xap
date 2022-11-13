@@ -1,18 +1,18 @@
 import { defineStore } from 'pinia'
 
-import { XAPDeviceDTO } from '@bindings/XAPDeviceDTO'
+import { XAPDevice } from '@bindings/XAPDevice'
 import { XAPSecureStatus } from '@bindings/XAPSecureStatus'
 
 export const useXAPDeviceStore = defineStore('xap-device-store', {
     state: () => {
         return {
-            device: null as XAPDeviceDTO | null,
-            devices: new Map<string, XAPDeviceDTO>(),
+            device: null as XAPDevice | null,
+            devices: new Map<string, XAPDevice>(),
         }
     },
     getters: {},
     actions: {
-        addDevice(device: XAPDeviceDTO): boolean {
+        addDevice(device: XAPDevice): boolean {
             if (!this.devices.has(device.id)) {
                 this.devices.set(device.id, device)
                 if (!this.device) {

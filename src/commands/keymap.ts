@@ -1,11 +1,10 @@
-import { queryBackend } from '@/commands/core'
+import { queryDevice } from '@/commands/core'
 import { KeyPosition } from '@bindings/KeyPosition'
-import { KeyPositionConfig } from '../../src-tauri/bindings/KeyPositionConfig'
 
 export async function getKeycode(id: string, position: KeyPosition): Promise<number> {
-    return await queryBackend('keycode_get', id, position)
+    return await queryDevice('keycode_get', id, position)
 }
 
-export async function getKeyMap(id: string): Promise<Array<Array<Array<KeyPositionConfig>>>> {
-    return await queryBackend('keymap_get', id, null)
+export async function getKeyMap(id: string): Promise<Array<Array<Array<KeyPosition>>>> {
+    return await queryDevice('keymap_get', id, null)
 }

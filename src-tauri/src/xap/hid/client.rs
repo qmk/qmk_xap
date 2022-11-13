@@ -1,4 +1,4 @@
-use std::{collections::HashMap, fmt::Debug};
+use std::{collections::HashMap, fmt::Debug, sync::Arc};
 
 use anyhow::anyhow;
 use crossbeam_channel::Sender;
@@ -6,7 +6,7 @@ use hidapi::{DeviceInfo, HidApi};
 use uuid::Uuid;
 
 use crate::{
-    xap::{XAPDevice, XAPError, XAPKeyCode, XAPRequest, XAPResult, read_xap_keycodes},
+    xap::{XAPConstants, XAPDevice, XAPError, XAPRequest, XAPResult},
     XAPEvent,
 };
 
@@ -17,7 +17,7 @@ pub(crate) struct XAPClient {
     hid: HidApi,
     devices: HashMap<Uuid, XAPDevice>,
     event_channel: Sender<XAPEvent>,
-    keycodes: HashMap<u16, XAPKeyCode>,
+    constants: Arc<XAPConstants>,
 }
 
 impl Debug for XAPClient {
@@ -34,7 +34,7 @@ impl XAPClient {
             devices: HashMap::new(),
             hid: HidApi::new_without_enumerate()?,
             event_channel,
-            keycodes: read_xap_keycodes()?,
+            constants: Arc::new(XAPConstants::new()?),
         })
     }
 
@@ -54,9 +54,13 @@ impl XAPClient {
         T: XAPRequest,
     {
         match self.devices.get(&id) {
-            Some(device) => device.do_query(request),
+            Some(device) => device.query(request),
             None => Err(XAPError::Other(anyhow!("device not available"))),
         }
+    }
+
+    pub fn xap_constants(&self) -> XAPConstants {
+        self.constants.as_ref().clone()
     }
 
     pub fn enumerate_xap_devices(&mut self) -> XAPResult<()> {
@@ -98,6 +102,7 @@ impl XAPClient {
 
             let new_device = XAPDevice::new(
                 device.clone(),
+                Arc::clone(&self.constants),
                 self.event_channel.clone(),
                 device.open_device(&self.hid)?,
                 device.open_device(&self.hid)?,

@@ -5,12 +5,12 @@
 
     import { secureUnlock, secureLock } from '@/commands/xap'
     import { useXAPDeviceStore } from '@/stores/devices'
-    import { XAPDeviceDTO } from '@bindings/XAPDeviceDTO'
-    import { XAPSecureStatus } from '@bindings/XAPSecureStatus'
+import { XAPDevice } from '@bindings/XAPDevice'
+import { XAPSecureStatus } from '@bindings/XAPSecureStatus'
 
-    const store = useXAPDeviceStore()
-    const { device, devices } = storeToRefs(store)
-    const devicesA: Ref<Array<XAPDeviceDTO>> = computed(() => Array.from(devices.value.values()))
+const store = useXAPDeviceStore()
+const { device, devices } = storeToRefs(store)
+const devicesA: Ref<Array<XAPDevice>> = computed(() => Array.from(devices.value.values()))
 
     async function lock() {
         if (device.value) {
@@ -58,7 +58,7 @@
                     :disable="device == null"
                     filled
                     :options="devicesA"
-                    :option-label="(device:XAPDeviceDTO) => device?.info.qmk.manufacturer + ' - ' + device?.info.qmk.product_name "
+                    :option-label="(device:XAPDevice) => device?.info.qmk.manufacturer + ' - ' + device?.info.qmk.product_name "
                     emit-value
                 />
             </div>
