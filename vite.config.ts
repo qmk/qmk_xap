@@ -21,7 +21,7 @@ export default defineConfig({
             { find: '@', replacement: path.resolve(__dirname, 'src') },
             {
                 find: '@bindings',
-                replacement: path.resolve(__dirname, 'src-tauri/bindings'),
+                replacement: path.resolve(__dirname, './bindings'),
             },
         ],
     },

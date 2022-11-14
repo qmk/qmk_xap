@@ -17,12 +17,12 @@ use tauri::State;
 
 use crate::{
     aggregation::XAPConstants,
-    xap::{XAPClient, XAPResult},
+    xap::{hid::XAPClient, ClientResult},
 };
 
 #[tauri::command]
 pub(crate) fn xap_constants_get(
     state: State<'_, Arc<Mutex<XAPClient>>>,
-) -> XAPResult<XAPConstants> {
+) -> ClientResult<XAPConstants> {
     Ok(state.lock().xap_constants().into())
 }

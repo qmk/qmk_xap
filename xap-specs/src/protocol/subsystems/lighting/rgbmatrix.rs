@@ -3,7 +3,7 @@ use bitflags::bitflags;
 use serde::{Deserialize, Serialize};
 use ts_rs::TS;
 
-use crate::xap::XAPRequest;
+use crate::request::XAPRequest;
 
 // ==============================
 // 0x6 0x4 0x1
@@ -65,6 +65,7 @@ impl XAPRequest for RGBMatrixEffectsQuery {
 // 0x6 0x4 0x3
 #[derive(BinWrite, BinRead, Debug, TS, Serialize, Deserialize)]
 #[ts(export)]
+#[ts(export_to = "../bindings/")]
 pub struct RGBMatrixConfig {
     pub enable: u8,
     pub mode: u8,

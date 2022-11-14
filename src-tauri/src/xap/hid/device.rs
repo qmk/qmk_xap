@@ -13,41 +13,53 @@ use flate2::read::GzDecoder;
 use hidapi::{DeviceInfo, HidDevice};
 use log::{error, info, trace};
 use parking_lot::RwLock;
-use serde::Serialize;
 use serde_json::{Map, Value};
-use ts_rs::TS;
 use uuid::Uuid;
+
+use xap_specs::{
+    constants::{keycode::XAPKeyCodeConfig, XAPConstants},
+    error::{XAPError, XAPResult},
+    protocol::{
+        keymap::{
+            KeyCode, KeyPosition, KeymapCapabilities, KeymapCapabilitiesQuery, KeymapKeycodeQuery,
+            KeymapLayerCountQuery,
+        },
+        lighting::{
+            BacklightCapabilities, BacklightCapabilitiesQuery, BacklightEffectsQuery,
+            LightingCapabilities, LightingCapabilitiesQuery, RGBLightCapabilities,
+            RGBLightCapabilitiesQuery, RGBLightEffectsQuery, RGBMatrixCapabilities,
+            RGBMatrixCapabilitiesQuery, RGBMatrixEffectsQuery,
+        },
+        qmk::{
+            ConfigBlobChunkQuery, QMKBoardIdentifiersQuery, QMKBoardManufacturerQuery,
+            QMKCapabilities, QMKCapabilitiesQuery, QMKConfigBlobLengthQuery,
+            QMKHardwareIdentifierQuery, QMKProductNameQuery, QMKVersionQuery,
+        },
+        remap::{
+            KeyPositionConfig, RemapCapabilities, RemapCapabilitiesQuery, RemapKeycodeQuery,
+            RemapLayerCountQuery,
+        },
+        xap::{
+            XAPEnabledSubsystems, XAPEnabledSubsystemsQuery, XAPSecureStatus, XAPSecureStatusQuery,
+            XAPVersionQuery,
+        },
+        *,
+    },
+    request::{RawRequest, XAPRequest},
+    response::RawResponse,
+    token::Token,
+};
 
 use crate::{
     aggregation::{
         BacklightInfo, KeymapInfo, LightingInfo, QMKInfo, RGBLightInfo, RGBMatrixInfo, RemapInfo,
         XAPDevice as XAPDeviceDto, XAPDeviceInfo, XAPInfo,
     },
-    xap::{
-        keycode::XAPKeyCode, BacklightCapabilities, BacklightCapabilitiesQuery,
-        BacklightEffectsQuery, BroadcastRaw, BroadcastType, ConfigBlobChunkQuery, KeyCode,
-        KeyPosition, KeyPositionConfig, KeymapCapabilities, KeymapCapabilitiesQuery,
-        KeymapKeycodeQuery, KeymapLayerCountQuery, LightingCapabilities, LightingCapabilitiesQuery,
-        LogBroadcast, QMKBoardIdentifiersQuery, QMKBoardManufacturerQuery, QMKCapabilities,
-        QMKCapabilitiesQuery, QMKConfigBlobLengthQuery, QMKHardwareIdentifierQuery,
-        QMKProductNameQuery, QMKVersionQuery, RGBLightCapabilities, RGBLightCapabilitiesQuery,
-        RGBLightEffectsQuery, RGBMatrixCapabilities, RGBMatrixCapabilitiesQuery,
-        RGBMatrixEffectsQuery, RawRequest, RawResponse, RemapCapabilities, RemapCapabilitiesQuery,
-        RemapKeycodeQuery, RemapLayerCountQuery, SecureStatusBroadcast, Token, XAPConstants,
-        XAPEnabledSubsystems, XAPEnabledSubsystemsQuery, XAPError, XAPRequest, XAPResult,
-        XAPSecureStatus, XAPSecureStatusQuery, XAPVersionQuery,
-    },
+    xap::{ClientError, ClientResult},
     XAPEvent,
 };
 
 const XAP_REPORT_SIZE: usize = 64;
-
-#[derive(Debug, Default, Clone, Serialize, TS)]
-#[ts(export)]
-pub struct XAPKeyCodeConfig {
-    code: XAPKeyCode,
-    position: KeyPosition,
-}
 
 #[derive(Debug, Default)]
 struct XAPDeviceState {
@@ -74,7 +86,7 @@ impl XAPDevice {
         event_channel: Sender<XAPEvent>,
         rx_device: HidDevice,
         tx_device: HidDevice,
-    ) -> XAPResult<Self> {
+    ) -> ClientResult<Self> {
         let (tx_channel, rx_channel) = unbounded();
         let id = Uuid::new_v4();
         let state = Arc::new(RwLock::new(XAPDeviceState::default()));
@@ -141,7 +153,7 @@ impl XAPDevice {
             && candidate.usage() == self.info.usage()
     }
 
-    pub fn set_keycode(&self, config: KeyPositionConfig) -> XAPResult<()> {
+    pub fn set_keycode(&self, config: KeyPositionConfig) -> ClientResult<()> {
         self.query(RemapKeycodeQuery(config.clone()))?;
         let (layer, row, col) = (config.layer, config.row, config.col);
 
@@ -157,18 +169,20 @@ impl XAPDevice {
         Ok(())
     }
 
-    pub fn query_keycode(&self, position: KeyPosition) -> XAPResult<KeyCode> {
+    pub fn query_keycode(&self, position: KeyPosition) -> ClientResult<KeyCode> {
         self.query(KeymapKeycodeQuery(position))
     }
 
-    pub fn query<T: XAPRequest>(&self, request: T) -> XAPResult<T::Response> {
+    pub fn query<T: XAPRequest>(&self, request: T) -> ClientResult<T::Response> {
         let request = RawRequest::new(request);
         let mut report = [0; XAP_REPORT_SIZE + 1];
 
         // Add trailing zero byte for the report Id to HID report
         trace!("send XAP report with payload {:?}", &report[1..]);
         let mut writer = Cursor::new(&mut report[1..]);
-        writer.write_le(&request)?;
+        writer
+            .write_le(&request)
+            .map_err(|err| ClientError::from(XAPError::BitHandling(err)))?;
 
         self.tx_device.write(&report)?;
 
@@ -178,7 +192,7 @@ impl XAPDevice {
             let response = self
                 .rx_channel
                 .recv_timeout(Duration::from_millis(500))
-                .map_err(|err| anyhow!("failed to reveice response {}", err))?;
+                .map_err(|err| XAPError::Protocol(format!("failed to reveice response {}", err)))?;
 
             if response.token() == request.token() {
                 break response;
@@ -187,20 +201,23 @@ impl XAPDevice {
                 return Err(XAPError::Protocol(format!(
                     "failed to receive XAP response for request {:?} in 5 seconds",
                     request.token()
-                )));
+                ))
+                .into());
             }
         };
 
-        response.into_xap_response::<T>()
+        response
+            .into_xap_response::<T>()
+            .map_err(|err| ClientError::from(err))
     }
 
-    pub fn query_secure_status(&self) -> XAPResult<XAPSecureStatus> {
+    pub fn query_secure_status(&self) -> ClientResult<XAPSecureStatus> {
         let status = self.query(XAPSecureStatusQuery {})?;
         self.state.write().secure_status = status;
         Ok(status)
     }
 
-    fn query_device_info(&self) -> XAPResult<()> {
+    fn query_device_info(&self) -> ClientResult<()> {
         let subsystems = self.query(XAPEnabledSubsystemsQuery)?;
 
         let xap_info = XAPInfo {
@@ -247,9 +264,9 @@ impl XAPDevice {
             // TODO ugly bodge
             let matrix = if let Some(value) = config.get("matrix_size") {
                 serde_json::from_value(value.clone())
-                    .map_err(|err| XAPError::Other(anyhow!("malformed matrix_size entry {err}")))
+                    .map_err(|err| ClientError::Other(anyhow!("malformed matrix_size entry {err}")))
             } else {
-                return Err(XAPError::Other(anyhow!(
+                return Err(ClientError::Other(anyhow!(
                     "matrix size not found in JSON config"
                 )));
             }?;
@@ -367,7 +384,7 @@ impl XAPDevice {
         Ok(())
     }
 
-    fn query_config_blob(&self) -> XAPResult<Map<String, Value>> {
+    fn query_config_blob(&self) -> ClientResult<Map<String, Value>> {
         // Query data size
         let size = self.query(QMKConfigBlobLengthQuery {})?.0;
 
@@ -393,7 +410,7 @@ impl XAPDevice {
         Ok(serde_json::from_str(&decompressed)?)
     }
 
-    fn query_keymap(&self) -> XAPResult<()> {
+    fn query_keymap(&self) -> ClientResult<()> {
         // Reset keymap
         self.state.write().keymap = Default::default();
 
@@ -402,7 +419,7 @@ impl XAPDevice {
             let cols = keymap.matrix.cols;
             let rows = keymap.matrix.rows;
 
-            let keymap: Result<Vec<Vec<Vec<XAPKeyCodeConfig>>>, XAPError> = (0..layers)
+            let keymap: Result<Vec<Vec<Vec<XAPKeyCodeConfig>>>, ClientError> = (0..layers)
                 .map(|layer| {
                     (0..rows)
                         .map(|row| {

@@ -5,12 +5,12 @@
 
     import { secureUnlock, secureLock } from '@/commands/xap'
     import { useXAPDeviceStore } from '@/stores/devices'
-import { XAPDevice } from '@bindings/XAPDevice'
-import { XAPSecureStatus } from '@bindings/XAPSecureStatus'
+    import { XAPDevice } from '@bindings/XAPDevice'
+    import { XAPSecureStatus } from '@bindings/XAPSecureStatus'
 
-const store = useXAPDeviceStore()
-const { device, devices } = storeToRefs(store)
-const devicesA: Ref<Array<XAPDevice>> = computed(() => Array.from(devices.value.values()))
+    const store = useXAPDeviceStore()
+    const { device, devices } = storeToRefs(store)
+    const devicesA: Ref<Array<XAPDevice>> = computed(() => Array.from(devices.value.values()))
 
     async function lock() {
         if (device.value) {

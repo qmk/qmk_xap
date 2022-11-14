@@ -1,14 +1,16 @@
 use std::{collections::HashMap, fmt::Debug, sync::Arc};
 
-use anyhow::anyhow;
 use crossbeam_channel::Sender;
 use hidapi::{DeviceInfo, HidApi};
 use uuid::Uuid;
+use xap_specs::{constants::XAPConstants, request::XAPRequest};
 
 use crate::{
-    xap::{XAPConstants, XAPDevice, XAPError, XAPRequest, XAPResult},
+    xap::{ClientError, ClientResult},
     XAPEvent,
 };
+
+use super::XAPDevice;
 
 const XAP_USAGE_PAGE: u16 = 0xFF51;
 const XAP_USAGE: u16 = 0x0058;
@@ -29,33 +31,33 @@ impl Debug for XAPClient {
 }
 
 impl XAPClient {
-    pub fn new(event_channel: Sender<XAPEvent>) -> XAPResult<Self> {
+    pub fn new(event_channel: Sender<XAPEvent>, xap_constants: XAPConstants) -> ClientResult<Self> {
         Ok(Self {
             devices: HashMap::new(),
             hid: HidApi::new_without_enumerate()?,
             event_channel,
-            constants: Arc::new(XAPConstants::new()?),
+            constants: Arc::new(xap_constants),
         })
     }
 
     #[allow(dead_code)]
-    pub fn action<T, F>(&self, id: Uuid, action: F) -> XAPResult<T>
+    pub fn action<T, F>(&self, id: Uuid, action: F) -> ClientResult<T>
     where
-        F: FnOnce(&XAPDevice) -> XAPResult<T>,
+        F: FnOnce(&XAPDevice) -> ClientResult<T>,
     {
         match self.devices.get(&id) {
             Some(device) => action(device),
-            None => Err(XAPError::Other(anyhow!("device not available"))),
+            None => Err(ClientError::UnknownDevice(id)),
         }
     }
 
-    pub fn query<T>(&self, id: Uuid, request: T) -> XAPResult<T::Response>
+    pub fn query<T>(&self, id: Uuid, request: T) -> ClientResult<T::Response>
     where
         T: XAPRequest,
     {
         match self.devices.get(&id) {
             Some(device) => device.query(request),
-            None => Err(XAPError::Other(anyhow!("device not available"))),
+            None => Err(ClientError::UnknownDevice(id)),
         }
     }
 
@@ -63,7 +65,7 @@ impl XAPClient {
         self.constants.as_ref().clone()
     }
 
-    pub fn enumerate_xap_devices(&mut self) -> XAPResult<()> {
+    pub fn enumerate_xap_devices(&mut self) -> ClientResult<()> {
         // 1. Device already enumerated - don't start new capturing thread (announce nothing)
         // 2. Device already enumerated but error occured - remove old device and restart device (announce removal + announce new device)
         // 3. Device not enumerated - add device and start capturing (announce new device)
@@ -117,12 +119,14 @@ impl XAPClient {
         Ok(())
     }
 
-    pub fn get_device(&self, id: &Uuid) -> XAPResult<&XAPDevice> {
-        self.devices.get(id).ok_or(XAPError::UnknownDevice(*id))
+    pub fn get_device(&self, id: &Uuid) -> ClientResult<&XAPDevice> {
+        self.devices.get(id).ok_or(ClientError::UnknownDevice(*id))
     }
 
-    pub fn get_device_mut(&mut self, id: &Uuid) -> XAPResult<&mut XAPDevice> {
-        self.devices.get_mut(id).ok_or(XAPError::UnknownDevice(*id))
+    pub fn get_device_mut(&mut self, id: &Uuid) -> ClientResult<&mut XAPDevice> {
+        self.devices
+            .get_mut(id)
+            .ok_or(ClientError::UnknownDevice(*id))
     }
 
     pub fn get_devices(&self) -> Vec<&XAPDevice> {

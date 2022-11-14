@@ -5,7 +5,10 @@ use bitflags::bitflags;
 use serde::{Deserialize, Serialize};
 use ts_rs::TS;
 
-use crate::xap::{SecureActionResponse, UTF8StringResponse, XAPRequest};
+use crate::{
+    request::XAPRequest,
+    response::{SecureActionResponse, UTF8StringResponse},
+};
 
 // ==============================
 // 0x1 0x0
@@ -56,6 +59,7 @@ impl XAPRequest for QMKCapabilitiesQuery {
 // 0x1 0x2
 #[derive(BinRead, Debug, Serialize, TS, Clone)]
 #[ts(export)]
+#[ts(export_to = "../bindings/")]
 pub struct QMKBoardIdentifiers {
     pub vendor_id: u16,
     pub product_id: u16,
@@ -124,6 +128,7 @@ pub struct ConfigBlobChunk(pub [u8; 32]);
 
 #[derive(BinWrite, BinRead, Debug, TS, Serialize, Deserialize)]
 #[ts(export)]
+#[ts(export_to = "../bindings/")]
 pub struct ConfigBlobOffset(u16);
 
 #[derive(BinWrite, Debug)]

@@ -3,19 +3,17 @@ use std::sync::Arc;
 use parking_lot::Mutex;
 use tauri::State;
 use uuid::Uuid;
-
-use crate::xap::{
-    protocol::{
-        RGBMatrixConfig, RGBMatrixConfigGet, RGBMatrixConfigSave, RGBMatrixConfigSet, XAPResult,
-    },
-    XAPClient,
+use xap_specs::protocol::lighting::{
+    RGBMatrixConfig, RGBMatrixConfigGet, RGBMatrixConfigSave, RGBMatrixConfigSet,
 };
+
+use crate::xap::{hid::XAPClient, ClientResult};
 
 #[tauri::command]
 pub(crate) async fn rgbmatrix_config_get(
     id: Uuid,
     state: State<'_, Arc<Mutex<XAPClient>>>,
-) -> XAPResult<RGBMatrixConfig> {
+) -> ClientResult<RGBMatrixConfig> {
     state.lock().query(id, RGBMatrixConfigGet {})
 }
 
@@ -24,7 +22,7 @@ pub(crate) async fn rgbmatrix_config_set(
     id: Uuid,
     arg: RGBMatrixConfig,
     state: State<'_, Arc<Mutex<XAPClient>>>,
-) -> XAPResult<()> {
+) -> ClientResult<()> {
     state.lock().query(id, RGBMatrixConfigSet { config: arg })
 }
 
@@ -32,6 +30,6 @@ pub(crate) async fn rgbmatrix_config_set(
 pub(crate) async fn rgbmatrix_config_save(
     id: Uuid,
     state: State<'_, Arc<Mutex<XAPClient>>>,
-) -> XAPResult<()> {
+) -> ClientResult<()> {
     state.lock().query(id, RGBMatrixConfigSave {})
 }

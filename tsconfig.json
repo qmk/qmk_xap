@@ -14,7 +14,7 @@
         "skipLibCheck": true,
         "paths": {
             "@/*": ["./src/*"],
-            "@bindings/*": ["./src-tauri/bindings/*"]
+            "@bindings/*": ["./bindings/*"]
         }
     },
     "include": [

@@ -3,7 +3,7 @@ use bitflags::bitflags;
 use serde::{Deserialize, Serialize};
 use ts_rs::TS;
 
-use crate::xap::XAPRequest;
+use crate::request::XAPRequest;
 
 // ==============================
 // 0x5 0x1
@@ -46,8 +46,9 @@ impl XAPRequest for RemapLayerCountQuery {
 
 // ==============================
 // 0x5 0x3
-#[derive(BinWrite, BinRead, Clone, Default, Debug, TS, Serialize, Deserialize)]
+#[derive(BinWrite, BinRead, Clone, Debug, Default, TS, Serialize, Deserialize)]
 #[ts(export)]
+#[ts(export_to = "../bindings/")]
 pub struct KeyPositionConfig {
     pub layer: u8,
     pub row: u8,
@@ -74,6 +75,7 @@ impl XAPRequest for RemapKeycodeQuery {
 // 0x5 0x4
 #[derive(BinWrite, BinRead, Debug, TS, Serialize, Deserialize)]
 #[ts(export)]
+#[ts(export_to = "../bindings/")]
 pub struct EncoderPositionConfig {
     pub layer: u8,
     pub encoder: u8,

@@ -1,6 +1,7 @@
 use std::{
     collections::HashMap,
     fs::{self, read_to_string},
+    path::PathBuf,
 };
 
 use log::error;
@@ -8,12 +9,13 @@ use serde::{de::Error, Deserialize, Deserializer, Serialize};
 use serde_with::{serde_as, skip_serializing_none, NoneAsEmptyString};
 use ts_rs::TS;
 
-use crate::xap::XAPResult;
+use crate::{error::XAPResult, protocol::keymap::KeyPosition};
 
 #[serde_as]
 #[skip_serializing_none]
 #[derive(Deserialize, Clone, Serialize, Default, Debug, PartialEq, Eq, TS)]
 #[ts(export)]
+#[ts(export_to = "../bindings/")]
 pub struct XAPKeyCode {
     #[serde(default)]
     pub code: u16,
@@ -45,11 +47,10 @@ struct KeyCodes {
     keycodes: HashMap<u16, XAPKeyCode>,
 }
 
-pub(crate) fn read_xap_keycodes() -> XAPResult<HashMap<u16, XAPKeyCode>> {
+pub(crate) fn read_xap_keycodes(path: PathBuf) -> XAPResult<HashMap<u16, XAPKeyCode>> {
     let mut all = HashMap::new();
 
-    // TODO runtime configurable config path
-    for entry in fs::read_dir("./xap/constants/keycodes")? {
+    for entry in fs::read_dir(path)? {
         let entry = entry?;
         let path = entry.path();
         if !path.is_dir() {
@@ -89,6 +90,14 @@ where
     }
 
     Ok(result)
+}
+
+#[derive(Debug, Default, Clone, Serialize, TS)]
+#[ts(export)]
+#[ts(export_to = "../bindings/")]
+pub struct XAPKeyCodeConfig {
+    pub code: XAPKeyCode,
+    pub position: KeyPosition,
 }
 
 #[cfg(test)]

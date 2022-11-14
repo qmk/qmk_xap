@@ -2,7 +2,6 @@
 
 use anyhow::anyhow;
 use binrw::{prelude::*, ReadOptions};
-use bitflags::bitflags;
 use rand::distributions::{Distribution, Uniform};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -41,13 +40,5 @@ impl BinRead for Token {
                 err: Box::new(anyhow!("XAP token has invalid value of {}", raw)),
             }),
         }
-    }
-}
-
-bitflags! {
-    #[binread]
-    pub struct ResponseFlags: u8 {
-        const SUCCESS = 0b1;
-        const SECURE_FAILURE = 0b10;
     }
 }

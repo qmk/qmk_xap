@@ -1,3 +1,5 @@
 src-tauri/
-!src-tauri/bindings
+xap-specs/
+bindings/
 dist/
+target/

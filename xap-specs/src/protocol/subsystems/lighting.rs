@@ -3,7 +3,7 @@
 use binrw::*;
 use bitflags::bitflags;
 
-use crate::xap::XAPRequest;
+use crate::request::XAPRequest;
 
 mod backlight;
 mod rgblight;

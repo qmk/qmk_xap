@@ -3,17 +3,15 @@ use std::sync::Arc;
 use parking_lot::Mutex;
 use tauri::State;
 use uuid::Uuid;
+use xap_specs::protocol::xap::{XAPSecureStatus, XAPSecureStatusLock, XAPSecureStatusUnlock};
 
-use crate::xap::{
-    protocol::{XAPResult, XAPSecureStatus, XAPSecureStatusLock, XAPSecureStatusUnlock},
-    XAPClient,
-};
+use crate::xap::{hid::XAPClient, ClientResult};
 
 #[tauri::command]
 pub(crate) async fn secure_status_get(
     id: Uuid,
     state: State<'_, Arc<Mutex<XAPClient>>>,
-) -> XAPResult<XAPSecureStatus> {
+) -> ClientResult<XAPSecureStatus> {
     state.lock().get_device(&id)?.query_secure_status()
 }
 
@@ -21,7 +19,7 @@ pub(crate) async fn secure_status_get(
 pub(crate) async fn secure_lock(
     id: Uuid,
     state: State<'_, Arc<Mutex<XAPClient>>>,
-) -> XAPResult<()> {
+) -> ClientResult<()> {
     state.lock().query(id, XAPSecureStatusLock {})
 }
 
@@ -29,6 +27,6 @@ pub(crate) async fn secure_lock(
 pub(crate) async fn secure_unlock(
     id: Uuid,
     state: State<'_, Arc<Mutex<XAPClient>>>,
-) -> XAPResult<()> {
+) -> ClientResult<()> {
     state.lock().query(id, XAPSecureStatusUnlock {})
 }

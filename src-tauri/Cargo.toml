@@ -10,6 +10,10 @@ rust-version = "1.65"
 
 [build-dependencies]
 tauri-build = { version = "1.1", features = [] }
+ts-rs = { git = "https://github.com/Aleph-Alpha/ts-rs", branch = "main", features = [
+    "serde-compat",
+    "uuid-impl",
+] }
 
 [dependencies]
 anyhow = "1.0"
@@ -18,10 +22,7 @@ bitflags = "1.3"
 flate2 = "1.0"
 crossbeam-channel = "0.5"
 env_logger = "0.9"
-hidapi = { version = "1.5.0", features = [
-    "linux-static-hidraw",
-    "macos-shared-device",
-], default-features = false }
+hidapi = { version = "2.0.2", features = ["macos-shared-device"] }
 log = "0.4"
 parking_lot = "0.12.1"
 rand = "0.8"
@@ -36,6 +37,7 @@ ts-rs = { git = "https://github.com/Aleph-Alpha/ts-rs", branch = "main", feature
     "uuid-impl",
 ] }
 uuid = { version = "1.2.1", features = ["serde", "v4"] }
+xap-specs = { path = "../xap-specs" }
 
 [dev-dependencies]
 similar-asserts = "1.4.2"

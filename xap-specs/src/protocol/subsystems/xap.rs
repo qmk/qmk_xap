@@ -5,7 +5,7 @@ use bitflags::bitflags;
 use serde::Serialize;
 use ts_rs::TS;
 
-use crate::xap::XAPRequest;
+use crate::request::XAPRequest;
 
 // ==============================
 // 0x0 0x0
@@ -78,6 +78,7 @@ impl XAPRequest for XAPEnabledSubsystemsQuery {
 // 0x0 0x3
 #[derive(Debug, Serialize, TS, Clone, Copy)]
 #[ts(export)]
+#[ts(export_to = "../bindings/")]
 pub enum XAPSecureStatus {
     Locked,
     Unlocking,

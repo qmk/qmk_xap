@@ -3,7 +3,7 @@ use bitflags::bitflags;
 use serde::{Deserialize, Serialize};
 use ts_rs::TS;
 
-use crate::xap::XAPRequest;
+use crate::request::XAPRequest;
 
 // ==============================
 // 0x4 0x1
@@ -48,10 +48,12 @@ impl XAPRequest for KeymapLayerCountQuery {
 // 0x4 0x3
 #[derive(BinRead, Debug, TS, Serialize, Deserialize)]
 #[ts(export)]
+#[ts(export_to = "../bindings/")]
 pub struct KeyCode(pub u16);
 
 #[derive(BinWrite, Debug, Default, Clone, TS, Serialize, Deserialize)]
 #[ts(export)]
+#[ts(export_to = "../bindings/")]
 pub struct KeyPosition {
     pub layer: u8,
     pub row: u8,
@@ -73,6 +75,7 @@ impl XAPRequest for KeymapKeycodeQuery {
 // 0x4 0x4
 #[derive(BinWrite, Debug, TS, Serialize, Deserialize)]
 #[ts(export)]
+#[ts(export_to = "../bindings/")]
 pub struct EncoderPosition {
     layer: u8,
     encoder: u8,

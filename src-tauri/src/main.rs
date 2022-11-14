@@ -24,12 +24,11 @@ use tauri::{
 };
 use tauri::{AppHandle, Manager};
 
-
-
-
 use commands::*;
 use events::{FrontendEvent, XAPEvent};
-use xap::{XAPClient, XAPResult};
+use xap::hid::XAPClient;
+use xap::ClientResult;
+use xap_specs::constants::XAPConstants;
 
 fn shutdown_event_loop<R: Runtime>(sender: Sender<XAPEvent>) -> TauriPlugin<R> {
     Builder::new("event loop shutdown")
@@ -114,13 +113,16 @@ fn start_event_loop(
     });
 }
 
-fn main() -> XAPResult<()> {
+fn main() -> ClientResult<()> {
     env_logger::Builder::from_env(Env::default().default_filter_or("info"))
         .format_timestamp(None)
         .init();
 
     let (event_channel_tx, event_channel_rx): (Sender<XAPEvent>, Receiver<XAPEvent>) = unbounded();
-    let state = Arc::new(Mutex::new(XAPClient::new(event_channel_tx.clone())?));
+    let state = Arc::new(Mutex::new(XAPClient::new(
+        event_channel_tx.clone(),
+        XAPConstants::new("../xap-specs/specs/constants/keycodes".into())?,
+    )?));
     let event_channel_tx_listen_frontend = event_channel_tx.clone();
 
     tauri::Builder::default()
