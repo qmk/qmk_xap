@@ -5,12 +5,13 @@ use std::{
 
 use log::error;
 use serde::{de::Error, Deserialize, Deserializer, Serialize};
-use serde_with::{serde_as, NoneAsEmptyString};
+use serde_with::{serde_as, skip_serializing_none, NoneAsEmptyString};
 use ts_rs::TS;
 
 use crate::xap::XAPResult;
 
 #[serde_as]
+#[skip_serializing_none]
 #[derive(Deserialize, Clone, Serialize, Default, Debug, PartialEq, Eq, TS)]
 #[ts(export)]
 pub struct XAPKeyCode {
@@ -24,6 +25,18 @@ pub struct XAPKeyCode {
     pub label: Option<String>,
     #[serde(default)]
     pub aliases: Vec<String>,
+}
+
+impl XAPKeyCode {
+    pub fn new_custom(code: u16) -> Self {
+        Self {
+            code,
+            key: format!("USER-CUSTOM-{code}"),
+            group: Some("USER-CUSTOM".to_owned()),
+            label: Some(format!("{code}")),
+            aliases: vec![],
+        }
+    }
 }
 
 #[derive(Deserialize, Debug)]

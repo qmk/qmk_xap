@@ -19,4 +19,11 @@ impl XAPConstants {
             keycodes: read_xap_keycodes()?,
         })
     }
+
+    pub fn get_keycode(&self, code: u16) -> XAPKeyCode {
+        self.keycodes
+            .get(&code)
+            .cloned()
+            .unwrap_or_else(|| XAPKeyCode::new_custom(code))
+    }
 }

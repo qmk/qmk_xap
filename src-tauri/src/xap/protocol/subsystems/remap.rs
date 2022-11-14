@@ -46,7 +46,7 @@ impl XAPRequest for RemapLayerCountQuery {
 
 // ==============================
 // 0x5 0x3
-#[derive(BinWrite, BinRead, Clone, Debug, TS, Serialize, Deserialize)]
+#[derive(BinWrite, BinRead, Clone, Default, Debug, TS, Serialize, Deserialize)]
 #[ts(export)]
 pub struct KeyPositionConfig {
     pub layer: u8,

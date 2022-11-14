@@ -1,18 +1,19 @@
 use std::collections::HashMap;
 
 use serde::{Deserialize, Serialize};
-use serde_with::serde_as;
 use ts_rs::TS;
 use uuid::Uuid;
 
-use crate::xap::{keycode::XAPKeyCode, KeyPositionConfig, QMKBoardIdentifiers, XAPSecureStatus};
+use crate::xap::{
+    keycode::XAPKeyCode, KeyPositionConfig, QMKBoardIdentifiers, XAPKeyCodeConfig, XAPSecureStatus,
+};
 
 #[derive(Clone, Serialize, TS)]
 #[ts(export)]
 pub struct XAPDevice {
     pub id: Uuid,
     pub info: XAPDeviceInfo,
-    pub keymap: Vec<Vec<Vec<KeyPositionConfig>>>,
+    pub keymap: Vec<Vec<Vec<XAPKeyCodeConfig>>>,
     pub secure_status: XAPSecureStatus,
 }
 
@@ -125,7 +126,7 @@ impl From<crate::xap::XAPConstants> for XAPConstants {
                 .into_iter()
                 .fold(HashMap::new(), |mut category, (_, keycode)| {
                     category
-                        .entry(keycode.group.clone().unwrap_or("Other".to_owned()))
+                        .entry(keycode.group.clone().unwrap_or("other".to_owned()))
                         .or_insert(Vec::new())
                         .push(keycode);
 

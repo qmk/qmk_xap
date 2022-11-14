@@ -1,6 +1,6 @@
 <script setup lang="ts">
     import { storeToRefs } from 'pinia'
-    import { ref, watch, onMounted, computed } from 'vue'
+    import { ref, watch, onMounted } from 'vue'
     import type { Ref } from 'vue'
 
     import { useXAPDeviceStore } from '@/stores/devices'
@@ -100,23 +100,36 @@
                         transition-next="jump-up"
                     >
                         <!-- eslint-disable-next-line vue/valid-v-for -->
-                        <q-tab-panel v-for="(layer, layerid) in device?.keymap" :name="layerid">
+                        <q-tab-panel v-for="(layer, layer_idx) in device?.keymap" :name="layer_idx">
                             <!-- eslint-disable-next-line vue/require-v-for-key -->
-                            <div v-for="(row, rowid) in layer" class="row q-gutter-x-md q-ma-md">
+                            <div v-for="row in layer" class="row q-gutter-x-md q-ma-md">
                                 <!--  TODO create proper Key and Keycode components -->
                                 <!-- eslint-disable-next-line vue/valid-v-for -->
                                 <q-responsive
-                                    v-for="(key, colid) in row"
+                                    v-for="col in row"
                                     class="col"
                                     style="max-width: 3rem"
                                     :ratio="1"
                                 >
                                     <q-btn
-                                        :color="colorButton(layerid, rowid, colid)"
+                                        :color="
+                                            colorButton(
+                                                col.position.layer,
+                                                col.position.row,
+                                                col.position.col
+                                            )
+                                        "
                                         text-color="black"
-                                        :label="key.keycode"
+                                        :label="col.code.label ?? col.code.key"
                                         square
-                                        @click="() => selectKey(layerid, rowid, colid)"
+                                        @click="
+                                            () =>
+                                                selectKey(
+                                                    col.position.layer,
+                                                    col.position.row,
+                                                    col.position.col
+                                                )
+                                        "
                                     />
                                 </q-responsive>
                             </div>
@@ -155,15 +168,10 @@
                             :key="category.name"
                             :name="category.name"
                             :label="category.name"
+                            class="row q-gutter-md"
                         >
-                            <div class="row q-gutter-x-md q-ma-md">
-                                <q-responsive
-                                    v-for="code in category.codes"
-                                    :key="code.code"
-                                    class="col"
-                                    style="max-width: 3rem"
-                                    :ratio="1"
-                                >
+                            <div v-for="code in category.codes" :key="code.code" class="col-1">
+                                <q-responsive style="max-width: 4rem" :ratio="1">
                                     <q-btn
                                         color="white"
                                         :disable="device?.secure_status != 'Unlocked'"
@@ -182,7 +190,7 @@
                                 </q-responsive>
                             </div>
                         </q-tab-panel>
-                    </q-tab-panels> 
+                    </q-tab-panels>
                 </template>
             </q-splitter>
         </div>

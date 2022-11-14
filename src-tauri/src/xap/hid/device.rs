@@ -13,7 +13,9 @@ use flate2::read::GzDecoder;
 use hidapi::{DeviceInfo, HidDevice};
 use log::{error, info, trace};
 use parking_lot::RwLock;
+use serde::Serialize;
 use serde_json::{Map, Value};
+use ts_rs::TS;
 use uuid::Uuid;
 
 use crate::{
@@ -22,27 +24,35 @@ use crate::{
         XAPDevice as XAPDeviceDto, XAPDeviceInfo, XAPInfo,
     },
     xap::{
-        BacklightCapabilities, BacklightCapabilitiesQuery, BacklightEffectsQuery, BroadcastRaw,
-        BroadcastType, ConfigBlobChunkQuery, KeyCode, KeyPosition, KeyPositionConfig,
-        KeymapCapabilities, KeymapCapabilitiesQuery, KeymapKeycodeQuery, KeymapLayerCountQuery,
-        LightingCapabilities, LightingCapabilitiesQuery, LogBroadcast, QMKBoardIdentifiersQuery,
-        QMKBoardManufacturerQuery, QMKCapabilities, QMKCapabilitiesQuery, QMKConfigBlobLengthQuery,
-        QMKHardwareIdentifierQuery, QMKProductNameQuery, QMKVersionQuery, RGBLightCapabilities,
-        RGBLightCapabilitiesQuery, RGBLightEffectsQuery, RGBMatrixCapabilities,
-        RGBMatrixCapabilitiesQuery, RGBMatrixEffectsQuery, RawRequest, RawResponse,
-        RemapCapabilities, RemapCapabilitiesQuery, RemapKeycodeQuery, RemapLayerCountQuery,
-        SecureStatusBroadcast, Token, XAPEnabledSubsystems, XAPEnabledSubsystemsQuery, XAPError,
-        XAPRequest, XAPResult, XAPSecureStatus, XAPSecureStatusQuery, XAPVersionQuery, XAPConstants,
+        keycode::XAPKeyCode, BacklightCapabilities, BacklightCapabilitiesQuery,
+        BacklightEffectsQuery, BroadcastRaw, BroadcastType, ConfigBlobChunkQuery, KeyCode,
+        KeyPosition, KeyPositionConfig, KeymapCapabilities, KeymapCapabilitiesQuery,
+        KeymapKeycodeQuery, KeymapLayerCountQuery, LightingCapabilities, LightingCapabilitiesQuery,
+        LogBroadcast, QMKBoardIdentifiersQuery, QMKBoardManufacturerQuery, QMKCapabilities,
+        QMKCapabilitiesQuery, QMKConfigBlobLengthQuery, QMKHardwareIdentifierQuery,
+        QMKProductNameQuery, QMKVersionQuery, RGBLightCapabilities, RGBLightCapabilitiesQuery,
+        RGBLightEffectsQuery, RGBMatrixCapabilities, RGBMatrixCapabilitiesQuery,
+        RGBMatrixEffectsQuery, RawRequest, RawResponse, RemapCapabilities, RemapCapabilitiesQuery,
+        RemapKeycodeQuery, RemapLayerCountQuery, SecureStatusBroadcast, Token, XAPConstants,
+        XAPEnabledSubsystems, XAPEnabledSubsystemsQuery, XAPError, XAPRequest, XAPResult,
+        XAPSecureStatus, XAPSecureStatusQuery, XAPVersionQuery,
     },
     XAPEvent,
 };
 
 const XAP_REPORT_SIZE: usize = 64;
 
+#[derive(Debug, Default, Clone, Serialize, TS)]
+#[ts(export)]
+pub struct XAPKeyCodeConfig {
+    code: XAPKeyCode,
+    position: KeyPosition,
+}
+
 #[derive(Debug, Default)]
 struct XAPDeviceState {
     xap_info: Option<XAPDeviceInfo>,
-    keymap: Vec<Vec<Vec<KeyPositionConfig>>>,
+    keymap: Vec<Vec<Vec<XAPKeyCodeConfig>>>,
     secure_status: XAPSecureStatus,
 }
 
@@ -105,7 +115,7 @@ impl XAPDevice {
             .expect("XAP device wasn't properly initialized")
     }
 
-    pub fn keymap(&self) -> Vec<Vec<Vec<KeyPositionConfig>>> {
+    pub fn keymap(&self) -> Vec<Vec<Vec<XAPKeyCodeConfig>>> {
         self.state.read().keymap.clone()
     }
 
@@ -134,7 +144,16 @@ impl XAPDevice {
     pub fn set_keycode(&self, config: KeyPositionConfig) -> XAPResult<()> {
         self.query(RemapKeycodeQuery(config.clone()))?;
         let (layer, row, col) = (config.layer, config.row, config.col);
-        self.state.write().keymap[layer as usize][row as usize][col as usize] = config;
+
+        self.state.write().keymap[layer as usize][row as usize][col as usize] = XAPKeyCodeConfig {
+            code: self.constants.get_keycode(config.keycode),
+            position: KeyPosition {
+                layer: config.layer,
+                row: config.row,
+                col: config.col,
+            },
+        };
+
         Ok(())
     }
 
@@ -383,7 +402,7 @@ impl XAPDevice {
             let cols = keymap.matrix.cols;
             let rows = keymap.matrix.rows;
 
-            let keymap: Result<Vec<Vec<Vec<KeyPositionConfig>>>, XAPError> = (0..layers)
+            let keymap: Result<Vec<Vec<Vec<XAPKeyCodeConfig>>>, XAPError> = (0..layers)
                 .map(|layer| {
                     (0..rows)
                         .map(|row| {
@@ -392,12 +411,12 @@ impl XAPDevice {
                                     let keycode =
                                         self.query_keycode(KeyPosition { layer, row, col })?;
 
-                                    Ok(KeyPositionConfig {
-                                        layer,
-                                        row,
-                                        col,
-                                        keycode: keycode.0,
-                                    })
+                                    let xap = XAPKeyCodeConfig {
+                                        code: self.constants.get_keycode(keycode.0),
+                                        position: KeyPosition { layer, row, col },
+                                    };
+
+                                    Ok(xap)
                                 })
                                 .collect()
                         })
