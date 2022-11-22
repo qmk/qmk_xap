@@ -20,6 +20,10 @@ const routes: RouteRecordRaw[] = [
                 path: 'keymap',
                 component: () => import('@/pages/KeymapView.vue'),
             },
+            {
+                path: 'painter',
+                component: () => import('@/pages/PainterView.vue'),
+            },
         ],
     },
 ]

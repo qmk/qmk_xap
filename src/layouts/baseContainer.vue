@@ -49,6 +49,12 @@ const devicesA: Ref<Array<XAPDevice>> = computed(() => Array.from(devices.value.
                         to="/rgb"
                         exact
                     />
+                    <q-route-tab
+                        v-if="device?.info?.features?.quantum_painter !== false"
+                        label="Painter"
+                        to="/painter"
+                        exact
+                    />
                 </q-tabs>
             </q-toolbar>
             <div class="bg-white">

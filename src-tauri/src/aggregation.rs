@@ -22,9 +22,31 @@ pub struct XAPDevice {
 pub struct XAPDeviceInfo {
     pub xap: XAPInfo,
     pub qmk: QMKInfo,
+    pub features: FeaturesInfo,
     pub keymap: Option<KeymapInfo>,
     pub remap: Option<RemapInfo>,
     pub lighting: Option<LightingInfo>,
+}
+
+#[derive(Debug, Deserialize, Serialize, TS, Clone)]
+#[ts(export)]
+pub struct FeaturesInfo {
+    pub audio: bool,
+    pub backlight: bool,
+    pub bootmagic: bool,
+    pub console: bool,
+    pub deferred_exec: bool,
+    pub encoder: bool,
+    pub extrakey: bool,
+    pub mousekey: bool,
+    pub nkro: bool,
+    pub quantum_painter: bool,
+    pub quantum_painter_animations: bool,
+    pub rgb_matrix: bool,
+    pub unicode: bool,
+    pub usbpd: bool,
+    pub wpm:  bool,
+    pub xap: bool,
 }
 
 #[derive(Debug, Serialize, TS, Clone)]

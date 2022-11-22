@@ -20,7 +20,7 @@ use uuid::Uuid;
 
 use crate::{
     aggregation::{
-        BacklightInfo, KeymapInfo, LightingInfo, QMKInfo, RGBLightInfo, RGBMatrixInfo, RemapInfo,
+        BacklightInfo, FeaturesInfo, KeymapInfo, LightingInfo, QMKInfo, RGBLightInfo, RGBMatrixInfo, RemapInfo,
         XAPDevice as XAPDeviceDto, XAPDeviceInfo, XAPInfo,
     },
     xap::{
@@ -235,6 +235,8 @@ impl XAPDevice {
             eeprom_reset_enabled: qmk_caps.contains(QMKCapabilities::EEPROM_RESET),
         };
 
+        let features: FeaturesInfo = serde_json::from_value(config["features"].clone())?;
+
         let keymap_info = if subsystems.contains(XAPEnabledSubsystems::KEYMAP) {
             let keymap_caps = self.query(KeymapCapabilitiesQuery)?;
 
@@ -359,6 +361,7 @@ impl XAPDevice {
         self.state.write().xap_info = Some(XAPDeviceInfo {
             xap: xap_info,
             qmk: qmk_info,
+            features: features,
             keymap: keymap_info,
             remap: remap_info,
             lighting: lighting_info,
