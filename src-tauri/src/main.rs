@@ -119,14 +119,9 @@ fn main() -> ClientResult<()> {
         .init();
 
     let (event_channel_tx, event_channel_rx): (Sender<XAPEvent>, Receiver<XAPEvent>) = unbounded();
-    let state = Arc::new(Mutex::new(XAPClient::new(
-        event_channel_tx.clone(),
-        XAPConstants::new("../xap-specs/specs/constants/keycodes".into())?,
-    )?));
-    let event_channel_tx_listen_frontend = event_channel_tx.clone();
 
     tauri::Builder::default()
-        .plugin(shutdown_event_loop(event_channel_tx))
+        .plugin(shutdown_event_loop(Sender::clone(&event_channel_tx)))
         .invoke_handler(tauri::generate_handler![
             xap_constants_get,
             secure_lock,
@@ -150,17 +145,28 @@ fn main() -> ClientResult<()> {
             rgbmatrix_config_save,
         ])
         .setup(move |app| {
-            app.manage(state.clone());
-            app.listen_global("frontend-loaded", move |_| {
-                event_channel_tx_listen_frontend
-                    .send(XAPEvent::AnnounceAllDevices)
-                    .unwrap();
-            });
+            let xap_specs = app
+                .path_resolver()
+                .resolve_resource("../xap-specs/specs/constants/keycodes")
+                .expect("unable to find XAP specifications");
+
+            let state = Arc::new(Mutex::new(
+                XAPClient::new(Sender::clone(&event_channel_tx), XAPConstants::new(xap_specs)?)
+                    .expect("failed to initialize XAP state"),
+            ));
+            app.manage(Arc::clone(&state));
+
             start_event_loop(app.handle(), state, event_channel_rx);
+
+            app.listen_global("frontend-loaded", move |_| {
+                let event_tx = event_channel_tx.clone();
+                event_tx.send(XAPEvent::AnnounceAllDevices).unwrap();
+            });
+
             Ok(())
         })
         .run(tauri::generate_context!())
-        .expect("error while running tauri application");
+        .expect("error running QMK XAP client");
 
     Ok(())
 }

@@ -12,6 +12,11 @@
   },
   "tauri": {
     "allowlist": {
+      "fs": {
+        "scope": [
+          "$RESOURCE/*"
+        ]
+      },
       "all": true
     },
     "bundle": {
@@ -38,7 +43,9 @@
         "providerShortName": null,
         "signingIdentity": null
       },
-      "resources": [],
+      "resources": [
+        "../xap-specs/specs/*"
+      ],
       "shortDescription": "",
       "targets": "all",
       "windows": {
