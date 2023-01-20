@@ -148,7 +148,10 @@ impl From<xap_specs::constants::XAPConstants> for XAPConstants {
 
         let keycodes = keycodes
             .into_iter()
-            .map(|(name, codes)| XAPKeyCodeCategory { name, codes })
+            .map(|(name, mut codes)| {
+                codes.sort_by_key(|code| code.code);
+                XAPKeyCodeCategory { name, codes }
+            })
             .collect();
 
         Self { keycodes }
