@@ -1,12 +1,12 @@
 use core::fmt::Debug;
 use std::io::{Seek, Write};
 
-use binrw::{BinRead, BinResult, BinWrite, BinWriterExt};
+use binrw::{BinRead, BinResult, BinWrite, BinWriterExt, Endian};
 
 use crate::token::Token;
 
-pub trait XAPRequest: Sized + Debug + BinWrite<Args = ()> {
-    type Response: BinRead<Args = ()>;
+pub trait XAPRequest: Sized + Debug + for<'a> BinWrite<Args<'a> = ()> {
+    type Response: for<'a> BinRead<Args<'a> = ()>;
 
     fn id() -> &'static [u8];
 
@@ -40,13 +40,13 @@ impl<T> BinWrite for RawRequest<T>
 where
     T: XAPRequest,
 {
-    type Args = ();
+    type Args<'a> = ();
 
     fn write_options<W: Write + Seek>(
         &self,
         writer: &mut W,
-        _options: &binrw::WriteOptions,
-        _args: Self::Args,
+        _endian: Endian,
+        _args: Self::Args<'_>,
     ) -> BinResult<()> {
         writer.write_le(&self.token)?;
         // Dummy write of the payload length, which is not known at this point.

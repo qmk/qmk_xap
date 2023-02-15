@@ -1,7 +1,7 @@
 // This file defines the different kind of tokens
 
 use anyhow::anyhow;
-use binrw::{prelude::*, ReadOptions};
+use binrw::{prelude::*, Endian};
 use rand::distributions::{Distribution, Uniform};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -22,12 +22,12 @@ impl Token {
 }
 
 impl BinRead for Token {
-    type Args = ();
+    type Args<'a> = ();
 
     fn read_options<R: std::io::Read + std::io::Seek>(
         reader: &mut R,
-        _options: &ReadOptions,
-        _args: Self::Args,
+        _endian: Endian,
+        _args: Self::Args<'_>,
     ) -> BinResult<Self> {
         let raw: u16 = reader.read_le()?;
 

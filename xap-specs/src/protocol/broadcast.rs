@@ -1,7 +1,7 @@
 use core::fmt::Debug;
 use std::io::Cursor;
 
-use binrw::{binread, BinRead, BinReaderExt};
+use binrw::{binread, BinRead, BinReaderExt, Endian};
 use log::trace;
 
 use crate::error::XAPResult;
@@ -51,18 +51,18 @@ impl BroadcastRaw {
     }
 }
 
-pub trait XAPBroadcast: Sized + Debug + BinRead<Args = ()> {}
+pub trait XAPBroadcast: Sized + Debug + for<'a> BinRead<Args<'a> = ()> {}
 
 #[derive(Debug)]
 pub struct LogBroadcast(pub String);
 
 impl BinRead for LogBroadcast {
-    type Args = ();
+    type Args<'a> = ();
 
     fn read_options<R: std::io::Read + std::io::Seek>(
         reader: &mut R,
-        _options: &binrw::ReadOptions,
-        _args: Self::Args,
+        _endian: Endian,
+        _args: Self::Args<'_>,
     ) -> binrw::BinResult<Self> {
         let len: u8 = reader.read_le()?;
         let mut bytes = Vec::with_capacity(len as usize);

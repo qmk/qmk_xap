@@ -1,7 +1,7 @@
 use core::fmt::Debug;
 use std::io::{Cursor, Read, Seek};
 
-use binrw::{binread, BinRead, BinResult, ReadOptions};
+use binrw::{binread, BinRead, BinResult, Endian};
 use bitflags::bitflags;
 use log::trace;
 
@@ -68,12 +68,12 @@ impl RawResponse {
 pub struct UTF8StringResponse(pub String);
 
 impl BinRead for UTF8StringResponse {
-    type Args = ();
+    type Args<'a> = ();
 
     fn read_options<R: Read + Seek>(
         reader: &mut R,
-        _options: &ReadOptions,
-        _args: Self::Args,
+        _endian: Endian,
+        _args: Self::Args<'_>,
     ) -> BinResult<Self> {
         Ok(Self(std::io::read_to_string(reader)?))
     }

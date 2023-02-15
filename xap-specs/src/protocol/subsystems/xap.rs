@@ -92,12 +92,12 @@ impl Default for XAPSecureStatus {
 }
 
 impl BinRead for XAPSecureStatus {
-    type Args = ();
+    type Args<'a> = ();
 
     fn read_options<R: std::io::Read + std::io::Seek>(
         reader: &mut R,
-        _options: &ReadOptions,
-        _args: Self::Args,
+        _endian: Endian,
+        _args: Self::Args<'_>,
     ) -> BinResult<Self> {
         let raw_status: u8 = reader.read_le()?;
         Ok(match raw_status {
