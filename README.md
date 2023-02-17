@@ -1,6 +1,6 @@
 # QMK XAP Client
 
-This repository contains the an experimental Client for the QMK Firmware [XAP protocol](https://github.com/qmk/qmk_firmware/pull/13733). It is build using the following base technologies:
+This repository contains the (experimental) [QMK XAP](https://github.com/qmk/qmk_firmware/pull/13733) protocol client. It is build using the following base technologies:
 
 -   [Tauri](https://tauri.app/) as it's runtime
 -   [Vue.js](https://vuejs.org/) as the frontend framework
@@ -39,7 +39,7 @@ pub struct RGBMatrixConfig {
 }
 ```
 
-With these the following Typescript Interface are automatically generated:
+With these, the following Typescript Interface are automatically generated:
 
 ```Typescript
 export interface RGBMatrixConfig {
