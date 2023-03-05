@@ -10,7 +10,31 @@ This repository contains the (experimental) [QMK XAP](https://github.com/qmk/qmk
 
 ## Architecture/Design
 
-![Overview](docs/architecture.png)
+```mermaid
+flowchart TD
+    subgraph QMK XAP UI
+        subgraph Frontend
+            vue[Vue.js]
+        end
+
+        subgraph Backend
+            Tauri
+            client[XAP Client]
+        end
+    end
+    
+    subgraph Devices
+        dev1[XAP Device 1]
+        dev2[XAP Device 2]
+    end
+
+    vue <-->|JSON RPC - <b><i>*1</i></b>| Tauri
+
+    Tauri <--> client
+
+    client <-->|Usb Hid - <b><i>*2</i></b>|dev1
+    client <-->|Usb Hid - <b><i>*2</i></b>|dev2
+```
 
 **(1) JSON RPC:**
 
