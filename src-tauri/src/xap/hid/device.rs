@@ -11,13 +11,16 @@ use binrw::{BinRead, BinWriterExt};
 use crossbeam_channel::{unbounded, Receiver, Sender};
 use flate2::read::GzDecoder;
 use hidapi::{DeviceInfo, HidDevice};
-use log::{error, info, trace};
+use log::{debug, error, info, trace};
 use parking_lot::RwLock;
 use serde_json::{Map, Value};
 use uuid::Uuid;
 
 use xap_specs::{
-    constants::{keycode::XAPKeyCodeConfig, XAPConstants},
+    constants::{
+        keycode::{KeyCoords, XAPKeyCodeConfig, XAPKeyInfo},
+        XAPConstants,
+    },
     error::{XAPError, XAPResult},
     protocol::{
         keymap::{
@@ -65,6 +68,8 @@ const XAP_REPORT_SIZE: usize = 64;
 struct XAPDeviceState {
     xap_info: Option<XAPDeviceInfo>,
     keymap: Vec<Vec<Vec<XAPKeyCodeConfig>>>,
+    key_info: Vec<Vec<Vec<Option<XAPKeyInfo>>>>,
+    coords_from_rowcol: Vec<Vec<Option<KeyCoords>>>,
     secure_status: XAPSecureStatus,
 }
 
@@ -107,6 +112,8 @@ impl XAPDevice {
         };
         device.query_device_info()?;
         device.query_keymap()?;
+        device.generate_coords_from_rowcol()?;
+        device.generate_key_info();
         device.query_secure_status()?;
         Ok(device)
     }
@@ -131,6 +138,14 @@ impl XAPDevice {
         self.state.read().keymap.clone()
     }
 
+    pub fn key_info(&self) -> Vec<Vec<Vec<Option<XAPKeyInfo>>>> {
+        self.state.read().key_info.clone()
+    }
+
+    fn coords_from_rowcol(&self) -> Vec<Vec<Option<KeyCoords>>> {
+        self.state.read().coords_from_rowcol.clone()
+    }
+
     pub fn as_dto(&self) -> XAPDeviceDto {
         let state = self.state.read();
         XAPDeviceDto {
@@ -140,7 +155,7 @@ impl XAPDevice {
                 .as_ref()
                 .expect("XAP device wasn't properly initialized")
                 .clone(),
-            keymap: state.keymap.clone(),
+            key_info: state.key_info.clone(),
             secure_status: state.secure_status,
         }
     }
@@ -445,6 +460,125 @@ impl XAPDevice {
         }
 
         Ok(())
+    }
+
+    fn get_coords_from_rowcol(&self, row: u8, col: u8) -> Option<KeyCoords> {
+        let json: Map<String, Value> =
+            serde_json::from_str(self.xap_info().qmk.config.as_str()).ok()?;
+
+        // TODO: Dynamic layout name
+        let layout_info = json
+            .get("layouts")?
+            .get("LAYOUT")?
+            .get("layout")?
+            .as_array()?;
+
+        // TODO: Handle JSONs that dont contain matrix info (?)
+        let Some(key) = layout_info.iter().find(|&key| {
+                key.get("matrix")
+                    .unwrap()
+                    .as_array()
+                    .unwrap() == &[row, col]
+            }) else {
+                debug!("There's no key at matrix ({row}, {col})");
+                return None;
+            };
+
+        let x = key.get("x")?.as_u64()? as u8;
+        let y = key.get("y")?.as_u64()? as u8;
+        let w = if let Some(w) = key.get("w") {
+            w.as_u64()? as u8
+        } else {
+            0
+        };
+        let h = if let Some(h) = key.get("h") {
+            h.as_u64()? as u8
+        } else {
+            0
+        };
+
+        debug!("Matrix ({row}, {col}) -> Position ({x}, {y})");
+
+        Some(KeyCoords { x, y, w, h })
+    }
+
+    fn get_rowcol_from_coords(&self, x: u8, y: u8) -> Option<KeyPosition> {
+        for (row, values) in self.coords_from_rowcol().iter().enumerate() {
+            for (col, value) in values.iter().enumerate() {
+                if let Some(key) = value {
+                    if key.x == x && key.y == y {
+                        let row = row as u8;
+                        let col = col as u8;
+                        return Some(KeyPosition { layer: 0, row, col });
+                    }
+                }
+            }
+        }
+
+        None
+    }
+
+    fn generate_coords_from_rowcol(&self) -> ClientResult<()> {
+        self.state.write().coords_from_rowcol = Default::default();
+
+        if let Some(keymap) = &self.xap_info().keymap {
+            let cols = keymap.matrix.cols;
+            let rows = keymap.matrix.rows;
+
+            let coords_from_rowcol: Vec<Vec<Option<KeyCoords>>> = (0..rows)
+                .map(|row| {
+                    (0..cols)
+                        .map(|col| self.get_coords_from_rowcol(row, col))
+                        .collect()
+                })
+                .collect();
+
+            self.state.write().coords_from_rowcol = coords_from_rowcol;
+        }
+
+        Ok(())
+    }
+
+    fn generate_key_info(&self) {
+        let coords = self.coords_from_rowcol();
+
+        info!("{}||{}", coords.len(), coords[0].len());
+
+        let flat_coords: Vec<_> = coords.iter().flatten().flatten().collect();
+
+        let max_x = flat_coords.iter().max_by_key(|coord| coord.x).unwrap().x;
+        let max_y = flat_coords.iter().max_by_key(|coord| coord.y).unwrap().y;
+
+        let keymap = self.keymap();
+        let layers = keymap.len();
+
+        let key_info: Vec<Vec<Vec<Option<XAPKeyInfo>>>> = (0..layers)
+            .map(|layer| {
+                (0..=max_y)
+                    .map(|y| {
+                        (0..=max_x)
+                            .map(|x| {
+                                let mut position = self.get_rowcol_from_coords(x, y)?;
+                                position.layer = layer as u8;
+
+                                let KeyPosition { layer: _, row, col } = position;
+
+                                let keycode =
+                                    keymap[layer][row as usize][col as usize].code.clone();
+
+                                Some(XAPKeyInfo {
+                                    coords: coords[row as usize][col as usize].clone()?,
+                                    keycode,
+                                    position,
+                                })
+                            })
+                            .collect()
+                    })
+                    .collect()
+            })
+            .collect();
+
+        self.state.write().key_info = key_info;
     }
 }
 

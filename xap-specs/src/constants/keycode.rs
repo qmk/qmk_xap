@@ -100,6 +100,25 @@ pub struct XAPKeyCodeConfig {
     pub position: KeyPosition,
 }
 
+#[derive(Debug, Default, Clone, Serialize, TS)]
+#[ts(export)]
+#[ts(export_to = "../bindings/")]
+pub struct KeyCoords {
+    pub x: u8,
+    pub y: u8,
+    pub w: u8,
+    pub h: u8,
+}
+
+#[derive(Debug, Default, Clone, Serialize, TS)]
+#[ts(export)]
+#[ts(export_to = "../bindings/")]
+pub struct XAPKeyInfo {
+    pub position: KeyPosition,
+    pub keycode: XAPKeyCode,
+    pub coords: KeyCoords,
+}
+
 #[cfg(test)]
 mod test {
     use similar_asserts::assert_eq;

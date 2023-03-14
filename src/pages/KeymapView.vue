@@ -6,6 +6,7 @@
     import { useXAPDeviceStore } from '@/stores/devices'
     import { KeyPosition } from '@bindings/KeyPosition'
     import { KeyPositionConfig } from '@bindings/KeyPositionConfig'
+    import { XAPKeyInfo } from '@bindings/XAPKeyInfo'
     import { XAPConstants } from '@bindings/XAPConstants'
     import { setKeyCode } from '@/commands/remap'
     import { getKeyMap } from '@/commands/keymap'
@@ -38,26 +39,34 @@
                 // attempt to set keycode
                 await setKeyCode(device.value.id, config)
                 // read-back updated keymap - state handling is done in the backend
-                device.value.keymap = await getKeyMap(device.value.id)
+                device.value.key_info = await getKeyMap(device.value.id)
             } catch (err: unknown) {
                 notifyError(err)
             }
         }
     }
 
-    function selectKey(layer: number, row: number, col: number) {
-        selectedKey.value = { layer: layer, row: row, col: col }
+    function selectKey(key: XAPKeyInfo) {
+        selectedKey.value = {
+            layer: key.position.layer,
+            row: key.position.row,
+            col: key.position.col
+        }
     }
 
-    function colorButton(layer: number, row: number, col: number): string {
+    function colorButton(key: XAPKeyInfo): string {
         if (
-            selectedKey.value?.layer == layer &&
-            selectedKey.value?.row == row &&
-            selectedKey.value?.col == col
+            selectedKey.value?.layer == key.position.layer &&
+            selectedKey.value?.row == key.position.row &&
+            selectedKey.value?.col == key.position.col
         ) {
             return 'grey'
         }
         return 'white'
+    }
+
+    function keyLabel(key: XAPKeyInfo): string{
+        return key.keycode.label ?? key.keycode.key
     }
 
     watch(device, async () => {
@@ -84,7 +93,7 @@
                         <h5>Layer</h5>
                         <!-- eslint-disable-next-line vue/valid-v-for -->
                         <q-tab
-                            v-for="(layer, index) in device?.keymap"
+                            v-for="(layer, index) in device?.key_info"
                             :name="index"
                             :label="index"
                         />
@@ -100,7 +109,7 @@
                         transition-next="jump-up"
                     >
                         <!-- eslint-disable-next-line vue/valid-v-for -->
-                        <q-tab-panel v-for="(layer, layer_idx) in device?.keymap" :name="layer_idx">
+                        <q-tab-panel v-for="(layer, layer_idx) in device?.key_info" :name="layer_idx">
                             <!-- eslint-disable-next-line vue/require-v-for-key -->
                             <div v-for="row in layer" class="row q-gutter-x-md q-ma-md">
                                 <!--  TODO create proper Key and Keycode components -->
@@ -111,25 +120,14 @@
                                     style="max-width: 3rem"
                                     :ratio="1"
                                 >
+                                    <!-- TODO proper representation based on x/y/w/h values -->
                                     <q-btn
-                                        :color="
-                                            colorButton(
-                                                col.position.layer,
-                                                col.position.row,
-                                                col.position.col
-                                            )
-                                        "
+                                        v-if="col !== null"
+                                        :color="colorButton(col)"
                                         text-color="black"
-                                        :label="col.code.label ?? col.code.key"
+                                        :label="keyLabel(col)"
                                         square
-                                        @click="
-                                            () =>
-                                                selectKey(
-                                                    col.position.layer,
-                                                    col.position.row,
-                                                    col.position.col
-                                                )
-                                        "
+                                        @click="() => selectKey(col)"
                                     />
                                 </q-responsive>
                             </div>
