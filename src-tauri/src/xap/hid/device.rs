@@ -542,8 +542,6 @@ impl XAPDevice {
     fn generate_key_info(&self) {
         let coords = self.coords_from_rowcol();
 
-        info!("{}||{}", coords.len(), coords[0].len());
-
         let flat_coords: Vec<_> = coords.iter().flatten().flatten().collect();
 
         let max_x = flat_coords.iter().max_by_key(|coord| coord.x).unwrap().x;
