@@ -489,12 +489,12 @@ impl XAPDevice {
         let w = if let Some(w) = key.get("w") {
             w.as_u64()? as u8
         } else {
-            0
+            1
         };
         let h = if let Some(h) = key.get("h") {
             h.as_u64()? as u8
         } else {
-            0
+            1
         };
 
         debug!("Matrix ({row}, {col}) -> Position ({x}, {y})");
