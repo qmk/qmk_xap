@@ -26,7 +26,7 @@
     "dependencies": {
         "@quasar/extras": "^1.15.5",
         "@radial-color-picker/vue-color-picker": "^5.0.1",
-        "@tauri-apps/api": "^1.2.0",
+        "@tauri-apps/api": "next",
         "@vitejs/plugin-vue-jsx": "^2.1.1",
         "@vueuse/core": "^9.5.0",
         "colord": "^2.9.3",
@@ -37,7 +37,7 @@
     },
     "devDependencies": {
         "@quasar/vite-plugin": "^1.2.3",
-        "@tauri-apps/cli": "^1.2.0",
+        "@tauri-apps/cli": "next",
         "@types/node": "^18.11.9",
         "@typescript-eslint/eslint-plugin": "^5.42.1",
         "@typescript-eslint/parser": "^5.42.1",

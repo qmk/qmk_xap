@@ -5,7 +5,7 @@ edition = "2021"
 
 [dependencies]
 anyhow = "1.0"
-binrw = "0.11.1"
+binrw = "0.11"
 bitflags = "1.3"
 flate2 = "1.0"
 log = "0.4"
@@ -19,7 +19,7 @@ ts-rs = { git = "https://github.com/Aleph-Alpha/ts-rs", branch = "main", feature
     "serde-compat",
     "uuid-impl",
 ] }
-uuid = { version = "1.2.1", features = ["serde", "v4"] }
+uuid = { version = "1.3", features = ["serde", "v4"] }
 
 [dev-dependencies]
 similar-asserts = "1.4.2"
