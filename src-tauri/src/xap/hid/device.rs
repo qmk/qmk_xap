@@ -178,11 +178,11 @@ impl XAPDevice {
         let mut report = [0; XAP_REPORT_SIZE + 1];
 
         // Add trailing zero byte for the report Id to HID report
-        trace!("send XAP report with payload {:?}", &report[1..]);
         let mut writer = Cursor::new(&mut report[1..]);
         writer
             .write_le(&request)
             .map_err(|err| ClientError::from(XAPError::BitHandling(err)))?;
+        trace!("send XAP report with payload {:?}", &report[1..]);
 
         self.tx_device.write(&report)?;
 
