@@ -12,7 +12,7 @@ import router from '@/router/routes'
 
 createApp(App)
     .use(Quasar, {
-        plugins: [Notify, Loading],
+        plugins: { Notify, Loading },
         config: {
             notify: {
                 position: 'bottom',

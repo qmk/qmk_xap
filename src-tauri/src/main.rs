@@ -151,8 +151,11 @@ fn main() -> ClientResult<()> {
                 .expect("unable to find XAP specifications");
 
             let state = Arc::new(Mutex::new(
-                XAPClient::new(Sender::clone(&event_channel_tx), XAPConstants::new(xap_specs)?)
-                    .expect("failed to initialize XAP state"),
+                XAPClient::new(
+                    Sender::clone(&event_channel_tx),
+                    XAPConstants::new(xap_specs)?,
+                )
+                .expect("failed to initialize XAP state"),
             ));
             app.manage(Arc::clone(&state));
 

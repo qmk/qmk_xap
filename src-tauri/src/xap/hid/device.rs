@@ -206,9 +206,7 @@ impl XAPDevice {
             }
         };
 
-        response
-            .into_xap_response::<T>()
-            .map_err(|err| ClientError::from(err))
+        response.into_xap_response::<T>().map_err(ClientError::from)
     }
 
     pub fn query_secure_status(&self) -> ClientResult<XAPSecureStatus> {
