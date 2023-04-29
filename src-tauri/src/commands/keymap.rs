@@ -5,7 +5,7 @@ use tauri::State;
 use uuid::Uuid;
 
 use xap_specs::{
-    constants::keycode::XAPKeyCodeConfig,
+    constants::keycode::XAPKeyInfo,
     protocol::keymap::{
         EncoderPosition, KeyCode, KeyPosition, KeymapEncoderQuery, KeymapKeycodeQuery,
     },
@@ -35,6 +35,6 @@ pub(crate) async fn encoder_keycode_get(
 pub(crate) async fn keymap_get(
     id: Uuid,
     state: State<'_, Arc<Mutex<XAPClient>>>,
-) -> ClientResult<Vec<Vec<Vec<XAPKeyCodeConfig>>>> {
-    Ok(state.lock().get_device(&id)?.keymap())
+) -> ClientResult<Vec<Vec<Vec<Option<XAPKeyInfo>>>>> {
+    Ok(state.lock().get_device(&id)?.key_info())
 }
