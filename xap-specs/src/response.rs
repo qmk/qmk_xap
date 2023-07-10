@@ -65,9 +65,9 @@ impl RawResponse {
 }
 
 #[derive(Debug)]
-pub struct UTF8StringResponse(pub String);
+pub struct UTF8String(pub String);
 
-impl BinRead for UTF8StringResponse {
+impl BinRead for UTF8String {
     type Args<'a> = ();
 
     fn read_options<R: Read + Seek>(

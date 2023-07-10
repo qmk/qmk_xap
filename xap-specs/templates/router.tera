@@ -1,0 +1,7 @@
+pub mod {{module_name}}_routes {
+
+    use binrw::{BinRead, BinWrite};
+    use crate::request::XAPRequest;
+
+    {{routes}}
+}

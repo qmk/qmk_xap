@@ -7,7 +7,7 @@ use ts_rs::TS;
 
 use crate::{
     request::XAPRequest,
-    response::{SecureActionResponse, UTF8StringResponse},
+    response::{SecureActionResponse, UTF8String},
 };
 
 // ==============================
@@ -84,7 +84,7 @@ impl XAPRequest for QMKBoardIdentifiersQuery {
 pub struct QMKBoardManufacturerQuery;
 
 impl XAPRequest for QMKBoardManufacturerQuery {
-    type Response = UTF8StringResponse;
+    type Response = UTF8String;
 
     fn id() -> &'static [u8] {
         &[0x1, 0x3]
@@ -98,7 +98,7 @@ impl XAPRequest for QMKBoardManufacturerQuery {
 pub struct QMKProductNameQuery;
 
 impl XAPRequest for QMKProductNameQuery {
-    type Response = UTF8StringResponse;
+    type Response = UTF8String;
 
     fn id() -> &'static [u8] {
         &[0x1, 0x4]
