@@ -2,45 +2,40 @@
 name = "qmk-xap-gui"
 version = "0.0.0"
 description = "QMK XAP client"
-authors = ["you"]
+authors = ["Stefan Kerkmann"]
 license = ""
 repository = ""
 edition = "2021"
-rust-version = "1.67"
 
 [build-dependencies]
-tauri-build = { version = "1.2.1", features = [] }
-ts-rs = { git = "https://github.com/Aleph-Alpha/ts-rs", branch = "main", features = [
-    "serde-compat",
-    "uuid-impl",
-] }
+tauri-build = { version = "1.5.1", features = [] }
 
 [dependencies]
 anyhow = "1.0"
-binrw = "0.11"
-bitflags = "1.3"
-flate2 = "1.0"
+binrw = "0.13"
+bitflags = { version = "2.5.0", features = ["serde"] }
 crossbeam-channel = "0.5"
-env_logger = "0.10"
-hidapi = { version = "2.2", features = ["macos-shared-device"] }
+deser-hjson = "2.2"
+env_logger = "0.11"
+flate2 = "1.0"
+hidapi = { version = "2.6", features = ["macos-shared-device"] }
 log = "0.4"
 parking_lot = "0.12"
 rand = "0.8"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
-deser-hjson = "1"
-serde_with = "2"
-tauri = { version = "1.2.4", features = ["api-all"] }
-thiserror = "1.0"
-ts-rs = { git = "https://github.com/Aleph-Alpha/ts-rs", branch = "main", features = [
-    "serde-compat",
-    "uuid-impl",
+serde_with = "3.6"
+specta = { version = "=2.0.0-rc.7", features = ["uuid"] }
+tauri = { version = "1.6.1", features = ["api-all"] }
+tauri-specta = { git = "https://github.com/oscartbeaumont/tauri-specta.git", branch = "main", commit = "4e48b7b378ce89590a9e9befe29a83b0cd4b322a", features = [
+    "typescript",
 ] }
-uuid = { version = "1.3", features = ["serde", "v4"] }
+thiserror = "1.0"
+uuid = { version = "1.7", features = ["serde", "v4"] }
 xap-specs = { path = "../xap-specs" }
 
 [dev-dependencies]
-similar-asserts = "1.4.2"
+similar-asserts = "1.5.0"
 
 [features]
 # by default Tauri runs in production mode
@@ -49,7 +44,3 @@ default = ["custom-protocol"]
 # this feature is used used for production builds where `devPath` points to the filesystem
 # DO NOT remove this
 custom-protocol = ["tauri/custom-protocol"]
-
-[profile.release]
-opt-level = 'z'
-lto = 'fat'

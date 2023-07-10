@@ -4,6 +4,8 @@ use std::io::{Cursor, Read, Seek};
 use binrw::{binread, BinRead, BinResult, Endian};
 use bitflags::bitflags;
 use log::trace;
+use serde::Serialize;
+use specta::Type;
 
 use crate::{
     error::{XAPError, XAPResult},
@@ -11,9 +13,11 @@ use crate::{
     token::Token,
 };
 
+#[derive(Serialize, BinRead, Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub struct ResponseFlags(u8);
+
 bitflags! {
-    #[binread]
-    pub struct ResponseFlags: u8 {
+    impl ResponseFlags: u8 {
         const SUCCESS = 0b1;
         const SECURE_FAILURE = 0b10;
     }
@@ -37,13 +41,14 @@ impl RawResponse {
 
         trace!("received raw XAP response: {:#?}", response);
 
-        if !response.flags.contains(ResponseFlags::SUCCESS) {
-            return Err(XAPError::RequestFailed);
-        } else if response.flags.contains(ResponseFlags::SECURE_FAILURE) {
-            return Err(XAPError::SecureLocked);
+        match response.flags {
+            ResponseFlags::SUCCESS => Ok(response),
+            ResponseFlags::SECURE_FAILURE => Err(XAPError::SecureLocked),
+            _ => Err(XAPError::Protocol(format!(
+                "unknown response flag {:?}",
+                response.flags
+            ))),
         }
-
-        Ok(response)
     }
 
     pub fn token(&self) -> &Token {
@@ -64,10 +69,10 @@ impl RawResponse {
     }
 }
 
-#[derive(Debug)]
-pub struct UTF8StringResponse(pub String);
+#[derive(Debug, Default, Clone, Serialize, Type)]
+pub struct UTF8String(pub String);
 
-impl BinRead for UTF8StringResponse {
+impl BinRead for UTF8String {
     type Args<'a> = ();
 
     fn read_options<R: Read + Seek>(

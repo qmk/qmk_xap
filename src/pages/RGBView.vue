@@ -5,15 +5,15 @@
     import { storeToRefs } from 'pinia'
     import ColorPicker from '@radial-color-picker/vue-color-picker'
 
-    import { RGBLightConfig } from '@bindings/RGBLightConfig'
+    import { RgbLightConfig } from '@generated/xap'
     import { useXAPDeviceStore } from '@/stores/devices'
-    import { saveConfig, getConfig, setConfig } from '@/commands/lighting/rgblight'
+    import { commands } from '@generated/xap'
     import { notifyError } from '@/utils/utils'
 
     const store = useXAPDeviceStore()
     const { device } = storeToRefs(store)
 
-    const config: Ref<RGBLightConfig> = ref({
+    const RgbConfig: Ref<RgbLightConfig> = ref({
         enable: 1,
         mode: 1,
         hue: 255,
@@ -24,10 +24,10 @@
 
     const hue = computed({
         get() {
-            return Math.ceil((config.value.hue / 255) * 360)
+            return Math.ceil((RgbConfig.value.hue / 255) * 360)
         },
         set(h: number) {
-            config.value.hue = Math.ceil((h / 360) * 255)
+            RgbConfig.value.hue = Math.ceil((h / 360) * 255)
         },
     })
 
@@ -37,12 +37,16 @@
 
     onMounted(async () => {
         pause()
-        try {
-            if (device.value) {
-                config.value = await getConfig(device.value.id)
+        if (device.value) {
+            const config = await commands.rgblightGetConfig(device.value.id)
+            switch (config.status) {
+                case 'ok':
+                    RgbConfig.value = config.data
+                    break
+                case 'error':
+                    notifyError(config.error)
+                    return
             }
-        } catch (err) {
-            notifyError(err)
         }
         await nextTick()
         resume()
@@ -50,35 +54,36 @@
 
     watch(device, async (device) => {
         pause()
-        try {
-            if (device) {
-                config.value = await getConfig(device.id)
+        if (device) {
+            const config = await commands.rgblightGetConfig(device.id)
+            switch (config.status) {
+                case 'ok':
+                    RgbConfig.value = config.data
+                    break
+                case 'error':
+                    notifyError(config.error)
+                    return
             }
-        } catch (err) {
-            notifyError(err)
         }
+
         await nextTick()
         resume()
     })
 
-    const { stop, pause, resume } = watchPausable(
-        config,
-        async (newConfig: RGBLightConfig) => {
-            try {
-                if (device.value) {
-                    await setConfig(device.value.id, newConfig)
-                }
-            } catch (err) {
-                notifyError(err)
+    const { pause, resume } = watchPausable(
+        RgbConfig,
+        async (newConfig: RgbLightConfig) => {
+            if (device.value) {
+                await commands.rgblightSetConfig(device.value.id, newConfig)
             }
         },
-        { deep: true }
+        { deep: true },
     )
 
     async function save() {
         try {
             if (device.value) {
-                await saveConfig(device.value.id)
+                await commands.rgblightSaveConfig(device.value.id)
             }
         } catch (err) {
             notifyError(err)
@@ -95,14 +100,14 @@
                 </div>
                 <div class="col q-pa-md q-ma-md q-gutter-md">
                     <q-select
-                        v-model.number.lazy="config.mode"
+                        v-model.number.lazy="RgbConfig.mode"
                         :options="device?.info?.lighting?.rgblight?.effects ?? []"
                         label="Mode"
                         emit-value
                     />
                     <q-badge> Hue </q-badge>
                     <q-slider
-                        v-model.number.lazy="config.hue"
+                        v-model.number.lazy="RgbConfig.hue"
                         :min="0"
                         :max="255"
                         label
@@ -111,7 +116,7 @@
                     />
                     <q-badge> Saturation </q-badge>
                     <q-slider
-                        v-model.number.lazy="config.sat"
+                        v-model.number.lazy="RgbConfig.sat"
                         :min="0"
                         :max="255"
                         label
@@ -120,7 +125,7 @@
                     />
                     <q-badge> Value </q-badge>
                     <q-slider
-                        v-model.number.lazy="config.val"
+                        v-model.number.lazy="RgbConfig.val"
                         :min="0"
                         :max="255"
                         label
@@ -129,7 +134,7 @@
                     />
                     <q-badge> Speed </q-badge>
                     <q-slider
-                        v-model.number.lazy="config.speed"
+                        v-model.number.lazy="RgbConfig.speed"
                         :min="0"
                         :max="255"
                         label
@@ -137,7 +142,7 @@
                         :markers="32"
                     />
                     <q-btn-toggle
-                        v-model="config.enable"
+                        v-model="RgbConfig.enable"
                         spread
                         no-caps
                         toggle-color="primary"

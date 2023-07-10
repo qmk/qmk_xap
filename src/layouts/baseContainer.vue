@@ -3,10 +3,10 @@
     import { computed } from 'vue'
     import type { Ref } from 'vue'
 
-    import { secureUnlock, secureLock } from '@/commands/xap'
+    import { commands } from '@generated/xap'
     import { useXAPDeviceStore } from '@/stores/devices'
-    import { XAPDevice } from '@bindings/XAPDevice'
-    import { XAPSecureStatus } from '@bindings/XAPSecureStatus'
+    import { XAPDevice } from '@generated/xap'
+    import { XAPSecureStatus } from '@generated/xap'
 
     const store = useXAPDeviceStore()
     const { device, devices } = storeToRefs(store)
@@ -14,13 +14,13 @@
 
     async function lock() {
         if (device.value) {
-            await secureLock(device.value.id)
+            await commands.xapSecureLock(device.value.id)
         }
     }
 
     async function unlock() {
         if (device.value) {
-            await secureUnlock(device.value.id)
+            await commands.xapSecureUnlock(device.value.id)
         }
     }
 </script>
@@ -58,7 +58,10 @@
                     :disable="device == null"
                     filled
                     :options="devicesA"
-                    :option-label="(device:XAPDevice) => device?.info.qmk.manufacturer + ' - ' + device?.info.qmk.product_name "
+                    :option-label="
+                        (device: XAPDevice) =>
+                            device?.info.qmk.manufacturer + ' - ' + device?.info.qmk.product_name
+                    "
                     emit-value
                 />
             </div>
@@ -71,7 +74,7 @@
                 v-if="device?.secure_status != 'Unlocked'"
                 fab
                 icon="lock_open"
-                :loading="device?.secure_status as XAPSecureStatus == 'Unlocking'"
+                :loading="(device?.secure_status as XAPSecureStatus) == 'Unlocking'"
                 color="secondary"
                 text-color="white"
                 @click="unlock"
@@ -79,7 +82,7 @@
             <q-btn
                 v-else
                 fab
-                :loading="device?.secure_status as XAPSecureStatus == 'Unlocking'"
+                :loading="(device?.secure_status as XAPSecureStatus) == 'Unlocking'"
                 color="secondary"
                 text-color="white"
                 icon="lock"

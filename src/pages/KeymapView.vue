@@ -4,56 +4,61 @@
     import type { Ref } from 'vue'
 
     import { useXAPDeviceStore } from '@/stores/devices'
-    import { KeyPosition } from '@bindings/KeyPosition'
-    import { KeyPositionConfig } from '@bindings/KeyPositionConfig'
-    import { XAPConstants } from '@bindings/XAPConstants'
-    import { setKeyCode } from '@/commands/remap'
-    import { getKeyMap } from '@/commands/keymap'
+    import { KeyPosition, XAPKeyCodeCategory } from '@generated/xap'
+    import { commands } from '@generated/xap'
     import { notifyError } from '@/utils/utils'
-    import { getXapConstants } from '../commands/constants'
 
+    type XAPConstants = { keycodes: XAPKeyCodeCategory[] }
     const store = useXAPDeviceStore()
     const { device } = storeToRefs(store)
 
     const splitter: Ref<number> = ref(15)
     const keycodeTab: Ref<string> = ref('basic')
     const layerTab: Ref<number> = ref(0)
-
     const selectedKey: Ref<KeyPosition | null> = ref(null)
-
     const xapConstants: Ref<XAPConstants | null> = ref(null)
 
     async function set(code: number) {
         if (selectedKey.value) {
-            try {
-                if (!device.value) {
+            if (!device.value) {
+                return
+            }
+            // attempt to set keycode
+            const ok = await commands.keycodeSet(device.value.id, {
+                layer: selectedKey.value.layer,
+                row: selectedKey.value.row,
+                col: selectedKey.value.column,
+                keycode: code,
+            })
+            switch (ok.status) {
+                case 'ok':
+                    break
+                case 'error':
+                    notifyError(ok.error)
                     return
-                }
-                const config: KeyPositionConfig = {
-                    layer: selectedKey.value.layer,
-                    row: selectedKey.value.row,
-                    col: selectedKey.value.col,
-                    keycode: code,
-                }
-                // attempt to set keycode
-                await setKeyCode(device.value.id, config)
-                // read-back updated keymap - state handling is done in the backend
-                device.value.keymap = await getKeyMap(device.value.id)
-            } catch (err: unknown) {
-                notifyError(err)
+            }
+            // read-back updated keymap - state handling is done in the backend
+            const keymap = await commands.keymapGet(device.value.id)
+            switch (keymap.status) {
+                case 'ok':
+                    device.value.keymap = keymap.data
+                    return
+                case 'error':
+                    notifyError(keymap.error)
+                    return
             }
         }
     }
 
     function selectKey(layer: number, row: number, col: number) {
-        selectedKey.value = { layer: layer, row: row, col: col }
+        selectedKey.value = { layer: layer, row: row, column: col }
     }
 
-    function colorButton(layer: number, row: number, col: number): string {
+    function colorButton(layer: number, row: number, column: number): string {
         if (
             selectedKey.value?.layer == layer &&
             selectedKey.value?.row == row &&
-            selectedKey.value?.col == col
+            selectedKey.value?.column == column
         ) {
             return 'grey'
         }
@@ -65,12 +70,7 @@
     })
 
     onMounted(async () => {
-        try {
-            xapConstants.value = await getXapConstants()
-            console.log(xapConstants.value)
-        } catch (err) {
-            notifyError(err)
-        }
+        xapConstants.value = await commands.xapConstantsGet()
     })
 </script>
 
@@ -116,7 +116,7 @@
                                             colorButton(
                                                 col.position.layer,
                                                 col.position.row,
-                                                col.position.col
+                                                col.position.column,
                                             )
                                         "
                                         text-color="black"
@@ -127,7 +127,7 @@
                                                 selectKey(
                                                     col.position.layer,
                                                     col.position.row,
-                                                    col.position.col
+                                                    col.position.column,
                                                 )
                                         "
                                     />
@@ -178,7 +178,7 @@
                                         square
                                         text-color="black"
                                         :label="code.label ?? code.key"
-                                        @click="set(code.code)"
+                                        @click="set(code.code!)"
                                     />
                                     <q-tooltip
                                         v-if="device?.secure_status != 'Unlocked'"

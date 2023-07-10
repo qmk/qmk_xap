@@ -6,8 +6,7 @@ use log::trace;
 
 use crate::error::XAPResult;
 use crate::token::Token;
-
-use crate::protocol::xap::XAPSecureStatus;
+use crate::XAPSecureStatus;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 #[binread]

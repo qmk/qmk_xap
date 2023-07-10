@@ -40,17 +40,6 @@ impl XAPClient {
         })
     }
 
-    #[allow(dead_code)]
-    pub fn action<T, F>(&self, id: Uuid, action: F) -> ClientResult<T>
-    where
-        F: FnOnce(&XAPDevice) -> ClientResult<T>,
-    {
-        match self.devices.get(&id) {
-            Some(device) => action(device),
-            None => Err(ClientError::UnknownDevice(id)),
-        }
-    }
-
     pub fn query<T>(&self, id: Uuid, request: T) -> ClientResult<T::Response>
     where
         T: XAPRequest,

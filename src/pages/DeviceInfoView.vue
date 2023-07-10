@@ -2,34 +2,33 @@
     import { storeToRefs } from 'pinia'
 
     import { useXAPDeviceStore } from '@/stores/devices'
-    import { secureUnlock, secureLock } from '@/commands/xap'
-    import { resetEEPROM, jumpToBootloader } from '@/commands/qmk'
-    import { XAPSecureStatus } from '@bindings/XAPSecureStatus'
+    import { XAPSecureStatus } from '@generated/xap'
+    import { commands } from '@generated/xap'
 
     const store = useXAPDeviceStore()
     const { device } = storeToRefs(store)
 
     async function lock() {
         if (device.value) {
-            await secureLock(device.value.id)
+            await commands.xapSecureLock(device.value.id)
         }
     }
 
     async function unlock() {
         if (device.value) {
-            await secureUnlock(device.value.id)
+            await commands.xapSecureUnlock(device.value.id)
         }
     }
 
     async function bootloader() {
         if (device.value) {
-            await jumpToBootloader(device.value.id)
+            await commands.qmkJumpToBootloader(device.value.id)
         }
     }
 
     async function reset() {
         if (device.value) {
-            await resetEEPROM(device.value.id)
+            await commands.qmkReinitializeEeprom(device.value.id)
         }
     }
 </script>
@@ -116,7 +115,7 @@
                 <q-btn
                     v-else
                     class="full-width"
-                    :loading="device?.secure_status as XAPSecureStatus == 'Unlocking'"
+                    :loading="(device?.secure_status as XAPSecureStatus) == 'Unlocking'"
                     color="primary"
                     text-color="white"
                     label="Lock"
@@ -125,7 +124,7 @@
             </div>
             <div v-if="device?.info.qmk.jump_to_bootloader_enabled">
                 <q-btn
-                    :disable="device?.secure_status as XAPSecureStatus != 'Unlocked'"
+                    :disable="(device?.secure_status as XAPSecureStatus) != 'Unlocked'"
                     class="full-width"
                     color="primary"
                     text-color="white"
@@ -138,7 +137,7 @@
             </div>
             <div v-if="device?.info.qmk.eeprom_reset_enabled">
                 <q-btn
-                    :disable="device?.secure_status as XAPSecureStatus != 'Unlocked'"
+                    :disable="(device?.secure_status as XAPSecureStatus) != 'Unlocked'"
                     class="full-width"
                     color="primary"
                     text-color="white"

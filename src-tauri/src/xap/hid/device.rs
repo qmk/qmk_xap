@@ -17,45 +17,54 @@ use serde_json::{Map, Value};
 use uuid::Uuid;
 
 use xap_specs::{
+    broadcast::{BroadcastRaw, BroadcastType, LogBroadcast, SecureStatusBroadcast},
     constants::{keycode::XAPKeyCodeConfig, XAPConstants},
     error::{XAPError, XAPResult},
-    protocol::{
-        keymap::{
-            KeyCode, KeyPosition, KeymapCapabilities, KeymapCapabilitiesQuery, KeymapKeycodeQuery,
-            KeymapLayerCountQuery,
-        },
-        lighting::{
-            BacklightCapabilities, BacklightCapabilitiesQuery, BacklightEffectsQuery,
-            LightingCapabilities, LightingCapabilitiesQuery, RGBLightCapabilities,
-            RGBLightCapabilitiesQuery, RGBLightEffectsQuery, RGBMatrixCapabilities,
-            RGBMatrixCapabilitiesQuery, RGBMatrixEffectsQuery,
-        },
-        qmk::{
-            ConfigBlobChunkQuery, QMKBoardIdentifiersQuery, QMKBoardManufacturerQuery,
-            QMKCapabilities, QMKCapabilitiesQuery, QMKConfigBlobLengthQuery,
-            QMKHardwareIdentifierQuery, QMKProductNameQuery, QMKVersionQuery,
-        },
-        remap::{
-            KeyPositionConfig, RemapCapabilities, RemapCapabilitiesQuery, RemapKeycodeQuery,
-            RemapLayerCountQuery,
-        },
-        xap::{
-            XAPEnabledSubsystems, XAPEnabledSubsystemsQuery, XAPSecureStatus, XAPSecureStatusQuery,
-            XAPVersionQuery,
-        },
-        *,
-    },
     request::{RawRequest, XAPRequest},
     response::RawResponse,
     token::Token,
+    KeyPosition, KeyPositionConfig, XAPSecureStatus,
 };
 
 use crate::{
     aggregation::{
-        BacklightInfo, KeymapInfo, LightingInfo, QMKInfo, RGBLightInfo, RGBMatrixInfo, RemapInfo,
-        XAPDevice as XAPDeviceDto, XAPDeviceInfo, XAPInfo,
+        KeymapInfo, LightingCapabilities as LightingCapabilitiesDto, LightingInfo, QMKInfo,
+        RemapInfo, XAPDevice as XAPDeviceDto, XAPDeviceInfo, XAPInfo,
     },
     xap::{ClientError, ClientResult},
+    xap_spec::{
+        keymap::{
+            KeymapCapabilities, KeymapCapabilitiesRequest, KeymapGetKeycodeArg,
+            KeymapGetKeycodeRequest, KeymapGetKeycodeResponse, KeymapGetLayerCountRequest,
+        },
+        lighting::{
+            backlight::{
+                BacklightCapabilities, BacklightCapabilitiesRequest,
+                BacklightGetEnabledEffectsRequest,
+            },
+            rgblight::{
+                RgblightCapabilities, RgblightCapabilitiesRequest, RgblightGetEnabledEffectsRequest,
+            },
+            rgbmatrix::{
+                RgbmatrixCapabilities, RgbmatrixCapabilitiesRequest,
+                RgbmatrixGetEnabledEffectsRequest,
+            },
+            LightingCapabilities, LightingCapabilitiesRequest,
+        },
+        qmk::{
+            QmkBoardIdentifiersRequest, QmkBoardManufacturerRequest, QmkCapabilities,
+            QmkCapabilitiesRequest, QmkConfigBlobChunkRequest, QmkConfigBlobLengthRequest,
+            QmkHardwareIdentifierRequest, QmkProductNameRequest, QmkVersionRequest,
+        },
+        remapping::{
+            RemappingCapabilities, RemappingCapabilitiesRequest, RemappingGetLayerCountRequest,
+            RemappingSetKeycodeArg, RemappingSetKeycodeRequest,
+        },
+        xap::{
+            XapEnabledSubsystemCapabilities, XapEnabledSubsystemCapabilitiesRequest,
+            XapSecureStatusRequest, XapVersionRequest,
+        },
+    },
     XAPEvent,
 };
 
@@ -87,12 +96,14 @@ impl XAPDevice {
         rx_device: HidDevice,
         tx_device: HidDevice,
     ) -> ClientResult<Self> {
-        let (tx_channel, rx_channel) = unbounded();
         let id = Uuid::new_v4();
         let state = Arc::new(RwLock::new(XAPDeviceState::default()));
+
+        let (tx_channel, rx_channel) = unbounded();
+
         let device = Self {
-            info,
             id,
+            info,
             tx_device,
             rx_channel,
             rx_thread: start_rx_thread(
@@ -154,26 +165,45 @@ impl XAPDevice {
     }
 
     pub fn set_keycode(&self, config: KeyPositionConfig) -> ClientResult<()> {
-        self.query(RemapKeycodeQuery(config.clone()))?;
-        let (layer, row, col) = (config.layer, config.row, config.col);
+        let (layer, row, column, keycode) = (config.layer, config.row, config.col, config.keycode);
 
-        self.state.write().keymap[layer as usize][row as usize][col as usize] = XAPKeyCodeConfig {
-            code: self.constants.get_keycode(config.keycode),
-            position: KeyPosition {
-                layer: config.layer,
-                row: config.row,
-                col: config.col,
-            },
+        let arg = RemappingSetKeycodeArg {
+            layer,
+            row,
+            column,
+            keycode,
         };
+
+        self.query(RemappingSetKeycodeRequest(arg))?;
+
+        self.state.write().keymap[layer as usize][row as usize][column as usize] =
+            XAPKeyCodeConfig {
+                code: self.constants.get_keycode(keycode),
+                position: KeyPosition { layer, row, column },
+            };
 
         Ok(())
     }
 
-    pub fn query_keycode(&self, position: KeyPosition) -> ClientResult<KeyCode> {
-        self.query(KeymapKeycodeQuery(position))
+    pub fn query_keycode(&self, position: KeyPosition) -> ClientResult<KeymapGetKeycodeResponse> {
+        self.query(KeymapGetKeycodeRequest(KeymapGetKeycodeArg {
+            layer: position.layer,
+            row: position.row,
+            column: position.column,
+        }))
     }
 
     pub fn query<T: XAPRequest>(&self, request: T) -> ClientResult<T::Response> {
+        if let Some(xap_info) = &self.state.read().xap_info {
+            if !T::xap_version() < xap_info.xap.version {
+                return Err(ClientError::ProtocolError(XAPError::Protocol(format!(
+                    "can't do xap request [{:?}] with client of version {}",
+                    T::id(),
+                    xap_info.xap.version
+                ))));
+            }
+        }
+
         let request = RawRequest::new(request);
         let mut report = [0; XAP_REPORT_SIZE + 1];
 
@@ -182,6 +212,7 @@ impl XAPDevice {
         writer
             .write_le(&request)
             .map_err(|err| ClientError::from(XAPError::BitHandling(err)))?;
+
         trace!("send XAP report with payload {:?}", &report[1..]);
 
         self.tx_device.write(&report)?;
@@ -210,51 +241,56 @@ impl XAPDevice {
     }
 
     pub fn query_secure_status(&self) -> ClientResult<XAPSecureStatus> {
-        let status = self.query(XAPSecureStatusQuery {})?;
+        let status = self.query(XapSecureStatusRequest(()))?.0.into();
         self.state.write().secure_status = status;
         Ok(status)
     }
 
     fn query_device_info(&self) -> ClientResult<()> {
-        let subsystems = self.query(XAPEnabledSubsystemsQuery)?;
+        let subsystems = self.query(XapEnabledSubsystemCapabilitiesRequest(()))?;
 
         let xap_info = XAPInfo {
-            version: self.query(XAPVersionQuery)?.0.to_string(),
+            version: self.query(XapVersionRequest(()))?.0,
         };
 
-        let qmk_caps = self.query(QMKCapabilitiesQuery)?;
-        let board_ids = self.query(QMKBoardIdentifiersQuery)?;
+        let qmk_caps = self.query(QmkCapabilitiesRequest(()))?;
+        let board_ids = self.query(QmkBoardIdentifiersRequest(()))?;
         // TODO: why do these strings have leading and trailing " characters -
         // should be removed in QMK
         let manufacturer = self
-            .query(QMKBoardManufacturerQuery)?
+            .query(QmkBoardManufacturerRequest(()))?
             .0
+             .0
             .trim_matches('"')
             .to_owned();
         let product_name = self
-            .query(QMKProductNameQuery)?
+            .query(QmkProductNameRequest(()))?
             .0
+             .0
             .trim_matches('"')
             .to_owned();
         let config = self.query_config_blob()?;
-        let hardware_id = self.query(QMKHardwareIdentifierQuery)?.to_string();
+        let hardware_id = self.query(QmkHardwareIdentifierRequest(()))?.0;
 
         let qmk_info = QMKInfo {
-            version: self.query(QMKVersionQuery)?.0.to_string(),
+            version: self.query(QmkVersionRequest(()))?.0.to_string(),
             board_ids,
             manufacturer,
             product_name,
             config: serde_json::to_string_pretty(&config).unwrap(),
-            hardware_id,
-            jump_to_bootloader_enabled: qmk_caps.contains(QMKCapabilities::JUMP_TO_BOOTLOADER),
-            eeprom_reset_enabled: qmk_caps.contains(QMKCapabilities::EEPROM_RESET),
+            hardware_id: format!(
+                "{}{}{}{}",
+                hardware_id[0], hardware_id[1], hardware_id[2], hardware_id[3]
+            ),
+            jump_to_bootloader_enabled: qmk_caps.contains(QmkCapabilities::JumpToBootloader),
+            eeprom_reset_enabled: qmk_caps.contains(QmkCapabilities::ReinitializeEeprom),
         };
 
-        let keymap_info = if subsystems.contains(XAPEnabledSubsystems::KEYMAP) {
-            let keymap_caps = self.query(KeymapCapabilitiesQuery)?;
+        let keymap_info = if subsystems.contains(XapEnabledSubsystemCapabilities::Keymap) {
+            let keymap_caps = self.query(KeymapCapabilitiesRequest(()))?;
 
-            let layer_count = if keymap_caps.contains(KeymapCapabilities::LAYER_COUNT) {
-                Some(self.query(KeymapLayerCountQuery)?.0)
+            let layer_count = if keymap_caps.contains(KeymapCapabilities::GetLayerCount) {
+                Some(self.query(KeymapGetLayerCountRequest(()))?.0)
             } else {
                 None
             };
@@ -272,92 +308,90 @@ impl XAPDevice {
             Some(KeymapInfo {
                 matrix,
                 layer_count,
-                get_keycode_enabled: keymap_caps.contains(KeymapCapabilities::GET_KEYCODE),
+                get_keycode_enabled: keymap_caps.contains(KeymapCapabilities::GetKeycode),
                 get_encoder_keycode_enabled: keymap_caps
-                    .contains(KeymapCapabilities::GET_ENCODER_KEYCODE),
+                    .contains(KeymapCapabilities::GetEncoderKeycode),
             })
         } else {
             info!("keymap subsystem not active!");
             None
         };
 
-        let remap_info = if subsystems.contains(XAPEnabledSubsystems::REMAPPING) {
-            let keymap_caps = self.query(RemapCapabilitiesQuery)?;
+        let remap_info = if subsystems.contains(XapEnabledSubsystemCapabilities::Remapping) {
+            let keymap_caps = self.query(RemappingCapabilitiesRequest(()))?;
 
-            let layer_count = if keymap_caps.contains(RemapCapabilities::LAYER_COUNT) {
-                Some(self.query(RemapLayerCountQuery)?.0)
+            let layer_count = if keymap_caps.contains(RemappingCapabilities::GetLayerCount) {
+                Some(self.query(RemappingGetLayerCountRequest(()))?.0)
             } else {
                 None
             };
 
             Some(RemapInfo {
                 layer_count,
-                set_keycode_enabled: keymap_caps.contains(RemapCapabilities::SET_KEYCODE),
+                set_keycode_enabled: keymap_caps.contains(RemappingCapabilities::SetKeycode),
                 set_encoder_keycode_enabled: keymap_caps
-                    .contains(RemapCapabilities::SET_ENCODER_KEYCODE),
+                    .contains(RemappingCapabilities::SetEncoderKeycode),
             })
         } else {
             None
         };
 
-        let lighting_info = if subsystems.contains(XAPEnabledSubsystems::LIGHTING) {
-            let lighting_caps = self.query(LightingCapabilitiesQuery)?;
+        let lighting_info = if subsystems.contains(XapEnabledSubsystemCapabilities::Lighting) {
+            let lighting_caps = self.query(LightingCapabilitiesRequest(()))?;
 
-            let backlight_info = if lighting_caps.contains(LightingCapabilities::BACKLIGHT) {
-                let backlight_caps = self.query(BacklightCapabilitiesQuery)?;
+            let backlight_info = if lighting_caps.contains(LightingCapabilities::Backlight) {
+                let backlight_caps = self.query(BacklightCapabilitiesRequest(()))?;
 
-                let effects = if backlight_caps.contains(BacklightCapabilities::ENABLED_EFFECTS) {
-                    Some(self.query(BacklightEffectsQuery)?.enabled_effect_list())
+                let effects = if backlight_caps.contains(BacklightCapabilities::GetEnabledEffects) {
+                    self.query(BacklightGetEnabledEffectsRequest(()))?.0
                 } else {
-                    None
+                    0
                 };
 
-                Some(BacklightInfo {
-                    effects,
-                    get_config_enabled: backlight_caps.contains(BacklightCapabilities::GET_CONFIG),
-                    set_config_enabled: backlight_caps.contains(BacklightCapabilities::SET_CONFIG),
-                    save_config_enabled: backlight_caps
-                        .contains(BacklightCapabilities::SAVE_CONFIG),
-                })
+                Some(LightingCapabilitiesDto::new(
+                    effects as u64,
+                    backlight_caps.contains(BacklightCapabilities::GetConfig),
+                    backlight_caps.contains(BacklightCapabilities::SetConfig),
+                    backlight_caps.contains(BacklightCapabilities::SaveConfig),
+                ))
             } else {
                 None
             };
 
-            let rgblight_info = if lighting_caps.contains(LightingCapabilities::RGBLIGHT) {
-                let rgblight_caps = self.query(RGBLightCapabilitiesQuery)?;
+            let rgblight_info = if lighting_caps.contains(LightingCapabilities::Rgblight) {
+                let rgblight_caps = self.query(RgblightCapabilitiesRequest(()))?;
 
-                let effects = if rgblight_caps.contains(RGBLightCapabilities::ENABLED_EFFECTS) {
-                    Some(self.query(RGBLightEffectsQuery)?.enabled_effect_list())
+                let effects = if rgblight_caps.contains(RgblightCapabilities::GetEnabledEffects) {
+                    self.query(RgblightGetEnabledEffectsRequest(()))?.0
                 } else {
-                    None
+                    0
                 };
 
-                Some(RGBLightInfo {
+                Some(LightingCapabilitiesDto::new(
                     effects,
-                    get_config_enabled: rgblight_caps.contains(RGBLightCapabilities::GET_CONFIG),
-                    set_config_enabled: rgblight_caps.contains(RGBLightCapabilities::SET_CONFIG),
-                    save_config_enabled: rgblight_caps.contains(RGBLightCapabilities::SAVE_CONFIG),
-                })
+                    rgblight_caps.contains(RgblightCapabilities::GetConfig),
+                    rgblight_caps.contains(RgblightCapabilities::SetConfig),
+                    rgblight_caps.contains(RgblightCapabilities::SaveConfig),
+                ))
             } else {
                 None
             };
 
-            let rgbmatrix_info = if lighting_caps.contains(LightingCapabilities::RGBMATRIX) {
-                let rgbmatrix_caps = self.query(RGBMatrixCapabilitiesQuery)?;
+            let rgbmatrix_info = if lighting_caps.contains(LightingCapabilities::Rgbmatrix) {
+                let rgbmatrix_caps = self.query(RgbmatrixCapabilitiesRequest(()))?;
 
-                let effects = if rgbmatrix_caps.contains(RGBMatrixCapabilities::ENABLED_EFFECTS) {
-                    Some(self.query(RGBMatrixEffectsQuery)?.enabled_effect_list())
+                let effects = if rgbmatrix_caps.contains(RgbmatrixCapabilities::GetEnabledEffects) {
+                    self.query(RgbmatrixGetEnabledEffectsRequest(()))?.0
                 } else {
-                    None
+                    0
                 };
 
-                Some(RGBMatrixInfo {
+                Some(LightingCapabilitiesDto::new(
                     effects,
-                    get_config_enabled: rgbmatrix_caps.contains(RGBMatrixCapabilities::GET_CONFIG),
-                    set_config_enabled: rgbmatrix_caps.contains(RGBMatrixCapabilities::SET_CONFIG),
-                    save_config_enabled: rgbmatrix_caps
-                        .contains(RGBMatrixCapabilities::SAVE_CONFIG),
-                })
+                    rgbmatrix_caps.contains(RgbmatrixCapabilities::GetConfig),
+                    rgbmatrix_caps.contains(RgbmatrixCapabilities::SetConfig),
+                    rgbmatrix_caps.contains(RgbmatrixCapabilities::SaveConfig),
+                ))
             } else {
                 None
             };
@@ -383,14 +417,14 @@ impl XAPDevice {
     }
 
     fn query_config_blob(&self) -> ClientResult<Map<String, Value>> {
-        // Query data size
-        let size = self.query(QMKConfigBlobLengthQuery {})?.0;
+        //  data size
+        let size = self.query(QmkConfigBlobLengthRequest(()))?.0;
 
-        // Query all chunks and merge them in a Vec
+        //  all chunks and merge them in a Vec
         let mut data: Vec<u8> = Vec::with_capacity(size as usize);
         let mut offset: u16 = 0;
         while offset < size {
-            let chunk = self.query(ConfigBlobChunkQuery(offset))?;
+            let chunk = self.query(QmkConfigBlobChunkRequest(offset))?;
             data.extend(chunk.0.into_iter());
             offset += chunk.0.len() as u16;
         }
@@ -423,12 +457,19 @@ impl XAPDevice {
                         .map(|row| {
                             (0..cols)
                                 .map(|col| {
-                                    let keycode =
-                                        self.query_keycode(KeyPosition { layer, row, col })?;
+                                    let keycode = self.query_keycode(KeyPosition {
+                                        layer,
+                                        row,
+                                        column: col,
+                                    })?;
 
                                     let xap = XAPKeyCodeConfig {
                                         code: self.constants.get_keycode(keycode.0),
-                                        position: KeyPosition { layer, row, col },
+                                        position: KeyPosition {
+                                            layer,
+                                            row,
+                                            column: col,
+                                        },
                                     };
 
                                     Ok(xap)
@@ -502,7 +543,7 @@ fn handle_report(
                     .expect("failed to send broadcast event!");
             }
             BroadcastType::Keyboard => info!("keyboard broadcasts are not implemented!"),
-            BroadcastType::User => info!("keyboard broadcasts are not implemented!"),
+            BroadcastType::User => info!("user broadcasts are not implemented!"),
         }
     } else {
         let response = RawResponse::from_raw_report(&report)?;

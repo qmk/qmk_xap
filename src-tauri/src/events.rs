@@ -1,14 +1,13 @@
 use serde::Serialize;
-use ts_rs::TS;
+use specta::Type;
+use tauri_specta::Event;
 use uuid::Uuid;
-use xap_specs::protocol::xap::XAPSecureStatus;
+use xap_specs::XAPSecureStatus;
 
 use crate::aggregation::XAPDevice as XAPDeviceDTO;
 
-#[derive(Clone, Serialize, TS)]
+#[derive(Clone, Serialize, Type, Event)]
 #[serde(tag = "kind", content = "data")]
-#[ts(export)]
-#[ts(export_to = "../bindings/")]
 pub(crate) enum FrontendEvent {
     NewDevice {
         device: XAPDeviceDTO,

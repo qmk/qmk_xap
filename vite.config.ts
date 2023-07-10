@@ -20,8 +20,8 @@ export default defineConfig({
         alias: [
             { find: '@', replacement: path.resolve(__dirname, 'src') },
             {
-                find: '@bindings',
-                replacement: path.resolve(__dirname, './bindings'),
+                find: '@generated',
+                replacement: path.resolve(__dirname, './src/generated/'),
             },
         ],
     },

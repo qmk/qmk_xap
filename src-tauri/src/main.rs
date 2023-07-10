@@ -8,6 +8,7 @@ mod commands;
 mod aggregation;
 mod events;
 mod xap;
+mod xap_spec;
 
 use std::sync::Arc;
 use std::time::Duration;
@@ -17,14 +18,13 @@ use crossbeam_channel::{select, unbounded, Receiver, Sender};
 use env_logger::Env;
 use log::{error, info};
 use parking_lot::Mutex;
-
 use tauri::{
     plugin::{Builder, TauriPlugin},
     RunEvent, Runtime,
 };
 use tauri::{AppHandle, Manager};
 
-use commands::*;
+use commands::{keycode_set, keymap_get, xap_constants_get};
 use events::{FrontendEvent, XAPEvent};
 use xap::hid::XAPClient;
 use xap::ClientResult;
@@ -45,7 +45,7 @@ fn start_event_loop(
     state: Arc<Mutex<XAPClient>>,
     event_channel: Receiver<XAPEvent>,
 ) {
-    let _ = std::thread::spawn(move || {
+    _ = std::thread::spawn(move || {
         let ticker = tick(Duration::from_millis(500));
         let state = state;
         info!("started event loop");
@@ -68,7 +68,6 @@ fn start_event_loop(
                         Ok(XAPEvent::NewDevice(id)) => {
                             if let Ok(device) = state.lock().get_device(&id){
                                 info!("detected new device - notifying frontend!");
-
                                 app.emit_all("new-device", FrontendEvent::NewDevice{ device: device.as_dto() }).unwrap();
                             }
                         },
@@ -118,33 +117,28 @@ fn main() -> ClientResult<()> {
         .format_timestamp(None)
         .init();
 
+    let specta_config = specta::ts::ExportConfig::default()
+        .bigint(specta::ts::BigIntExportBehavior::BigInt)
+        .formatter(specta::ts::formatter::prettier);
+
+    let mut specta_builder =
+        generate_specta_builder!(commands: [xap_constants_get, keycode_set, keymap_get], events: [FrontendEvent])
+            .config(specta_config);
+
+    if cfg!(debug_assertions) {
+        specta_builder = specta_builder.path("../src/generated/xap.ts");
+    }
+
+    let (xap_handler, xap_events) = specta_builder.build().expect("failed to build specta");
+
     let (event_channel_tx, event_channel_rx): (Sender<XAPEvent>, Receiver<XAPEvent>) = unbounded();
 
     tauri::Builder::default()
+        .invoke_handler(xap_handler)
         .plugin(shutdown_event_loop(Sender::clone(&event_channel_tx)))
-        .invoke_handler(tauri::generate_handler![
-            xap_constants_get,
-            secure_lock,
-            secure_unlock,
-            secure_status_get,
-            jump_to_bootloader,
-            reset_eeprom,
-            keycode_get,
-            keycode_set,
-            keymap_get,
-            encoder_keycode_get,
-            encoder_keycode_set,
-            backlight_config_get,
-            backlight_config_set,
-            backlight_config_save,
-            rgblight_config_get,
-            rgblight_config_set,
-            rgblight_config_save,
-            rgbmatrix_config_get,
-            rgbmatrix_config_set,
-            rgbmatrix_config_save,
-        ])
         .setup(move |app| {
+            xap_events(app);
+
             let xap_specs = app
                 .path_resolver()
                 .resolve_resource("../xap-specs/specs/constants/keycodes")

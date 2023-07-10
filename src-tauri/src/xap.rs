@@ -1,12 +1,13 @@
 // Module which contains everything needed to communicate to a XAP-enabled device
 
 use serde::Serialize;
+use specta::Type;
 use thiserror::Error;
 use uuid::Uuid;
 
 use xap_specs::error::XAPError;
 
-pub mod constant;
+// pub mod constant;
 pub mod hid;
 
 pub type ClientResult<T> = Result<T, ClientError>;
@@ -33,5 +34,12 @@ impl Serialize for ClientError {
         S: serde::Serializer,
     {
         serializer.serialize_str(&self.to_string())
+    }
+}
+
+impl Type for ClientError {
+    fn inline(_type_map: &mut specta::TypeMap, generics: &[specta::DataType]) -> specta::DataType {
+        // TODO: this is a hack, but it works for now
+        specta::DataType::Literal(specta::LiteralType::String("Todo".to_string()))
     }
 }

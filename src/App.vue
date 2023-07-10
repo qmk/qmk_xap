@@ -5,7 +5,7 @@
     import { Notify, Loading } from 'quasar'
 
     import { useXAPDeviceStore } from '@/stores/devices'
-    import { FrontendEvent } from '@bindings/FrontendEvent'
+    import { FrontendEvent } from '@generated/xap'
     import router from '@/router/routes'
 
     const store = useXAPDeviceStore()
@@ -59,7 +59,7 @@
                 const { id, secure_status } = event.payload.data
                 console.log('secure status ' + secure_status + ' for device ' + id)
                 store.updateSecureStatus(id, secure_status)
-            }
+            },
         )
 
         await emit('frontend-loaded')
