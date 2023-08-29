@@ -64,11 +64,7 @@ impl BinRead for LogBroadcast {
         _endian: Endian,
         _args: Self::Args<'_>,
     ) -> binrw::BinResult<Self> {
-        let len: u8 = reader.read_le()?;
-        let mut bytes = Vec::with_capacity(len as usize);
-        reader.read_exact(&mut bytes[..len as usize])?;
-        let mut cursor = Cursor::new(&bytes);
-        Ok(Self(std::io::read_to_string(&mut cursor)?))
+        Ok(Self(std::io::read_to_string(reader)?))
     }
 }
 
