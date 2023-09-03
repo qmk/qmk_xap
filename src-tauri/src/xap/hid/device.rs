@@ -504,7 +504,11 @@ fn handle_report(
                     .expect("failed to send broadcast event!");
             }
             BroadcastType::Keyboard => info!("keyboard broadcasts are not implemented!"),
-            BroadcastType::User => info!("keyboard broadcasts are not implemented!"),
+            BroadcastType::User => {
+                event_channel
+                    .send(XAPEvent::ReceivedUserBroadcast { id, broadcast })
+                    .expect("failed to send user broadcast event!");
+            }
         }
     } else {
         let response = RawResponse::from_raw_report(&report)?;
