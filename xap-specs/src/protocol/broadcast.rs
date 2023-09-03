@@ -78,3 +78,8 @@ impl XAPBroadcast for LogBroadcast {}
 pub struct SecureStatusBroadcast(pub XAPSecureStatus);
 
 impl XAPBroadcast for SecureStatusBroadcast {}
+
+#[derive(BinRead, Debug, Clone)]
+pub struct UserBroadcast {}
+
+impl XAPBroadcast for UserBroadcast {}

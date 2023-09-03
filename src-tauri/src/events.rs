@@ -1,7 +1,7 @@
 use serde::Serialize;
 use ts_rs::TS;
 use uuid::Uuid;
-use xap_specs::protocol::xap::XAPSecureStatus;
+use xap_specs::protocol::{xap::XAPSecureStatus, BroadcastRaw};
 
 use crate::aggregation::XAPDevice as XAPDeviceDTO;
 
@@ -39,5 +39,9 @@ pub(crate) enum XAPEvent {
     RemovedDevice(Uuid),
     AnnounceAllDevices,
     RxError,
+    ReceivedUserBroadcast {
+        id: Uuid,
+        broadcast: BroadcastRaw,
+    },
     Exit,
 }

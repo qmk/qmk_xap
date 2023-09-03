@@ -7,6 +7,7 @@
 mod commands;
 mod aggregation;
 mod events;
+mod user;
 mod xap;
 
 use std::sync::Arc;
@@ -26,6 +27,7 @@ use tauri::{AppHandle, Manager};
 
 use commands::*;
 use events::{FrontendEvent, XAPEvent};
+use user::UserData;
 use xap::hid::XAPClient;
 use xap::ClientResult;
 use xap_specs::constants::XAPConstants;
@@ -44,6 +46,7 @@ fn start_event_loop(
     app: AppHandle,
     state: Arc<Mutex<XAPClient>>,
     event_channel: Receiver<XAPEvent>,
+    user_data: Arc<Mutex<UserData>>,
 ) {
     let _ = std::thread::spawn(move || {
         let ticker = tick(Duration::from_millis(500));
@@ -55,6 +58,9 @@ fn start_event_loop(
                     match msg {
                         Ok(XAPEvent::Exit) => {
                             info!("received shutdown signal, exiting!");
+                            let client = state.lock();
+                            let mut user_data = user_data.lock();
+                            user::on_close(&client, &mut user_data);
                             break 'event_loop;
                         },
                         Ok(XAPEvent::LogReceived{id, log}) => {
@@ -70,11 +76,17 @@ fn start_event_loop(
                                 info!("detected new device - notifying frontend!");
 
                                 app.emit_all("new-device", FrontendEvent::NewDevice{ device: device.as_dto() }).unwrap();
+
+                                let mut user_data = user_data.lock();
+                                user::new_device(device, &mut user_data);
                             }
                         },
                         Ok(XAPEvent::RemovedDevice(id)) => {
                             info!("removed device - notifying frontend!");
                             app.emit_all("removed-device", FrontendEvent::RemovedDevice{ id }).unwrap();
+
+                            let mut user_data = user_data.lock();
+                            user::removed_device(&id, &mut user_data);
                         },
                         Ok(XAPEvent::AnnounceAllDevices) => {
                             let mut state = state.lock();
@@ -90,6 +102,12 @@ fn start_event_loop(
                                 error!("failed to enumerate XAP devices: {err}");
                             }
                         },
+                        Ok(XAPEvent::ReceivedUserBroadcast{id, broadcast}) => {
+                            let state = state.lock();
+                            let device = state.get_device(&id).unwrap();
+                            let mut user_data = user_data.lock();
+                            user::broadcast_callback(broadcast, device, &mut user_data);
+                        },
                         Err(err) => {
                             error!("error receiving event {err}");
                         },
@@ -99,9 +117,15 @@ fn start_event_loop(
                 recv(ticker) -> msg => {
                     match msg {
                         Ok(_) => {
-                            if let Err(err) = state.lock().enumerate_xap_devices() {
+                            let mut state = state.lock();
+
+                            if let Err(err) = state.enumerate_xap_devices() {
                                 error!("failed to enumerate XAP devices: {err}");
+                                return;
                             }
+
+                            let mut user_data = user_data.lock();
+                            user::housekeeping(&state, &mut user_data);
                         },
                         Err(err) => {
                             error!("failed receiving tick {err}");
@@ -117,6 +141,10 @@ fn main() -> ClientResult<()> {
     env_logger::Builder::from_env(Env::default().default_filter_or("info"))
         .format_timestamp(None)
         .init();
+
+    let user_data = Arc::new(Mutex::new(UserData::default()));
+
+    user::pre_init();
 
     let (event_channel_tx, event_channel_rx): (Sender<XAPEvent>, Receiver<XAPEvent>) = unbounded();
 
@@ -159,7 +187,7 @@ fn main() -> ClientResult<()> {
             ));
             app.manage(Arc::clone(&state));
 
-            start_event_loop(app.handle(), state, event_channel_rx);
+            start_event_loop(app.handle(), state, event_channel_rx, user_data);
 
             app.listen_global("frontend-loaded", move |_| {
                 let event_tx = event_channel_tx.clone();
