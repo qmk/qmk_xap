@@ -61,7 +61,7 @@
         resume()
     })
 
-    const { stop, pause, resume } = watchPausable(
+    const { pause, resume } = watchPausable(
         config,
         async (newConfig: RGBLightConfig) => {
             try {

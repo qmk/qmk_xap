@@ -5,3 +5,7 @@ members = [
     "src-tauri",
     "xap-specs"
 ]
+
+[profile.release]
+opt-level = 'z'
+lto = 'fat'

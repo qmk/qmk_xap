@@ -35,7 +35,7 @@ export async function queryDevice<T, R>(handler: string, id: string, arg: T | nu
     )
 }
 
-export async function callDevice<T, R>(handler: string, id: string): Promise<void> {
+export async function callDevice(handler: string, id: string): Promise<void> {
     const truncatedId = '(' + id.substring(0, 4) + ')'
     return await invoke<null>(handler, { id: id }).then(
         () => {
