@@ -12,7 +12,6 @@ pub mod xap_routes {
     /// * Returns the BCD-encoded version in the format of XX.YY.ZZZZ => `0xXXYYZZZZ`
     ///     * e.g. 3.2.115 will match `0x03020115`, or bytes {0x15,0x01,0x02,0x03}.
     /// ======================================================================
-
     #[derive(BinWrite, Default, Debug, Clone, Serialize)]
     pub struct VersionQueryRequest(pub ());
 
@@ -36,7 +35,6 @@ pub mod xap_routes {
     ///
     /// XAP subsystem capabilities query. Each bit should be considered as a "usable" route within this subsystem.
     /// ======================================================================
-
     #[derive(BinWrite, Default, Debug, Clone, Serialize)]
     pub struct CapabilitiesQueryRequest(pub ());
 
@@ -60,7 +58,6 @@ pub mod xap_routes {
     ///
     /// XAP protocol subsystem query. Each bit should be considered as a "usable" subsystem. For example, checking `(value & (1 << XAP_ROUTE_QMK) != 0)` means the QMK subsystem is enabled and available for querying.
     /// ======================================================================
-
     #[derive(BinWrite, Default, Debug, Clone, Serialize)]
     pub struct EnabledSubsystemQueryRequest(pub ());
 
@@ -89,7 +86,6 @@ pub mod xap_routes {
     /// * 2 means secure routes are allowed
     /// * any other value should be interpreted as disabled
     /// ======================================================================
-
     #[derive(BinWrite, Default, Debug, Clone, Serialize)]
     pub struct SecureStatusRequest(pub ());
 
@@ -113,7 +109,6 @@ pub mod xap_routes {
     ///
     /// Initiate secure route unlock sequence
     /// ======================================================================
-
     #[derive(BinWrite, Default, Debug, Clone, Serialize)]
     pub struct SecureUnlockRequest(pub ());
 
@@ -134,7 +129,6 @@ pub mod xap_routes {
     ///
     /// Disable secure routes
     /// ======================================================================
-
     #[derive(BinWrite, Default, Debug, Clone, Serialize)]
     pub struct SecureLockRequest(pub ());
 
@@ -164,7 +158,6 @@ pub mod qmk_routes {
     /// * Returns the BCD-encoded version in the format of XX.YY.ZZZZ => `0xXXYYZZZZ`
     ///     * e.g. 3.2.115 will match `0x03020115`, or bytes {0x15,0x01,0x02,0x03}.
     /// ======================================================================
-
     #[derive(BinWrite, Default, Debug, Clone, Serialize)]
     pub struct VersionQueryRequest(pub ());
 
@@ -188,7 +181,6 @@ pub mod qmk_routes {
     ///
     /// QMK subsystem capabilities query. Each bit should be considered as a "usable" route within this subsystem.
     /// ======================================================================
-
     #[derive(BinWrite, Default, Debug, Clone, Serialize)]
     pub struct CapabilitiesQueryRequest(pub ());
 
@@ -212,7 +204,6 @@ pub mod qmk_routes {
     ///
     /// Retrieves the set of identifying information for the board.
     /// ======================================================================
-
     #[derive(BinWrite, Default, Debug, Clone, Serialize)]
     pub struct BoardIdentifiersRequest(pub ());
 
@@ -241,7 +232,6 @@ pub mod qmk_routes {
     ///
     /// Retrieves the name of the manufacturer
     /// ======================================================================
-
     #[derive(BinWrite, Default, Debug, Clone, Serialize)]
     pub struct BoardManufacturerRequest(pub ());
 
@@ -265,7 +255,6 @@ pub mod qmk_routes {
     ///
     /// Retrieves the product name
     /// ======================================================================
-
     #[derive(BinWrite, Default, Debug, Clone, Serialize)]
     pub struct ProductNameRequest(pub ());
 
@@ -289,7 +278,6 @@ pub mod qmk_routes {
     ///
     /// Retrieves the length of the configuration data bundled within the firmware
     /// ======================================================================
-
     #[derive(BinWrite, Default, Debug, Clone, Serialize)]
     pub struct ConfigBlobLengthRequest(pub ());
 
@@ -313,7 +301,6 @@ pub mod qmk_routes {
     ///
     /// Retrieves a chunk of the configuration data bundled within the firmware
     /// ======================================================================
-
     #[derive(BinWrite, Default, Debug, Clone, Serialize)]
     pub struct ConfigBlobChunkRequest(pub u16);
 
@@ -342,7 +329,6 @@ pub mod qmk_routes {
     /// * 0 means secure routes are disabled, and should be considered as a failure
     /// * 1 means successful, board will jump to bootloader
     /// ======================================================================
-
     #[derive(BinWrite, Default, Debug, Clone, Serialize)]
     pub struct JumpToBootloaderRequest(pub ());
 
@@ -366,7 +352,6 @@ pub mod qmk_routes {
     ///
     /// Retrieves a unique identifier for the board.
     /// ======================================================================
-
     #[derive(BinWrite, Default, Debug, Clone, Serialize)]
     pub struct HardwareIdentifierRequest(pub ());
 
@@ -395,7 +380,6 @@ pub mod qmk_routes {
     /// * 0 means secure routes are disabled, and should be considered as a failure
     /// * 1 means successful, board will reinitialize and then reboot
     /// ======================================================================
-
     #[derive(BinWrite, Default, Debug, Clone, Serialize)]
     pub struct ReinitializeEepromRequest(pub ());
 
@@ -437,7 +421,6 @@ pub mod keymap_routes {
     ///
     /// Keymap subsystem capabilities query. Each bit should be considered as a "usable" route within this subsystem.
     /// ======================================================================
-
     #[derive(BinWrite, Default, Debug, Clone, Serialize)]
     pub struct CapabilitiesQueryRequest(pub ());
 
@@ -461,7 +444,6 @@ pub mod keymap_routes {
     ///
     /// Query maximum number of layers that can be addressed within the keymap.
     /// ======================================================================
-
     #[derive(BinWrite, Default, Debug, Clone, Serialize)]
     pub struct GetLayerCountRequest(pub ());
 
@@ -485,6 +467,8 @@ pub mod keymap_routes {
     ///
     /// Query the Keycode at the requested location.
     /// ======================================================================
+    #[derive(BinWrite, Default, Debug, Clone, Serialize)]
+    pub struct GetKeycodeRequest(pub GetKeycodeRequestArg);
 
     #[derive(BinWrite, Default, Debug, Clone, Serialize)]
     pub struct GetKeycodeRequestArg {
@@ -492,9 +476,6 @@ pub mod keymap_routes {
         pub row: u8,
         pub column: u8,
     }
-
-    #[derive(BinWrite, Default, Debug, Clone, Serialize)]
-    pub struct GetKeycodeRequest(pub GetKeycodeRequestArg);
 
     impl XAPRequest for GetKeycodeRequest {
         type Response = GetKeycodeResponseArg;
@@ -516,6 +497,8 @@ pub mod keymap_routes {
     ///
     /// Query the Keycode at the requested location.
     /// ======================================================================
+    #[derive(BinWrite, Default, Debug, Clone, Serialize)]
+    pub struct GetEncoderKeycodeRequest(pub GetEncoderKeycodeRequestArg);
 
     #[derive(BinWrite, Default, Debug, Clone, Serialize)]
     pub struct GetEncoderKeycodeRequestArg {
@@ -523,9 +506,6 @@ pub mod keymap_routes {
         pub encoder: u8,
         pub clockwise: u8,
     }
-
-    #[derive(BinWrite, Default, Debug, Clone, Serialize)]
-    pub struct GetEncoderKeycodeRequest(pub GetEncoderKeycodeRequestArg);
 
     impl XAPRequest for GetEncoderKeycodeRequest {
         type Response = GetEncoderKeycodeResponseArg;
@@ -553,7 +533,6 @@ pub mod remapping_routes {
     ///
     /// Remapping subsystem capabilities query. Each bit should be considered as a "usable" route within this subsystem.
     /// ======================================================================
-
     #[derive(BinWrite, Default, Debug, Clone, Serialize)]
     pub struct CapabilitiesQueryRequest(pub ());
 
@@ -577,7 +556,6 @@ pub mod remapping_routes {
     ///
     /// Query maximum number of layers that can be addressed within the keymap.
     /// ======================================================================
-
     #[derive(BinWrite, Default, Debug, Clone, Serialize)]
     pub struct GetLayerCountRequest(pub ());
 
@@ -601,6 +579,8 @@ pub mod remapping_routes {
     ///
     /// Modify the Keycode at the requested location.
     /// ======================================================================
+    #[derive(BinWrite, Default, Debug, Clone, Serialize)]
+    pub struct SetKeycodeRequest(pub SetKeycodeRequestArg);
 
     #[derive(BinWrite, Default, Debug, Clone, Serialize)]
     pub struct SetKeycodeRequestArg {
@@ -609,9 +589,6 @@ pub mod remapping_routes {
         pub column: u8,
         pub keycode: u16,
     }
-
-    #[derive(BinWrite, Default, Debug, Clone, Serialize)]
-    pub struct SetKeycodeRequest(pub SetKeycodeRequestArg);
 
     impl XAPRequest for SetKeycodeRequest {
         type Response = ();
@@ -630,6 +607,8 @@ pub mod remapping_routes {
     ///
     /// Modify the Keycode at the requested location.
     /// ======================================================================
+    #[derive(BinWrite, Default, Debug, Clone, Serialize)]
+    pub struct SetEncoderKeycodeRequest(pub SetEncoderKeycodeRequestArg);
 
     #[derive(BinWrite, Default, Debug, Clone, Serialize)]
     pub struct SetEncoderKeycodeRequestArg {
@@ -638,9 +617,6 @@ pub mod remapping_routes {
         pub clockwise: u8,
         pub keycode: u16,
     }
-
-    #[derive(BinWrite, Default, Debug, Clone, Serialize)]
-    pub struct SetEncoderKeycodeRequest(pub SetEncoderKeycodeRequestArg);
 
     impl XAPRequest for SetEncoderKeycodeRequest {
         type Response = ();
@@ -665,7 +641,6 @@ pub mod lighting_routes {
     ///
     /// Lighting subsystem capabilities query. Each bit should be considered as a "usable" route within this subsystem.
     /// ======================================================================
-
     #[derive(BinWrite, Default, Debug, Clone, Serialize)]
     pub struct CapabilitiesQueryRequest(pub ());
 
@@ -694,7 +669,6 @@ pub mod lighting_routes {
         ///
         /// backlight subsystem capabilities query. Each bit should be considered as a "usable" route within this subsystem.
         /// ======================================================================
-
         #[derive(BinWrite, Default, Debug, Clone, Serialize)]
         pub struct CapabilitiesQueryRequest(pub ());
 
@@ -718,7 +692,6 @@ pub mod lighting_routes {
         ///
         /// Each bit should be considered as a "usable" effect id
         /// ======================================================================
-
         #[derive(BinWrite, Default, Debug, Clone, Serialize)]
         pub struct GetEnabledEffectsRequest(pub ());
 
@@ -742,7 +715,6 @@ pub mod lighting_routes {
         ///
         /// Query the current config.
         /// ======================================================================
-
         #[derive(BinWrite, Default, Debug, Clone, Serialize)]
         pub struct GetConfigRequest(pub ());
 
@@ -770,6 +742,8 @@ pub mod lighting_routes {
         ///
         /// Set the current config.
         /// ======================================================================
+        #[derive(BinWrite, Default, Debug, Clone, Serialize)]
+        pub struct SetConfigRequest(pub SetConfigRequestArg);
 
         #[derive(BinWrite, Default, Debug, Clone, Serialize)]
         pub struct SetConfigRequestArg {
@@ -777,9 +751,6 @@ pub mod lighting_routes {
             pub mode: u8,
             pub val: u8,
         }
-
-        #[derive(BinWrite, Default, Debug, Clone, Serialize)]
-        pub struct SetConfigRequest(pub SetConfigRequestArg);
 
         impl XAPRequest for SetConfigRequest {
             type Response = ();
@@ -798,7 +769,6 @@ pub mod lighting_routes {
         ///
         /// Save the current config.
         /// ======================================================================
-
         #[derive(BinWrite, Default, Debug, Clone, Serialize)]
         pub struct SaveConfigRequest(pub ());
 
@@ -825,7 +795,6 @@ pub mod lighting_routes {
         ///
         /// rgblight subsystem capabilities query. Each bit should be considered as a "usable" route within this subsystem.
         /// ======================================================================
-
         #[derive(BinWrite, Default, Debug, Clone, Serialize)]
         pub struct CapabilitiesQueryRequest(pub ());
 
@@ -849,7 +818,6 @@ pub mod lighting_routes {
         ///
         /// Each bit should be considered as a "usable" effect id
         /// ======================================================================
-
         #[derive(BinWrite, Default, Debug, Clone, Serialize)]
         pub struct GetEnabledEffectsRequest(pub ());
 
@@ -873,7 +841,6 @@ pub mod lighting_routes {
         ///
         /// Query the current config.
         /// ======================================================================
-
         #[derive(BinWrite, Default, Debug, Clone, Serialize)]
         pub struct GetConfigRequest(pub ());
 
@@ -904,6 +871,8 @@ pub mod lighting_routes {
         ///
         /// Set the current config.
         /// ======================================================================
+        #[derive(BinWrite, Default, Debug, Clone, Serialize)]
+        pub struct SetConfigRequest(pub SetConfigRequestArg);
 
         #[derive(BinWrite, Default, Debug, Clone, Serialize)]
         pub struct SetConfigRequestArg {
@@ -914,9 +883,6 @@ pub mod lighting_routes {
             pub val: u8,
             pub speed: u8,
         }
-
-        #[derive(BinWrite, Default, Debug, Clone, Serialize)]
-        pub struct SetConfigRequest(pub SetConfigRequestArg);
 
         impl XAPRequest for SetConfigRequest {
             type Response = ();
@@ -935,7 +901,6 @@ pub mod lighting_routes {
         ///
         /// Save the current config.
         /// ======================================================================
-
         #[derive(BinWrite, Default, Debug, Clone, Serialize)]
         pub struct SaveConfigRequest(pub ());
 
@@ -962,7 +927,6 @@ pub mod lighting_routes {
         ///
         /// rgb matrix subsystem capabilities query. Each bit should be considered as a "usable" route within this subsystem.
         /// ======================================================================
-
         #[derive(BinWrite, Default, Debug, Clone, Serialize)]
         pub struct CapabilitiesQueryRequest(pub ());
 
@@ -986,7 +950,6 @@ pub mod lighting_routes {
         ///
         /// Each bit should be considered as a "usable" effect id
         /// ======================================================================
-
         #[derive(BinWrite, Default, Debug, Clone, Serialize)]
         pub struct GetEnabledEffectsRequest(pub ());
 
@@ -1010,7 +973,6 @@ pub mod lighting_routes {
         ///
         /// Query the current config.
         /// ======================================================================
-
         #[derive(BinWrite, Default, Debug, Clone, Serialize)]
         pub struct GetConfigRequest(pub ());
 
@@ -1042,6 +1004,8 @@ pub mod lighting_routes {
         ///
         /// Set the current config.
         /// ======================================================================
+        #[derive(BinWrite, Default, Debug, Clone, Serialize)]
+        pub struct SetConfigRequest(pub SetConfigRequestArg);
 
         #[derive(BinWrite, Default, Debug, Clone, Serialize)]
         pub struct SetConfigRequestArg {
@@ -1053,9 +1017,6 @@ pub mod lighting_routes {
             pub speed: u8,
             pub flags: u8,
         }
-
-        #[derive(BinWrite, Default, Debug, Clone, Serialize)]
-        pub struct SetConfigRequest(pub SetConfigRequestArg);
 
         impl XAPRequest for SetConfigRequest {
             type Response = ();
@@ -1074,7 +1035,6 @@ pub mod lighting_routes {
         ///
         /// Save the current config.
         /// ======================================================================
-
         #[derive(BinWrite, Default, Debug, Clone, Serialize)]
         pub struct SaveConfigRequest(pub ());
 
@@ -1102,7 +1062,6 @@ pub mod audio_routes {
     ///
     /// Audio subsystem capabilities query. Each bit should be considered as a "usable" route within this subsystem.
     /// ======================================================================
-
     #[derive(BinWrite, Default, Debug, Clone, Serialize)]
     pub struct CapabilitiesQueryRequest(pub ());
 
@@ -1126,7 +1085,6 @@ pub mod audio_routes {
     ///
     /// Query the current config.
     /// ======================================================================
-
     #[derive(BinWrite, Default, Debug, Clone, Serialize)]
     pub struct GetConfigRequest(pub ());
 
@@ -1153,15 +1111,14 @@ pub mod audio_routes {
     ///
     /// Set the current config.
     /// ======================================================================
+    #[derive(BinWrite, Default, Debug, Clone, Serialize)]
+    pub struct SetConfigRequest(pub SetConfigRequestArg);
 
     #[derive(BinWrite, Default, Debug, Clone, Serialize)]
     pub struct SetConfigRequestArg {
         pub enable: u8,
         pub clicky_enable: u8,
     }
-
-    #[derive(BinWrite, Default, Debug, Clone, Serialize)]
-    pub struct SetConfigRequest(pub SetConfigRequestArg);
 
     impl XAPRequest for SetConfigRequest {
         type Response = ();
@@ -1180,7 +1137,6 @@ pub mod audio_routes {
     ///
     /// Save the current config.
     /// ======================================================================
-
     #[derive(BinWrite, Default, Debug, Clone, Serialize)]
     pub struct SaveConfigRequest(pub ());
 

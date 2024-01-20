@@ -12,7 +12,7 @@ use serde::{de::Visitor, Deserialize, Deserializer, Serialize};
 
 use xap_specs::XAPVersion;
 
-#[derive(Debug, Serialize, Default, Clone)]
+#[derive(Debug, Serialize, Default, Clone, PartialEq)]
 #[serde(rename_all = "lowercase")]
 enum BasicType {
     #[default]
@@ -27,7 +27,7 @@ enum BasicType {
 }
 
 impl BasicType {
-    fn as_rust_type(&self) -> String {
+    fn as_type(&self) -> String {
         match self {
             BasicType::Unit => "()".to_owned(),
             BasicType::U8 => "u8".to_owned(),
@@ -36,7 +36,7 @@ impl BasicType {
             BasicType::U64 => "u64".to_owned(),
             BasicType::Struct => "Struct".to_owned(),
             BasicType::String => "UTF8String".to_owned(),
-            BasicType::Array(ty, len) => format!("[{}; {len}]", ty.as_rust_type()),
+            BasicType::Array(ty, len) => format!("[{}; {len}]", ty.as_type()),
         }
     }
 }
@@ -170,63 +170,90 @@ impl Route {
             /// {name}
             ///
             /// {description}
-            /// ======================================================================
-            "#
+            /// ======================================================================"#
         )?;
 
-        let request_type = match self.request_type {
+        let (request_type_name, request_type) = match self.request_type {
             BasicType::Struct => {
-                let request_struct = format!("{}RequestArg", name.to_case(Case::Pascal));
+                let request_struct_name = format!("{}RequestArg", name.to_case(Case::Pascal));
 
-                writeln!(
-                    &mut r,
+                let mut request_struct = format!(
                     r#"
                     #[derive(BinWrite, Default, Debug, Clone, Serialize)]
-                    pub struct {request_struct} {{
+                    pub struct {request_struct_name} {{
                     "#
-                )?;
+                );
 
                 for member in &self.request_struct_members {
                     writeln!(
-                        &mut r,
+                        &mut request_struct,
                         "    pub {}: {},",
                         member.name.to_case(Case::Snake),
-                        member.r#type.as_rust_type()
+                        member.r#type.as_type()
                     )?;
                 }
 
-                writeln!(&mut r, "}}\n")?;
+                writeln!(&mut request_struct, "}}\n")?;
 
-                request_struct
+                (request_struct_name, request_struct)
             }
-            _ => self.request_type.as_rust_type(),
+            _ => (self.request_type.as_type(), String::new()),
         };
 
         writeln!(
             &mut r,
             r#"
             #[derive(BinWrite, Default, Debug, Clone, Serialize)]
-            pub struct {}Request(pub {request_type});
+            pub struct {}Request(pub {request_type_name});
             "#,
             name.to_case(Case::Pascal),
         )?;
 
-        writeln!(
-            &mut r,
-            "impl XAPRequest for {}Request {{",
-            name.to_case(Case::Pascal)
-        )?;
+        writeln!(&mut r, "{}", request_type)?;
 
-        let response_type = match self.return_type {
-            BasicType::Unit => "()".to_owned(),
-            _ => format!("{}ResponseArg", name.to_case(Case::Pascal)),
+        let (response_type_name, response_type) = match self.return_type {
+            BasicType::Unit => ("()".to_owned(), String::new()),
+            _ => {
+                let response_struct_name = format!("{}ResponseArg", name.to_case(Case::Pascal));
+                let mut response_struct = String::new();
+
+                if self.return_type == BasicType::Struct {
+                    writeln!(
+                        &mut response_struct,
+                        r#"
+                        #[derive(BinRead, Default, Debug, Clone, Serialize)]
+                        pub struct {response_struct_name} {{
+                        "#
+                    )?;
+                    for member in &self.return_struct_members {
+                        writeln!(
+                            &mut response_struct,
+                            "    pub {}: {},",
+                            member.name.to_case(Case::Snake),
+                            member.r#type.as_type()
+                        )?;
+                    }
+                    writeln!(&mut response_struct, "}}\n")?;
+                } else {
+                    writeln!(
+                        &mut response_struct,
+                        r#"
+                        #[derive(BinRead, Default, Debug, Clone, Serialize)]
+                        pub struct {response_struct_name}(pub {});
+                        "#,
+                        self.return_type.as_type()
+                    )?;
+                }
+
+                (response_struct_name, response_struct)
+            }
         };
 
-        writeln!(&mut r, "type Response = {response_type};")?;
-
         writeln!(
             &mut r,
-            r#"
+            r#"impl XAPRequest for {}Request {{
+                type Response = {response_type_name};
+
                 fn id() -> &'static [u8] {{
                     &[{}]
                 }}
@@ -235,46 +262,13 @@ impl Route {
                     0x{}
                 }}
             }}
-            "#,
+                "#,
+            name.to_case(Case::Pascal),
             self.render_id(),
-            self.xap_version.as_ref().unwrap()
+            self.xap_version.as_ref().unwrap(),
         )?;
 
-        match self.return_type {
-            BasicType::Unit => (),
-            BasicType::Struct => {
-                writeln!(
-                    &mut r,
-                    r#"
-            #[derive(BinRead, Default, Debug, Clone, Serialize)]
-            pub struct {}ResponseArg {{
-            "#,
-                    name.to_case(Case::Pascal),
-                )?;
-
-                for member in &self.return_struct_members {
-                    writeln!(
-                        &mut r,
-                        "    pub {}: {},",
-                        member.name.to_case(Case::Snake),
-                        member.r#type.as_rust_type()
-                    )?;
-                }
-
-                writeln!(&mut r, "}}\n")?;
-            }
-            _ => {
-                writeln!(
-                    &mut r,
-                    r#"
-            #[derive(BinRead, Default, Debug, Clone, Serialize)]
-            pub struct {}ResponseArg(pub {});
-            "#,
-                    name.to_case(Case::Pascal),
-                    self.return_type.as_rust_type()
-                )?;
-            }
-        }
+        writeln!(&mut r, "{}", response_type)?;
 
         Ok(r)
     }
