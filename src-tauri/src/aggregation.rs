@@ -1,16 +1,13 @@
 use std::collections::HashMap;
 
 use serde::{Deserialize, Serialize};
-use ts_rs::TS;
 use uuid::Uuid;
 use xap_specs::{
-    constants::keycode::{XAPKeyCode, XAPKeyCodeConfig},
-    protocol::{qmk::QMKBoardIdentifiers, xap::XAPSecureStatus},
+    constants::keycode::{XAPKeyCode, XAPKeyCodeConfig}, XAPSecureStatus,
+    // protocol::{qmk::QMKBoardIdentifiers, xap::XAPSecureStatus},
 };
 
-#[derive(Clone, Serialize, TS)]
-#[ts(export)]
-#[ts(export_to = "../bindings/")]
+#[derive(Clone, Serialize)]
 pub struct XAPDevice {
     pub id: Uuid,
     pub info: XAPDeviceInfo,
@@ -18,9 +15,7 @@ pub struct XAPDevice {
     pub secure_status: XAPSecureStatus,
 }
 
-#[derive(Debug, Serialize, TS, Clone)]
-#[ts(export)]
-#[ts(export_to = "../bindings/")]
+#[derive(Debug, Serialize, Clone)]
 pub struct XAPDeviceInfo {
     pub xap: XAPInfo,
     pub qmk: QMKInfo,
@@ -29,16 +24,12 @@ pub struct XAPDeviceInfo {
     pub lighting: Option<LightingInfo>,
 }
 
-#[derive(Debug, Serialize, TS, Clone)]
-#[ts(export)]
-#[ts(export_to = "../bindings/")]
+#[derive(Debug, Serialize, Clone)]
 pub struct XAPInfo {
-    pub version: String,
+    pub version: u32,
 }
 
-#[derive(Debug, Serialize, TS, Clone)]
-#[ts(export)]
-#[ts(export_to = "../bindings/")]
+#[derive(Debug, Serialize, Clone)]
 pub struct QMKInfo {
     pub version: String,
     pub board_ids: QMKBoardIdentifiers,
@@ -50,17 +41,13 @@ pub struct QMKInfo {
     pub eeprom_reset_enabled: bool,
 }
 
-#[derive(Deserialize, Debug, Serialize, TS, Clone)]
-#[ts(export)]
-#[ts(export_to = "../bindings/")]
+#[derive(Deserialize, Debug, Serialize, Clone)]
 pub struct Matrix {
     pub cols: u8,
     pub rows: u8,
 }
 
-#[derive(Debug, Serialize, TS, Clone)]
-#[ts(export)]
-#[ts(export_to = "../bindings/")]
+#[derive(Debug, Serialize, Clone)]
 pub struct KeymapInfo {
     pub matrix: Matrix,
     pub layer_count: Option<u8>,
@@ -68,27 +55,21 @@ pub struct KeymapInfo {
     pub get_encoder_keycode_enabled: bool,
 }
 
-#[derive(Debug, Serialize, TS, Clone)]
-#[ts(export)]
-#[ts(export_to = "../bindings/")]
+#[derive(Debug, Serialize, Clone)]
 pub struct RemapInfo {
     pub layer_count: Option<u8>,
     pub set_keycode_enabled: bool,
     pub set_encoder_keycode_enabled: bool,
 }
 
-#[derive(Debug, Serialize, TS, Clone)]
-#[ts(export)]
-#[ts(export_to = "../bindings/")]
+#[derive(Debug, Serialize, Clone)]
 pub struct LightingInfo {
     pub backlight: Option<BacklightInfo>,
     pub rgblight: Option<RGBLightInfo>,
     pub rgbmatrix: Option<RGBMatrixInfo>,
 }
 
-#[derive(Debug, Serialize, TS, Clone)]
-#[ts(export)]
-#[ts(export_to = "../bindings/")]
+#[derive(Debug, Serialize, Clone)]
 pub struct BacklightInfo {
     pub effects: Option<Vec<u8>>,
     pub get_config_enabled: bool,
@@ -96,9 +77,7 @@ pub struct BacklightInfo {
     pub save_config_enabled: bool,
 }
 
-#[derive(Debug, Serialize, TS, Clone)]
-#[ts(export)]
-#[ts(export_to = "../bindings/")]
+#[derive(Debug, Serialize, Clone)]
 pub struct RGBLightInfo {
     pub effects: Option<Vec<u8>>,
     pub get_config_enabled: bool,
@@ -106,9 +85,7 @@ pub struct RGBLightInfo {
     pub save_config_enabled: bool,
 }
 
-#[derive(Debug, Serialize, TS, Clone)]
-#[ts(export)]
-#[ts(export_to = "../bindings/")]
+#[derive(Debug, Serialize, Clone)]
 pub struct RGBMatrixInfo {
     pub effects: Option<Vec<u8>>,
     pub get_config_enabled: bool,
@@ -116,17 +93,13 @@ pub struct RGBMatrixInfo {
     pub save_config_enabled: bool,
 }
 
-#[derive(Debug, Serialize, TS, Clone)]
-#[ts(export)]
-#[ts(export_to = "../bindings/")]
+#[derive(Debug, Serialize, Clone)]
 pub struct XAPKeyCodeCategory {
     name: String,
     codes: Vec<XAPKeyCode>,
 }
 
-#[derive(Debug, Serialize, TS, Clone)]
-#[ts(export)]
-#[ts(export_to = "../bindings/")]
+#[derive(Debug, Serialize, Clone)]
 pub struct XAPConstants {
     keycodes: Vec<XAPKeyCodeCategory>,
 }

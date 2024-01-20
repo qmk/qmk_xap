@@ -3,7 +3,10 @@ use std::sync::Arc;
 use parking_lot::Mutex;
 use tauri::State;
 use uuid::Uuid;
-use xap_specs::protocol::remap::{EncoderPositionConfig, KeyPositionConfig, RemapEncoderQuery};
+use xap_specs::xap_generated::remapping_routes::{
+    SetEncoderKeycodeRequest, SetEncoderKeycodeRequestArg,
+};
+use xap_specs::{EncoderPositionConfig, KeyPositionConfig};
 
 use crate::xap::{hid::XAPClient, ClientResult};
 
@@ -23,5 +26,11 @@ pub(crate) async fn encoder_keycode_set(
     state: State<'_, Arc<Mutex<XAPClient>>>,
 ) -> ClientResult<()> {
     // TODO handle as regular keymap
-    state.lock().query(id, RemapEncoderQuery(arg))
+    let arg = SetEncoderKeycodeRequestArg {
+        layer: arg.layer,
+        encoder: arg.encoder,
+        clockwise: arg.clockwise,
+        keycode: arg.keycode,
+    };
+    state.lock().query(id, SetEncoderKeycodeRequest(arg))
 }

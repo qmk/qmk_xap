@@ -4,10 +4,10 @@ use std::io::Cursor;
 use binrw::{binread, BinRead, BinReaderExt, Endian};
 use log::trace;
 
+use crate::XAPSecureStatus;
 use crate::error::XAPResult;
 use crate::token::Token;
 
-use crate::protocol::xap::XAPSecureStatus;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 #[binread]

@@ -1,7 +1,8 @@
 pub mod {{module_name}}_routes {
-
     use binrw::{BinRead, BinWrite};
-    use crate::request::XAPRequest;
+    use serde::Serialize;
+
+    use crate::{request::XAPRequest, response::UTF8String};
 
     {{routes}}
 }

@@ -3,9 +3,6 @@ use std::sync::Arc;
 use parking_lot::Mutex;
 use tauri::State;
 use uuid::Uuid;
-use xap_specs::protocol::lighting::{
-    BacklightConfig, BacklightConfigGet, BacklightConfigSave, BacklightConfigSet,
-};
 
 use crate::xap::hid::XAPClient;
 use crate::xap::ClientResult;

@@ -7,15 +7,12 @@ use std::{
 use log::error;
 use serde::{de::Error, Deserialize, Deserializer, Serialize};
 use serde_with::{serde_as, skip_serializing_none, NoneAsEmptyString};
-use ts_rs::TS;
 
-use crate::{error::XAPResult, protocol::keymap::KeyPosition};
+use crate::error::XAPResult;
 
 #[serde_as]
 #[skip_serializing_none]
-#[derive(Deserialize, Clone, Serialize, Default, Debug, PartialEq, Eq, TS)]
-#[ts(export)]
-#[ts(export_to = "../bindings/")]
+#[derive(Deserialize, Clone, Serialize, Default, Debug, PartialEq, Eq)]
 pub struct XAPKeyCode {
     #[serde(default)]
     pub code: u16,
@@ -92,12 +89,10 @@ where
     Ok(result)
 }
 
-#[derive(Debug, Default, Clone, Serialize, TS)]
-#[ts(export)]
-#[ts(export_to = "../bindings/")]
+#[derive(Debug, Default, Clone, Serialize)]
 pub struct XAPKeyCodeConfig {
     pub code: XAPKeyCode,
-    pub position: KeyPosition,
+    // pub position: GetKeycodeRequestArg,
 }
 
 #[cfg(test)]

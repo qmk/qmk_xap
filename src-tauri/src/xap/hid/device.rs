@@ -17,37 +17,13 @@ use serde_json::{Map, Value};
 use uuid::Uuid;
 
 use xap_specs::{
+    broadcast::{BroadcastRaw, BroadcastType, LogBroadcast, SecureStatusBroadcast},
     constants::{keycode::XAPKeyCodeConfig, XAPConstants},
     error::{XAPError, XAPResult},
-    protocol::{
-        keymap::{
-            KeyCode, KeyPosition, KeymapCapabilities, KeymapCapabilitiesQuery, KeymapKeycodeQuery,
-            KeymapLayerCountQuery,
-        },
-        lighting::{
-            BacklightCapabilities, BacklightCapabilitiesQuery, BacklightEffectsQuery,
-            LightingCapabilities, LightingCapabilitiesQuery, RGBLightCapabilities,
-            RGBLightCapabilitiesQuery, RGBLightEffectsQuery, RGBMatrixCapabilities,
-            RGBMatrixCapabilitiesQuery, RGBMatrixEffectsQuery,
-        },
-        qmk::{
-            ConfigBlobChunkQuery, QMKBoardIdentifiersQuery, QMKBoardManufacturerQuery,
-            QMKCapabilities, QMKCapabilitiesQuery, QMKConfigBlobLengthQuery,
-            QMKHardwareIdentifierQuery, QMKProductNameQuery, QMKVersionQuery,
-        },
-        remap::{
-            KeyPositionConfig, RemapCapabilities, RemapCapabilitiesQuery, RemapKeycodeQuery,
-            RemapLayerCountQuery,
-        },
-        xap::{
-            XAPEnabledSubsystems, XAPEnabledSubsystemsQuery, XAPSecureStatus, XAPSecureStatusQuery,
-            XAPVersionQuery,
-        },
-        *,
-    },
     request::{RawRequest, XAPRequest},
     response::RawResponse,
     token::Token,
+    XAPSecureStatus, KeyPositionConfig,
 };
 
 use crate::{
@@ -87,12 +63,14 @@ impl XAPDevice {
         rx_device: HidDevice,
         tx_device: HidDevice,
     ) -> ClientResult<Self> {
-        let (tx_channel, rx_channel) = unbounded();
         let id = Uuid::new_v4();
         let state = Arc::new(RwLock::new(XAPDeviceState::default()));
+
+        let (tx_channel, rx_channel) = unbounded();
+
         let device = Self {
-            info,
             id,
+            info,
             tx_device,
             rx_channel,
             rx_thread: start_rx_thread(
@@ -154,26 +132,38 @@ impl XAPDevice {
     }
 
     pub fn set_keycode(&self, config: KeyPositionConfig) -> ClientResult<()> {
-        self.query(RemapKeycodeQuery(config.clone()))?;
-        let (layer, row, col) = (config.layer, config.row, config.col);
-
-        self.state.write().keymap[layer as usize][row as usize][col as usize] = XAPKeyCodeConfig {
-            code: self.constants.get_keycode(config.keycode),
-            position: KeyPosition {
-                layer: config.layer,
-                row: config.row,
-                col: config.col,
-            },
-        };
+        // TODO: FIX ME
+        // self.query(RemapKeycodeQuery(config.clone()))?;
+        // let (layer, row, col) = (config.layer, config.row, config.col);
+        //
+        // self.state.write().keymap[layer as usize][row as usize][col as usize] = XAPKeyCodeConfig {
+        //     code: self.constants.get_keycode(config.keycode),
+        //     position: KeyPosition {
+        //         layer: config.layer,
+        //         row: config.row,
+        //         col: config.col,
+        //     },
+        // };
 
         Ok(())
     }
 
     pub fn query_keycode(&self, position: KeyPosition) -> ClientResult<KeyCode> {
-        self.query(KeymapKeycodeQuery(position))
+        // self.query(KeymapKeycodeQuery(position)) 
+        unimplemented!()
     }
 
     pub fn query<T: XAPRequest>(&self, request: T) -> ClientResult<T::Response> {
+        if let Some(xap_info) = &self.state.read().xap_info {
+            if !T::xap_version() < xap_info.xap.version {
+                return Err(ClientError::ProtocolError(XAPError::Protocol(format!(
+                    "can't do xap request [{:?}] with client of version {}",
+                    T::id(),
+                    xap_info.xap.version
+                ))));
+            }
+        }
+
         let request = RawRequest::new(request);
         let mut report = [0; XAP_REPORT_SIZE + 1];
 
@@ -182,6 +172,7 @@ impl XAPDevice {
         writer
             .write_le(&request)
             .map_err(|err| ClientError::from(XAPError::BitHandling(err)))?;
+
         trace!("send XAP report with payload {:?}", &report[1..]);
 
         self.tx_device.write(&report)?;
@@ -216,175 +207,175 @@ impl XAPDevice {
     }
 
     fn query_device_info(&self) -> ClientResult<()> {
-        let subsystems = self.query(XAPEnabledSubsystemsQuery)?;
-
-        let xap_info = XAPInfo {
-            version: self.query(XAPVersionQuery)?.0.to_string(),
-        };
-
-        let qmk_caps = self.query(QMKCapabilitiesQuery)?;
-        let board_ids = self.query(QMKBoardIdentifiersQuery)?;
-        // TODO: why do these strings have leading and trailing " characters -
-        // should be removed in QMK
-        let manufacturer = self
-            .query(QMKBoardManufacturerQuery)?
-            .0
-            .trim_matches('"')
-            .to_owned();
-        let product_name = self
-            .query(QMKProductNameQuery)?
-            .0
-            .trim_matches('"')
-            .to_owned();
-        let config = self.query_config_blob()?;
-        let hardware_id = self.query(QMKHardwareIdentifierQuery)?.to_string();
-
-        let qmk_info = QMKInfo {
-            version: self.query(QMKVersionQuery)?.0.to_string(),
-            board_ids,
-            manufacturer,
-            product_name,
-            config: serde_json::to_string_pretty(&config).unwrap(),
-            hardware_id,
-            jump_to_bootloader_enabled: qmk_caps.contains(QMKCapabilities::JUMP_TO_BOOTLOADER),
-            eeprom_reset_enabled: qmk_caps.contains(QMKCapabilities::EEPROM_RESET),
-        };
-
-        let keymap_info = if subsystems.contains(XAPEnabledSubsystems::KEYMAP) {
-            let keymap_caps = self.query(KeymapCapabilitiesQuery)?;
-
-            let layer_count = if keymap_caps.contains(KeymapCapabilities::LAYER_COUNT) {
-                Some(self.query(KeymapLayerCountQuery)?.0)
-            } else {
-                None
-            };
-
-            // TODO ugly bodge
-            let matrix = if let Some(value) = config.get("matrix_size") {
-                serde_json::from_value(value.clone())
-                    .map_err(|err| ClientError::Other(anyhow!("malformed matrix_size entry {err}")))
-            } else {
-                return Err(ClientError::Other(anyhow!(
-                    "matrix size not found in JSON config"
-                )));
-            }?;
-
-            Some(KeymapInfo {
-                matrix,
-                layer_count,
-                get_keycode_enabled: keymap_caps.contains(KeymapCapabilities::GET_KEYCODE),
-                get_encoder_keycode_enabled: keymap_caps
-                    .contains(KeymapCapabilities::GET_ENCODER_KEYCODE),
-            })
-        } else {
-            info!("keymap subsystem not active!");
-            None
-        };
-
-        let remap_info = if subsystems.contains(XAPEnabledSubsystems::REMAPPING) {
-            let keymap_caps = self.query(RemapCapabilitiesQuery)?;
-
-            let layer_count = if keymap_caps.contains(RemapCapabilities::LAYER_COUNT) {
-                Some(self.query(RemapLayerCountQuery)?.0)
-            } else {
-                None
-            };
-
-            Some(RemapInfo {
-                layer_count,
-                set_keycode_enabled: keymap_caps.contains(RemapCapabilities::SET_KEYCODE),
-                set_encoder_keycode_enabled: keymap_caps
-                    .contains(RemapCapabilities::SET_ENCODER_KEYCODE),
-            })
-        } else {
-            None
-        };
-
-        let lighting_info = if subsystems.contains(XAPEnabledSubsystems::LIGHTING) {
-            let lighting_caps = self.query(LightingCapabilitiesQuery)?;
-
-            let backlight_info = if lighting_caps.contains(LightingCapabilities::BACKLIGHT) {
-                let backlight_caps = self.query(BacklightCapabilitiesQuery)?;
-
-                let effects = if backlight_caps.contains(BacklightCapabilities::ENABLED_EFFECTS) {
-                    Some(self.query(BacklightEffectsQuery)?.enabled_effect_list())
-                } else {
-                    None
-                };
-
-                Some(BacklightInfo {
-                    effects,
-                    get_config_enabled: backlight_caps.contains(BacklightCapabilities::GET_CONFIG),
-                    set_config_enabled: backlight_caps.contains(BacklightCapabilities::SET_CONFIG),
-                    save_config_enabled: backlight_caps
-                        .contains(BacklightCapabilities::SAVE_CONFIG),
-                })
-            } else {
-                None
-            };
-
-            let rgblight_info = if lighting_caps.contains(LightingCapabilities::RGBLIGHT) {
-                let rgblight_caps = self.query(RGBLightCapabilitiesQuery)?;
-
-                let effects = if rgblight_caps.contains(RGBLightCapabilities::ENABLED_EFFECTS) {
-                    Some(self.query(RGBLightEffectsQuery)?.enabled_effect_list())
-                } else {
-                    None
-                };
-
-                Some(RGBLightInfo {
-                    effects,
-                    get_config_enabled: rgblight_caps.contains(RGBLightCapabilities::GET_CONFIG),
-                    set_config_enabled: rgblight_caps.contains(RGBLightCapabilities::SET_CONFIG),
-                    save_config_enabled: rgblight_caps.contains(RGBLightCapabilities::SAVE_CONFIG),
-                })
-            } else {
-                None
-            };
-
-            let rgbmatrix_info = if lighting_caps.contains(LightingCapabilities::RGBMATRIX) {
-                let rgbmatrix_caps = self.query(RGBMatrixCapabilitiesQuery)?;
-
-                let effects = if rgbmatrix_caps.contains(RGBMatrixCapabilities::ENABLED_EFFECTS) {
-                    Some(self.query(RGBMatrixEffectsQuery)?.enabled_effect_list())
-                } else {
-                    None
-                };
-
-                Some(RGBMatrixInfo {
-                    effects,
-                    get_config_enabled: rgbmatrix_caps.contains(RGBMatrixCapabilities::GET_CONFIG),
-                    set_config_enabled: rgbmatrix_caps.contains(RGBMatrixCapabilities::SET_CONFIG),
-                    save_config_enabled: rgbmatrix_caps
-                        .contains(RGBMatrixCapabilities::SAVE_CONFIG),
-                })
-            } else {
-                None
-            };
-
-            Some(LightingInfo {
-                backlight: backlight_info,
-                rgblight: rgblight_info,
-                rgbmatrix: rgbmatrix_info,
-            })
-        } else {
-            None
-        };
-
-        self.state.write().xap_info = Some(XAPDeviceInfo {
-            xap: xap_info,
-            qmk: qmk_info,
-            keymap: keymap_info,
-            remap: remap_info,
-            lighting: lighting_info,
-        });
-
+        // let subsystems = self.query(XAPEnabledSubsystemsQuery)?;
+        //
+        // let xap_info = XAPInfo {
+        //     version: self.query(XAPVersionQuery)?.0,
+        // };
+        //
+        // let qmk_caps = self.query(QMKCapabilitiesQuery)?;
+        // let board_ids = self.query(QMKBoardIdentifiersQuery)?;
+        // // TODO: why do these strings have leading and trailing " characters -
+        // // should be removed in QMK
+        // let manufacturer = self
+        //     .query(QMKBoardManufacturerQuery)?
+        //     .0
+        //     .trim_matches('"')
+        //     .to_owned();
+        // let product_name = self
+        //     .query(QMKProductNameQuery)?
+        //     .0
+        //     .trim_matches('"')
+        //     .to_owned();
+        // let config = self.query_config_blob()?;
+        // let hardware_id = self.query(QMKHardwareIdentifierQuery)?.to_string();
+        //
+        // let qmk_info = QMKInfo {
+        //     version: self.query(QMKVersionQuery)?.0.to_string(),
+        //     board_ids,
+        //     manufacturer,
+        //     product_name,
+        //     config: serde_json::to_string_pretty(&config).unwrap(),
+        //     hardware_id,
+        //     jump_to_bootloader_enabled: qmk_caps.contains(QMKCapabilities::JUMP_TO_BOOTLOADER),
+        //     eeprom_reset_enabled: qmk_caps.contains(QMKCapabilities::EEPROM_RESET),
+        // };
+        //
+        // let keymap_info = if subsystems.contains(XAPEnabledSubsystems::KEYMAP) {
+        //     let keymap_caps = self.query(KeymapCapabilitiesQuery)?;
+        //
+        //     let layer_count = if keymap_caps.contains(KeymapCapabilities::LAYER_COUNT) {
+        //         Some(self.query(KeymapLayerCountQuery(()))?.0)
+        //     } else {
+        //         None
+        //     };
+        //
+        //     // TODO ugly bodge
+        //     let matrix = if let Some(value) = config.get("matrix_size") {
+        //         serde_json::from_value(value.clone())
+        //             .map_err(|err| ClientError::Other(anyhow!("malformed matrix_size entry {err}")))
+        //     } else {
+        //         return Err(ClientError::Other(anyhow!(
+        //             "matrix size not found in JSON config"
+        //         )));
+        //     }?;
+        //
+        //     Some(KeymapInfo {
+        //         matrix,
+        //         layer_count,
+        //         get_keycode_enabled: keymap_caps.contains(KeymapCapabilities::GET_KEYCODE),
+        //         get_encoder_keycode_enabled: keymap_caps
+        //             .contains(KeymapCapabilities::GET_ENCODER_KEYCODE),
+        //     })
+        // } else {
+        //     info!("keymap subsystem not active!");
+        //     None
+        // };
+        //
+        // let remap_info = if subsystems.contains(XAPEnabledSubsystems::REMAPPING) {
+        //     let keymap_caps = self.query(RemapCapabilitiesQuery)?;
+        //
+        //     let layer_count = if keymap_caps.contains(RemapCapabilities::LAYER_COUNT) {
+        //         Some(self.query(RemapLayerCountQuery)?.0)
+        //     } else {
+        //         None
+        //     };
+        //
+        //     Some(RemapInfo {
+        //         layer_count,
+        //         set_keycode_enabled: keymap_caps.contains(RemapCapabilities::SET_KEYCODE),
+        //         set_encoder_keycode_enabled: keymap_caps
+        //             .contains(RemapCapabilities::SET_ENCODER_KEYCODE),
+        //     })
+        // } else {
+        //     None
+        // };
+        //
+        // let lighting_info = if subsystems.contains(XAPEnabledSubsystems::LIGHTING) {
+        //     let lighting_caps = self.query(LightingCapabilitiesQuery)?;
+        //
+        //     let backlight_info = if lighting_caps.contains(LightingCapabilities::BACKLIGHT) {
+        //         let backlight_caps = self.query(BacklightCapabilitiesQuery)?;
+        //
+        //         let effects = if backlight_caps.contains(BacklightCapabilities::ENABLED_EFFECTS) {
+        //             Some(self.query(BacklightEffectsQuery)?.enabled_effect_list())
+        //         } else {
+        //             None
+        //         };
+        //
+        //         Some(BacklightInfo {
+        //             effects,
+        //             get_config_enabled: backlight_caps.contains(BacklightCapabilities::GET_CONFIG),
+        //             set_config_enabled: backlight_caps.contains(BacklightCapabilities::SET_CONFIG),
+        //             save_config_enabled: backlight_caps
+        //                 .contains(BacklightCapabilities::SAVE_CONFIG),
+        //         })
+        //     } else {
+        //         None
+        //     };
+        //
+        //     let rgblight_info = if lighting_caps.contains(LightingCapabilities::RGBLIGHT) {
+        //         let rgblight_caps = self.query(RGBLightCapabilitiesQuery)?;
+        //
+        //         let effects = if rgblight_caps.contains(RGBLightCapabilities::ENABLED_EFFECTS) {
+        //             Some(self.query(RGBLightEffectsQuery)?.enabled_effect_list())
+        //         } else {
+        //             None
+        //         };
+        //
+        //         Some(RGBLightInfo {
+        //             effects,
+        //             get_config_enabled: rgblight_caps.contains(RGBLightCapabilities::GET_CONFIG),
+        //             set_config_enabled: rgblight_caps.contains(RGBLightCapabilities::SET_CONFIG),
+        //             save_config_enabled: rgblight_caps.contains(RGBLightCapabilities::SAVE_CONFIG),
+        //         })
+        //     } else {
+        //         None
+        //     };
+        //
+        //     let rgbmatrix_info = if lighting_caps.contains(LightingCapabilities::RGBMATRIX) {
+        //         let rgbmatrix_caps = self.query(RGBMatrixCapabilitiesQuery)?;
+        //
+        //         let effects = if rgbmatrix_caps.contains(RGBMatrixCapabilities::ENABLED_EFFECTS) {
+        //             Some(self.query(RGBMatrixEffectsQuery)?.enabled_effect_list())
+        //         } else {
+        //             None
+        //         };
+        //
+        //         Some(RGBMatrixInfo {
+        //             effects,
+        //             get_config_enabled: rgbmatrix_caps.contains(RGBMatrixCapabilities::GET_CONFIG),
+        //             set_config_enabled: rgbmatrix_caps.contains(RGBMatrixCapabilities::SET_CONFIG),
+        //             save_config_enabled: rgbmatrix_caps
+        //                 .contains(RGBMatrixCapabilities::SAVE_CONFIG),
+        //         })
+        //     } else {
+        //         None
+        //     };
+        //
+        //     Some(LightingInfo {
+        //         backlight: backlight_info,
+        //         rgblight: rgblight_info,
+        //         rgbmatrix: rgbmatrix_info,
+        //     })
+        // } else {
+        //     None
+        // };
+        //
+        // self.state.write().xap_info = Some(XAPDeviceInfo {
+        //     xap: xap_info,
+        //     qmk: qmk_info,
+        //     keymap: keymap_info,
+        //     remap: remap_info,
+        //     lighting: lighting_info,
+        // });
+        //
         Ok(())
     }
 
     fn query_config_blob(&self) -> ClientResult<Map<String, Value>> {
         // Query data size
-        let size = self.query(QMKConfigBlobLengthQuery {})?.0;
+        let size = self.query(ConfigBlobLengthQuery {})?.0;
 
         // Query all chunks and merge them in a Vec
         let mut data: Vec<u8> = Vec::with_capacity(size as usize);
@@ -502,7 +493,7 @@ fn handle_report(
                     .expect("failed to send broadcast event!");
             }
             BroadcastType::Keyboard => info!("keyboard broadcasts are not implemented!"),
-            BroadcastType::User => info!("keyboard broadcasts are not implemented!"),
+            BroadcastType::User => info!("user broadcasts are not implemented!"),
         }
     } else {
         let response = RawResponse::from_raw_report(&report)?;

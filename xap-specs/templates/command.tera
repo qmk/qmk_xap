@@ -6,7 +6,7 @@
 
 {% if request_struct_members | length > 0 %}
 {% set request_type = name_pascal_case ~ "RequestArg" %}
-#[derive(BinWrite, Debug)]
+#[derive(BinWrite, Default, Debug, Clone, Serialize)]
 pub struct {{ name_pascal_case }}RequestArg {
 {% for member in request_struct_members %}
     pub {{ member.name | snake_case }}: {{ member.type | rust_type }},
@@ -14,20 +14,28 @@ pub struct {{ name_pascal_case }}RequestArg {
 }
 {% endif %}
 
-#[derive(BinWrite, Debug)]
+#[derive(BinWrite, Default, Debug, Clone, Serialize)]
 pub struct {{ name_pascal_case }}Request(pub {{ request_type }});
 
 impl XAPRequest for {{ name_pascal_case }}Request {
+    {% if return_struct_members | length > 0 %}
     type Response = {{ name_pascal_case }}Response;
+    {% else %}
+    type Response = ();
+    {% endif %}
 
     fn id() -> &'static [u8] {
         &[{{ id }}]
+    }
+
+    fn xap_version() -> u32 {
+        0x{{ xap_version }}
     }
 }
 
 {% if return_struct_members | length > 0 %}
 {% set return_type = name_pascal_case ~ "ReturnArg" %}
-#[derive(BinRead, Debug)]
+#[derive(BinRead, Default, Debug, Clone, Serialize)]
 pub struct {{ name_pascal_case }}ReturnArg {
 {% for member in return_struct_members %}
     pub {{ member.name | snake_case }}: {{ member.type | rust_type }},
@@ -35,5 +43,5 @@ pub struct {{ name_pascal_case }}ReturnArg {
 }
 {% endif %}
 
-#[derive(BinRead, Debug)]
+#[derive(BinRead, Default, Debug, Clone, Serialize)]
 pub struct {{ name_pascal_case }}Response(pub {{ return_type }});
