@@ -15,19 +15,19 @@ path = "src/bin/codegen.rs"
 anyhow = "1.0"
 binrw = "0.13.3"
 bitflags = "1.3"
+convert_case = "0.6"
+deser-hjson = "2.2.4"
 flate2 = "1.0"
 log = "0.4"
 rand = "0.8"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
-deser-hjson = "2.2.4"
 serde_with = "3.4.0"
-thiserror = "1.0"
-uuid = { version = "1.6.1", features = ["serde", "v4"] }
-convert_case = "0.6"
 specta = "=2.0.0-rc.7"
 tauri = { version = "1.5.4", features = ["api-all"] }
 tauri-specta = { version = "=2.0.0-rc.4", features = ["javascript", "typescript"] }
+thiserror = "1.0"
+uuid = { version = "1.6.1", features = ["serde", "v4"] }
 
 [dev-dependencies]
 similar-asserts = "1.5.0"
