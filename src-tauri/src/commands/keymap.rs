@@ -5,11 +5,7 @@ use tauri::State;
 use uuid::Uuid;
 
 use xap_specs::KeyCode;
-use xap_specs::{
-    constants::keycode::XAPKeyCodeConfig,
-    EncoderPosition,
-    KeyPosition,
-};
+use xap_specs::{constants::keycode::XAPKeyCodeConfig, EncoderPosition, KeyPosition};
 
 use xap_specs::xap_generated::keymap_routes::{
     GetEncoderKeycodeRequest, GetEncoderKeycodeRequestArg, GetKeycodeRequest, GetKeycodeRequestArg,

@@ -23,7 +23,7 @@ use xap_specs::{
     request::{RawRequest, XAPRequest},
     response::RawResponse,
     token::Token,
-    XAPSecureStatus, KeyPositionConfig,
+    KeyPosition, KeyPositionConfig, XAPSecureStatus,
 };
 
 use crate::{
@@ -149,7 +149,7 @@ impl XAPDevice {
     }
 
     pub fn query_keycode(&self, position: KeyPosition) -> ClientResult<KeyCode> {
-        // self.query(KeymapKeycodeQuery(position)) 
+        // self.query(KeymapKeycodeQuery(position))
         unimplemented!()
     }
 
@@ -419,7 +419,7 @@ impl XAPDevice {
 
                                     let xap = XAPKeyCodeConfig {
                                         code: self.constants.get_keycode(keycode.0),
-                                        position: KeyPosition { layer, row, col },
+                                        // position: KeyPosition { layer, row, col },
                                     };
 
                                     Ok(xap)

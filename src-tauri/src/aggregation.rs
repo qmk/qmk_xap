@@ -3,7 +3,8 @@ use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 use xap_specs::{
-    constants::keycode::{XAPKeyCode, XAPKeyCodeConfig}, XAPSecureStatus,
+    constants::keycode::{XAPKeyCode, XAPKeyCodeConfig},
+    XAPSecureStatus,
     // protocol::{qmk::QMKBoardIdentifiers, xap::XAPSecureStatus},
 };
 

@@ -4,10 +4,11 @@
 )]
 
 #[macro_use]
-mod commands;
+// mod commands;
 mod aggregation;
 mod events;
 mod xap;
+mod xap_spec;
 
 use std::sync::Arc;
 use std::time::Duration;
@@ -24,7 +25,7 @@ use tauri::{
 };
 use tauri::{AppHandle, Manager};
 
-use commands::*;
+// use commands::*;
 use events::{FrontendEvent, XAPEvent};
 use xap::hid::XAPClient;
 use xap::ClientResult;
@@ -123,26 +124,26 @@ fn main() -> ClientResult<()> {
     tauri::Builder::default()
         .plugin(shutdown_event_loop(Sender::clone(&event_channel_tx)))
         .invoke_handler(tauri::generate_handler![
-            xap_constants_get,
-            secure_lock,
-            secure_unlock,
-            secure_status_get,
-            jump_to_bootloader,
-            reset_eeprom,
-            keycode_get,
-            keycode_set,
-            keymap_get,
-            encoder_keycode_get,
-            encoder_keycode_set,
-            backlight_config_get,
-            backlight_config_set,
-            backlight_config_save,
-            rgblight_config_get,
-            rgblight_config_set,
-            rgblight_config_save,
-            rgbmatrix_config_get,
-            rgbmatrix_config_set,
-            rgbmatrix_config_save,
+            // xap_constants_get,
+            // secure_lock,
+            // secure_unlock,
+            // secure_status_get,
+            // jump_to_bootloader,
+            // reset_eeprom,
+            // keycode_get,
+            // keycode_set,
+            // keymap_get,
+            // encoder_keycode_get,
+            // encoder_keycode_set,
+            // backlight_config_get,
+            // backlight_config_set,
+            // backlight_config_save,
+            // rgblight_config_get,
+            // rgblight_config_set,
+            // rgblight_config_save,
+            // rgbmatrix_config_get,
+            // rgbmatrix_config_set,
+            // rgbmatrix_config_save,
         ])
         .setup(move |app| {
             let xap_specs = app

@@ -5,6 +5,7 @@ use binrw::{binread, BinRead, BinResult, Endian};
 use bitflags::bitflags;
 use log::trace;
 use serde::Serialize;
+use specta::Type;
 
 use crate::{
     error::{XAPError, XAPResult},
@@ -65,7 +66,7 @@ impl RawResponse {
     }
 }
 
-#[derive(Debug, Default, Clone, Serialize)]
+#[derive(Debug, Default, Clone, Serialize, Type)]
 pub struct UTF8String(pub String);
 
 impl BinRead for UTF8String {

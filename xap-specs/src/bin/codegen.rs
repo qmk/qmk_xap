@@ -1,5 +1,6 @@
 use std::{
     collections::{BTreeMap, HashMap},
+    fmt::Display,
     fs::{self, read_dir, File},
     io::Write,
     path::Path,
@@ -10,7 +11,30 @@ use anyhow::Result;
 use convert_case::{Case, Casing};
 use serde::{de::Visitor, Deserialize, Deserializer, Serialize};
 
-use xap_specs::XAPVersion;
+#[derive(Debug, Default, PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
+pub struct XAPVersion(u32);
+
+impl TryFrom<u32> for XAPVersion {
+    type Error = anyhow::Error;
+
+    fn try_from(value: u32) -> Result<Self, Self::Error> {
+        match value {
+            0x01 | 0x0100 | 0x0200 | 0x0300 => Ok(Self(value)),
+            _ => Err(anyhow::anyhow!(format!(
+                "{value:06X} is not a valid BCD encoded XAP version"
+            ))),
+        }
+    }
+}
+
+impl Display for XAPVersion {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        for digit in self.0.to_be_bytes() {
+            write!(f, "{digit:02X}")?;
+        }
+        Ok(())
+    }
+}
 
 #[derive(Debug, Serialize, Default, Clone, PartialEq)]
 #[serde(rename_all = "lowercase")]
@@ -157,21 +181,8 @@ impl Route {
         }
     }
 
-    fn render_command(&self) -> Result<String> {
-        let mut r = String::new();
-
-        let name = self.name.as_ref().unwrap();
-        let description = self.description.as_ref().unwrap().replace("\n", "\n/// ");
-
-        write!(
-            &mut r,
-            r#"
-            /// ======================================================================
-            /// {name}
-            ///
-            /// {description}
-            /// ======================================================================"#
-        )?;
+    fn render_request_type(&self, ctx: &mut Context) -> Result<(String, String)> {
+        let name = format!("{}{}", ctx.module_name, self.name.as_ref().unwrap());
 
         let (request_type_name, request_type) = match self.request_type {
             BasicType::Struct => {
@@ -179,7 +190,7 @@ impl Route {
 
                 let mut request_struct = format!(
                     r#"
-                    #[derive(BinWrite, Default, Debug, Clone, Serialize)]
+                    #[derive(BinWrite, Default, Debug, Clone, Serialize, Type)]
                     pub struct {request_struct_name} {{
                     "#
                 );
@@ -200,28 +211,23 @@ impl Route {
             _ => (self.request_type.as_type(), String::new()),
         };
 
-        writeln!(
-            &mut r,
-            r#"
-            #[derive(BinWrite, Default, Debug, Clone, Serialize)]
-            pub struct {}Request(pub {request_type_name});
-            "#,
-            name.to_case(Case::Pascal),
-        )?;
+        Ok((request_type_name, request_type))
+    }
 
-        writeln!(&mut r, "{}", request_type)?;
+    fn render_return_type(&self, ctx: &mut Context) -> Result<(String, String)> {
+        let name = format!("{}{}", ctx.module_name, self.name.as_ref().unwrap());
 
-        let (response_type_name, response_type) = match self.return_type {
+        let (return_type_name, return_type) = match self.return_type {
             BasicType::Unit => ("()".to_owned(), String::new()),
             _ => {
-                let response_struct_name = format!("{}ResponseArg", name.to_case(Case::Pascal));
+                let response_struct_name = format!("{}Response", name.to_case(Case::Pascal));
                 let mut response_struct = String::new();
 
                 if self.return_type == BasicType::Struct {
                     writeln!(
                         &mut response_struct,
                         r#"
-                        #[derive(BinRead, Default, Debug, Clone, Serialize)]
+                        #[derive(BinRead, Default, Debug, Clone, Serialize, Type)]
                         pub struct {response_struct_name} {{
                         "#
                     )?;
@@ -238,7 +244,7 @@ impl Route {
                     writeln!(
                         &mut response_struct,
                         r#"
-                        #[derive(BinRead, Default, Debug, Clone, Serialize)]
+                        #[derive(BinRead, Default, Debug, Clone, Serialize, Type)]
                         pub struct {response_struct_name}(pub {});
                         "#,
                         self.return_type.as_type()
@@ -249,73 +255,147 @@ impl Route {
             }
         };
 
-        writeln!(
-            &mut r,
-            r#"impl XAPRequest for {}Request {{
+        Ok((return_type_name, return_type))
+    }
+
+    fn render_command(&self, ctx: &mut Context) -> Result<()> {
+        let command_name = self.name.as_ref().unwrap();
+        let name = format!("{}{}", ctx.module_name, command_name);
+        let name_pascal = name.to_case(Case::Pascal);
+        let name_snake = name.to_case(Case::Snake);
+        let description = self.description.as_ref().unwrap().replace("\n", "\n/// ");
+        let (request_type_name, request_type) = self.render_request_type(ctx)?;
+        let (response_type_name, response_type) = self.render_return_type(ctx)?;
+        let id = self.render_id();
+        let xap_version = self.xap_version.as_ref().unwrap();
+
+        write!(
+            &mut ctx.spec,
+            r#"
+            /// ======================================================================
+            /// {command_name}
+            ///
+            /// {description}
+            /// ======================================================================
+            #[derive(BinWrite, Default, Debug, Clone, Serialize, Type)]
+            pub struct {name_pascal}Request(pub {request_type_name});
+
+            {request_type}
+
+            impl XAPRequest for {name_pascal}Request {{
                 type Response = {response_type_name};
 
                 fn id() -> &'static [u8] {{
-                    &[{}]
+                    &[{id}]
                 }}
 
                 fn xap_version() -> u32 {{
-                    0x{}
+                    0x{xap_version}
                 }}
             }}
-                "#,
-            name.to_case(Case::Pascal),
-            self.render_id(),
-            self.xap_version.as_ref().unwrap(),
+
+            {response_type}"#
         )?;
 
-        writeln!(&mut r, "{}", response_type)?;
+        match self.request_type {
+            BasicType::Unit => {
+                writeln!(
+                    &mut ctx.spec,
+                    r#"
+                    #[tauri::command]
+                    #[specta::specta]
+                    pub fn {name_snake}(
+                        id: Uuid,
+                        state: State<'_, Arc<Mutex<XAPClient>>>,
+                    ) -> ClientResult<{response_type_name}> {{
+                        state
+                            .lock()
+                            .query(id, {name_pascal}Request(()))
+                    }}
+                    "#
+                )?;
+            }
+            _ => {
+                writeln!(
+                    &mut ctx.spec,
+                    r#"
+                    #[tauri::command]
+                    #[specta::specta]
+                    pub fn {name_snake}(
+                        id: Uuid,
+                        arg: {request_type_name},
+                        state: State<'_, Arc<Mutex<XAPClient>>>,
+                    ) -> ClientResult<{response_type_name}> {{
+                        state
+                            .lock()
+                            .query(id, {name_pascal}Request(arg))
+                    }}
+                    "#
+                )?;
+            }
+        }
 
-        Ok(r)
+        Ok(())
     }
 
-    fn render_route(&self) -> Result<String> {
-        let mut rendered = String::new();
-
+    fn render_route(&self, ctx: &mut Context) -> Result<()> {
         let module_name = self
             .name
             .as_ref()
             .expect("route name is missing")
             .to_case(Case::Snake);
 
-        let mut routes = String::new();
+        ctx.module_name = module_name.clone();
+
+        writeln!(
+            &mut ctx.spec,
+            r#"
+            #[allow(dead_code)]
+            #[allow(unused_imports)]
+            pub mod {module_name}_routes {{
+                use std::sync::Arc;
+
+                use binrw::{{BinRead, BinWrite}};
+                use parking_lot::Mutex;
+                use serde::{{Serialize, Deserialize}};
+                use specta::Type;
+                use tauri::State;
+                use uuid::Uuid;
+
+                use xap_specs::request::XAPRequest;
+                use xap_specs::response::UTF8String;
+                use crate::xap::hid::XAPClient;
+                use crate::xap::ClientResult;
+            "#
+        )?;
+
         for (_, subroute) in &self.routes {
-            routes.push_str(&subroute.render()?);
+            subroute.render(ctx)?;
         }
 
         writeln!(
-            &mut rendered,
+            &mut ctx.spec,
             r#"
-            pub mod {module_name}_routes {{
-                use binrw::{{BinRead, BinWrite}};
-                use serde::{{Serialize, Deserialize}};
-                use crate::{{request::XAPRequest, response::UTF8String}};
-                {routes}
             }}
             "#
         )?;
 
-        Ok(rendered)
+        Ok(())
     }
 
-    fn render(&self) -> Result<String> {
-        let mut rendered = String::new();
+    fn render(&self, ctx: &mut Context) -> Result<()> {
         match self.r#type.as_ref().expect("route type is missing") {
             RouteType::Router => {
-                rendered.push_str(&self.render_route()?);
+                self.render_route(ctx)?;
             }
             RouteType::Command => {
-                rendered.push_str(&self.render_command()?);
+                self.render_command(ctx)?;
                 for (_, subroute) in &self.routes {
-                    rendered.push_str(&subroute.render()?);
+                    subroute.render(ctx)?;
                 }
             }
         }
-        Ok(rendered)
+        Ok(())
     }
 
     fn expand_ids(&mut self, parent_id: &mut Vec<u8>) {
@@ -378,13 +458,12 @@ impl Spec {
         }
     }
 
-    fn render(&self) -> Result<String> {
-        let mut rendered = String::new();
+    fn render(&self, ctx: &mut Context) -> Result<()> {
         for (_, route) in self.routes.iter() {
-            rendered.push_str(&route.render()?);
+            route.render(ctx)?;
         }
 
-        Ok(rendered)
+        Ok(())
     }
 
     fn from_spec(path: &Path) -> Result<Spec> {
@@ -443,6 +522,11 @@ where
     )
 }
 
+struct Context<'a> {
+    spec: &'a mut dyn Write,
+    module_name: String,
+}
+
 fn main() -> Result<()> {
     let mut specs = read_dir(concat!(env!("CARGO_MANIFEST_DIR"), "/specs/xap"))?
         .filter_map(|spec| {
@@ -474,8 +558,14 @@ fn main() -> Result<()> {
 
     // Only render the latest spec as it contains all previous iterations
     if let Some(spec) = specs.last() {
-        File::create(format!("{}/src/xap.rs", env!("CARGO_MANIFEST_DIR"),))?
-            .write_all(spec.render()?.as_bytes())?;
+        let manifest_dir = env!("CARGO_MANIFEST_DIR");
+
+        let mut context = Context {
+            spec: &mut File::create(format!("{manifest_dir}/../src-tauri/src/xap_spec.rs"))?,
+            module_name: String::new(),
+        };
+
+        spec.render(&mut context)?;
     }
 
     Ok(())

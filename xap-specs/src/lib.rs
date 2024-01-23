@@ -1,17 +1,16 @@
 use std::fmt::Display;
 
-use binrw::{BinRead, BinWrite, Endian, BinResult, BinReaderExt};
+use binrw::{BinRead, BinReaderExt, BinResult, BinWrite, Endian};
 use error::XAPError;
 use serde::{Deserialize, Serialize};
 
 pub mod constants;
 pub mod error;
 //pub mod protocol;
+pub mod broadcast;
 pub mod request;
 pub mod response;
 pub mod token;
-pub mod xap;
-pub mod broadcast;
 
 #[derive(BinWrite, Debug, Default, Clone, Serialize, Deserialize)]
 pub struct KeyPosition {
