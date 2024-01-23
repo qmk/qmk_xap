@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 
 pub mod constants;
 pub mod error;
-//pub mod protocol;
+pub mod protocol;
 pub mod broadcast;
 pub mod request;
 pub mod response;

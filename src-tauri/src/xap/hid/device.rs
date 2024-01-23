@@ -32,6 +32,11 @@ use crate::{
         XAPDevice as XAPDeviceDto, XAPDeviceInfo, XAPInfo,
     },
     xap::{ClientError, ClientResult},
+    xap_spec::{
+        keymap::KeymapGetKeycodeResponse,
+        qmk::{QmkConfigBlobChunkRequest, QmkConfigBlobLengthRequest},
+        xap::XapSecureStatusRequest,
+    },
     XAPEvent,
 };
 
@@ -148,7 +153,7 @@ impl XAPDevice {
         Ok(())
     }
 
-    pub fn query_keycode(&self, position: KeyPosition) -> ClientResult<KeyCode> {
+    pub fn query_keycode(&self, position: KeyPosition) -> ClientResult<KeymapGetKeycodeResponse> {
         // self.query(KeymapKeycodeQuery(position))
         unimplemented!()
     }
@@ -201,9 +206,10 @@ impl XAPDevice {
     }
 
     pub fn query_secure_status(&self) -> ClientResult<XAPSecureStatus> {
-        let status = self.query(XAPSecureStatusQuery {})?;
-        self.state.write().secure_status = status;
-        Ok(status)
+        let status = self.query(XapSecureStatusRequest(()))?;
+        // self.state.write().secure_status = status;
+        // Ok(status)
+        unimplemented!()
     }
 
     fn query_device_info(&self) -> ClientResult<()> {
@@ -375,13 +381,13 @@ impl XAPDevice {
 
     fn query_config_blob(&self) -> ClientResult<Map<String, Value>> {
         // Query data size
-        let size = self.query(ConfigBlobLengthQuery {})?.0;
+        let size = self.query(QmkConfigBlobLengthRequest(()))?.0;
 
         // Query all chunks and merge them in a Vec
         let mut data: Vec<u8> = Vec::with_capacity(size as usize);
         let mut offset: u16 = 0;
         while offset < size {
-            let chunk = self.query(ConfigBlobChunkQuery(offset))?;
+            let chunk = self.query(QmkConfigBlobChunkRequest(offset))?;
             data.extend(chunk.0.into_iter());
             offset += chunk.0.len() as u16;
         }

@@ -8,6 +8,8 @@ use xap_specs::{
     // protocol::{qmk::QMKBoardIdentifiers, xap::XAPSecureStatus},
 };
 
+use crate::xap_spec::qmk::QmkBoardIdentifiersResponse;
+
 #[derive(Clone, Serialize)]
 pub struct XAPDevice {
     pub id: Uuid,
@@ -33,7 +35,7 @@ pub struct XAPInfo {
 #[derive(Debug, Serialize, Clone)]
 pub struct QMKInfo {
     pub version: String,
-    pub board_ids: QMKBoardIdentifiers,
+    pub board_ids: QmkBoardIdentifiersResponse,
     pub manufacturer: String,
     pub product_name: String,
     pub config: String,

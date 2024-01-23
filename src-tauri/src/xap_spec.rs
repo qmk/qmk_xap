@@ -1,7 +1,7 @@
 
 #[allow(dead_code)]
 #[allow(unused_imports)]
-pub mod xap_routes {
+pub mod xap {
     use std::sync::Arc;
 
     use binrw::{BinRead, BinWrite};
@@ -210,7 +210,7 @@ pub mod xap_routes {
 
 #[allow(dead_code)]
 #[allow(unused_imports)]
-pub mod qmk_routes {
+pub mod qmk {
     use std::sync::Arc;
 
     use binrw::{BinRead, BinWrite};
@@ -567,7 +567,7 @@ pub mod qmk_routes {
 
 #[allow(dead_code)]
 #[allow(unused_imports)]
-pub mod keyboard_routes {
+pub mod keyboard {
     use std::sync::Arc;
 
     use binrw::{BinRead, BinWrite};
@@ -585,7 +585,7 @@ pub mod keyboard_routes {
 
 #[allow(dead_code)]
 #[allow(unused_imports)]
-pub mod user_routes {
+pub mod user {
     use std::sync::Arc;
 
     use binrw::{BinRead, BinWrite};
@@ -603,7 +603,7 @@ pub mod user_routes {
 
 #[allow(dead_code)]
 #[allow(unused_imports)]
-pub mod keymap_routes {
+pub mod keymap {
     use std::sync::Arc;
 
     use binrw::{BinRead, BinWrite};
@@ -690,7 +690,7 @@ pub mod keymap_routes {
     #[derive(BinWrite, Default, Debug, Clone, Serialize, Type)]
     pub struct KeymapGetKeycodeRequest(pub KeymapGetKeycodeRequestArg);
 
-    #[derive(BinWrite, Default, Debug, Clone, Serialize, Type)]
+    #[derive(BinWrite, Default, Debug, Clone, Serialize, Deserialize, Type)]
     pub struct KeymapGetKeycodeRequestArg {
         pub layer: u8,
         pub row: u8,
@@ -730,7 +730,7 @@ pub mod keymap_routes {
     #[derive(BinWrite, Default, Debug, Clone, Serialize, Type)]
     pub struct KeymapGetEncoderKeycodeRequest(pub KeymapGetEncoderKeycodeRequestArg);
 
-    #[derive(BinWrite, Default, Debug, Clone, Serialize, Type)]
+    #[derive(BinWrite, Default, Debug, Clone, Serialize, Deserialize, Type)]
     pub struct KeymapGetEncoderKeycodeRequestArg {
         pub layer: u8,
         pub encoder: u8,
@@ -765,7 +765,7 @@ pub mod keymap_routes {
 
 #[allow(dead_code)]
 #[allow(unused_imports)]
-pub mod remapping_routes {
+pub mod remapping {
     use std::sync::Arc;
 
     use binrw::{BinRead, BinWrite};
@@ -854,7 +854,7 @@ pub mod remapping_routes {
     #[derive(BinWrite, Default, Debug, Clone, Serialize, Type)]
     pub struct RemappingSetKeycodeRequest(pub RemappingSetKeycodeRequestArg);
 
-    #[derive(BinWrite, Default, Debug, Clone, Serialize, Type)]
+    #[derive(BinWrite, Default, Debug, Clone, Serialize, Deserialize, Type)]
     pub struct RemappingSetKeycodeRequestArg {
         pub layer: u8,
         pub row: u8,
@@ -892,7 +892,7 @@ pub mod remapping_routes {
     #[derive(BinWrite, Default, Debug, Clone, Serialize, Type)]
     pub struct RemappingSetEncoderKeycodeRequest(pub RemappingSetEncoderKeycodeRequestArg);
 
-    #[derive(BinWrite, Default, Debug, Clone, Serialize, Type)]
+    #[derive(BinWrite, Default, Debug, Clone, Serialize, Deserialize, Type)]
     pub struct RemappingSetEncoderKeycodeRequestArg {
         pub layer: u8,
         pub encoder: u8,
@@ -927,7 +927,7 @@ pub mod remapping_routes {
 
 #[allow(dead_code)]
 #[allow(unused_imports)]
-pub mod lighting_routes {
+pub mod lighting {
     use std::sync::Arc;
 
     use binrw::{BinRead, BinWrite};
@@ -976,7 +976,7 @@ pub mod lighting_routes {
 
     #[allow(dead_code)]
     #[allow(unused_imports)]
-    pub mod backlight_routes {
+    pub mod backlight {
         use std::sync::Arc;
 
         use binrw::{BinRead, BinWrite};
@@ -1103,7 +1103,7 @@ pub mod lighting_routes {
         #[derive(BinWrite, Default, Debug, Clone, Serialize, Type)]
         pub struct BacklightSetConfigRequest(pub BacklightSetConfigRequestArg);
 
-        #[derive(BinWrite, Default, Debug, Clone, Serialize, Type)]
+        #[derive(BinWrite, Default, Debug, Clone, Serialize, Deserialize, Type)]
         pub struct BacklightSetConfigRequestArg {
             pub enable: u8,
             pub mode: u8,
@@ -1164,7 +1164,7 @@ pub mod lighting_routes {
 
     #[allow(dead_code)]
     #[allow(unused_imports)]
-    pub mod rgblight_routes {
+    pub mod rgblight {
         use std::sync::Arc;
 
         use binrw::{BinRead, BinWrite};
@@ -1290,7 +1290,7 @@ pub mod lighting_routes {
         #[derive(BinWrite, Default, Debug, Clone, Serialize, Type)]
         pub struct RgblightSetConfigRequest(pub RgblightSetConfigRequestArg);
 
-        #[derive(BinWrite, Default, Debug, Clone, Serialize, Type)]
+        #[derive(BinWrite, Default, Debug, Clone, Serialize, Deserialize, Type)]
         pub struct RgblightSetConfigRequestArg {
             pub enable: u8,
             pub mode: u8,
@@ -1354,7 +1354,7 @@ pub mod lighting_routes {
 
     #[allow(dead_code)]
     #[allow(unused_imports)]
-    pub mod rgbmatrix_routes {
+    pub mod rgbmatrix {
         use std::sync::Arc;
 
         use binrw::{BinRead, BinWrite};
@@ -1485,7 +1485,7 @@ pub mod lighting_routes {
         #[derive(BinWrite, Default, Debug, Clone, Serialize, Type)]
         pub struct RgbmatrixSetConfigRequest(pub RgbmatrixSetConfigRequestArg);
 
-        #[derive(BinWrite, Default, Debug, Clone, Serialize, Type)]
+        #[derive(BinWrite, Default, Debug, Clone, Serialize, Deserialize, Type)]
         pub struct RgbmatrixSetConfigRequestArg {
             pub enable: u8,
             pub mode: u8,
@@ -1551,7 +1551,7 @@ pub mod lighting_routes {
 
 #[allow(dead_code)]
 #[allow(unused_imports)]
-pub mod audio_routes {
+pub mod audio {
     use std::sync::Arc;
 
     use binrw::{BinRead, BinWrite};
@@ -1641,7 +1641,7 @@ pub mod audio_routes {
     #[derive(BinWrite, Default, Debug, Clone, Serialize, Type)]
     pub struct AudioSetConfigRequest(pub AudioSetConfigRequestArg);
 
-    #[derive(BinWrite, Default, Debug, Clone, Serialize, Type)]
+    #[derive(BinWrite, Default, Debug, Clone, Serialize, Deserialize, Type)]
     pub struct AudioSetConfigRequestArg {
         pub enable: u8,
         pub clicky_enable: u8,
@@ -1697,4 +1697,62 @@ pub mod audio_routes {
     ) -> ClientResult<()> {
         state.lock().query(id, AudioSaveConfigRequest(()))
     }
+}
+
+pub fn get_specta_builder_plugin() -> tauri::plugin::TauriPlugin<tauri::Wry> {
+    let mut specta_builder = tauri_specta::ts::builder().commands(tauri_specta::collect_commands![
+        xap::xap_version_query,
+        xap::xap_capabilities_query,
+        xap::xap_enabled_subsystem_query,
+        xap::xap_secure_status,
+        xap::xap_secure_unlock,
+        xap::xap_secure_lock,
+        qmk::qmk_version_query,
+        qmk::qmk_capabilities_query,
+        qmk::qmk_board_identifiers,
+        qmk::qmk_board_manufacturer,
+        qmk::qmk_product_name,
+        qmk::qmk_config_blob_length,
+        qmk::qmk_config_blob_chunk,
+        qmk::qmk_jump_to_bootloader,
+        qmk::qmk_hardware_identifier,
+        qmk::qmk_reinitialize_eeprom,
+        keymap::keymap_capabilities_query,
+        keymap::keymap_get_layer_count,
+        keymap::keymap_get_keycode,
+        keymap::keymap_get_encoder_keycode,
+        remapping::remapping_capabilities_query,
+        remapping::remapping_get_layer_count,
+        remapping::remapping_set_keycode,
+        remapping::remapping_set_encoder_keycode,
+        lighting::lighting_capabilities_query,
+        lighting::backlight::backlight_capabilities_query,
+        lighting::backlight::backlight_get_enabled_effects,
+        lighting::backlight::backlight_get_config,
+        lighting::backlight::backlight_set_config,
+        lighting::backlight::backlight_save_config,
+        lighting::rgblight::rgblight_capabilities_query,
+        lighting::rgblight::rgblight_get_enabled_effects,
+        lighting::rgblight::rgblight_get_config,
+        lighting::rgblight::rgblight_set_config,
+        lighting::rgblight::rgblight_save_config,
+        lighting::rgbmatrix::rgbmatrix_capabilities_query,
+        lighting::rgbmatrix::rgbmatrix_get_enabled_effects,
+        lighting::rgbmatrix::rgbmatrix_get_config,
+        lighting::rgbmatrix::rgbmatrix_set_config,
+        lighting::rgbmatrix::rgbmatrix_save_config,
+        audio::audio_capabilities_query,
+        audio::audio_get_config,
+        audio::audio_set_config,
+        audio::audio_save_config
+    ]);
+
+    if cfg!(debug_assertions) {
+        specta_builder = specta_builder.config(
+            specta::ts::ExportConfig::default().bigint(specta::ts::BigIntExportBehavior::BigInt),
+        );
+        specta_builder = specta_builder.path("../src/bindings.ts");
+    }
+
+    specta_builder.into_plugin()
 }

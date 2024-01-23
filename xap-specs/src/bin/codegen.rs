@@ -182,7 +182,7 @@ impl Route {
     }
 
     fn render_request_type(&self, ctx: &mut Context) -> Result<(String, String)> {
-        let name = format!("{}{}", ctx.module_name, self.name.as_ref().unwrap());
+        let name = format!("{}{}", ctx.current_module(), self.name.as_ref().unwrap());
 
         let (request_type_name, request_type) = match self.request_type {
             BasicType::Struct => {
@@ -190,7 +190,7 @@ impl Route {
 
                 let mut request_struct = format!(
                     r#"
-                    #[derive(BinWrite, Default, Debug, Clone, Serialize, Type)]
+                    #[derive(BinWrite, Default, Debug, Clone, Serialize, Deserialize, Type)]
                     pub struct {request_struct_name} {{
                     "#
                 );
@@ -215,7 +215,7 @@ impl Route {
     }
 
     fn render_return_type(&self, ctx: &mut Context) -> Result<(String, String)> {
-        let name = format!("{}{}", ctx.module_name, self.name.as_ref().unwrap());
+        let name = format!("{}{}", ctx.current_module(), self.name.as_ref().unwrap());
 
         let (return_type_name, return_type) = match self.return_type {
             BasicType::Unit => ("()".to_owned(), String::new()),
@@ -258,9 +258,9 @@ impl Route {
         Ok((return_type_name, return_type))
     }
 
-    fn render_command(&self, ctx: &mut Context) -> Result<()> {
+    fn render_command(&self, ctx: &mut Context) -> Result<String> {
         let command_name = self.name.as_ref().unwrap();
-        let name = format!("{}{}", ctx.module_name, command_name);
+        let name = format!("{}{}", ctx.current_module(), command_name);
         let name_pascal = name.to_case(Case::Pascal);
         let name_snake = name.to_case(Case::Snake);
         let description = self.description.as_ref().unwrap().replace("\n", "\n/// ");
@@ -270,7 +270,7 @@ impl Route {
         let xap_version = self.xap_version.as_ref().unwrap();
 
         write!(
-            &mut ctx.spec,
+            &mut ctx.rendered,
             r#"
             /// ======================================================================
             /// {command_name}
@@ -300,7 +300,7 @@ impl Route {
         match self.request_type {
             BasicType::Unit => {
                 writeln!(
-                    &mut ctx.spec,
+                    &mut ctx.rendered,
                     r#"
                     #[tauri::command]
                     #[specta::specta]
@@ -317,7 +317,7 @@ impl Route {
             }
             _ => {
                 writeln!(
-                    &mut ctx.spec,
+                    &mut ctx.rendered,
                     r#"
                     #[tauri::command]
                     #[specta::specta]
@@ -335,24 +335,21 @@ impl Route {
             }
         }
 
-        Ok(())
+        ctx.commands
+            .push(format!("{}::{name_snake}", ctx.full_module_path()));
+
+        Ok(name_snake)
     }
 
     fn render_route(&self, ctx: &mut Context) -> Result<()> {
-        let module_name = self
-            .name
-            .as_ref()
-            .expect("route name is missing")
-            .to_case(Case::Snake);
-
-        ctx.module_name = module_name.clone();
+        let module_name = ctx.current_module();
 
         writeln!(
-            &mut ctx.spec,
+            &mut ctx.rendered,
             r#"
             #[allow(dead_code)]
             #[allow(unused_imports)]
-            pub mod {module_name}_routes {{
+            pub mod {module_name} {{
                 use std::sync::Arc;
 
                 use binrw::{{BinRead, BinWrite}};
@@ -374,7 +371,7 @@ impl Route {
         }
 
         writeln!(
-            &mut ctx.spec,
+            &mut ctx.rendered,
             r#"
             }}
             "#
@@ -386,7 +383,9 @@ impl Route {
     fn render(&self, ctx: &mut Context) -> Result<()> {
         match self.r#type.as_ref().expect("route type is missing") {
             RouteType::Router => {
+                ctx.module_path.push(self.clone());
                 self.render_route(ctx)?;
+                ctx.module_path.pop();
             }
             RouteType::Command => {
                 self.render_command(ctx)?;
@@ -463,6 +462,27 @@ impl Spec {
             route.render(ctx)?;
         }
 
+        writeln!(
+            &mut ctx.rendered,
+            r#"
+            pub fn get_specta_builder_plugin() -> tauri::plugin::TauriPlugin<tauri::Wry> {{
+                let mut specta_builder = tauri_specta::ts::builder().commands(tauri_specta::collect_commands![
+                    {}
+                ]);
+
+                if cfg!(debug_assertions) {{
+                    specta_builder = specta_builder.config(
+                        specta::ts::ExportConfig::default().bigint(specta::ts::BigIntExportBehavior::BigInt),
+                    );
+                    specta_builder = specta_builder.path("../src/bindings.ts");
+                }}
+
+                specta_builder.into_plugin()
+            }}
+            "#,
+            ctx.commands.join(",\n")
+        )?;
+
         Ok(())
     }
 
@@ -523,8 +543,27 @@ where
 }
 
 struct Context<'a> {
-    spec: &'a mut dyn Write,
-    module_name: String,
+    rendered: &'a mut dyn Write,
+    commands: Vec<String>,
+    spec: &'a Spec,
+    module_path: Vec<Route>,
+}
+
+impl Context<'_> {
+    fn full_module_path(&self) -> String {
+        self.module_path
+            .iter()
+            .map(|route| route.name.as_ref().unwrap().to_case(Case::Snake))
+            .collect::<Vec<String>>()
+            .join("::")
+    }
+
+    fn current_module(&self) -> String {
+        self.module_path
+            .last()
+            .map(|route| route.name.as_ref().unwrap().to_case(Case::Snake))
+            .unwrap_or_default()
+    }
 }
 
 fn main() -> Result<()> {
@@ -561,8 +600,10 @@ fn main() -> Result<()> {
         let manifest_dir = env!("CARGO_MANIFEST_DIR");
 
         let mut context = Context {
-            spec: &mut File::create(format!("{manifest_dir}/../src-tauri/src/xap_spec.rs"))?,
-            module_name: String::new(),
+            rendered: &mut File::create(format!("{manifest_dir}/../src-tauri/src/xap_spec.rs"))?,
+            commands: Vec::new(),
+            module_path: Vec::new(),
+            spec: spec,
         };
 
         spec.render(&mut context)?;

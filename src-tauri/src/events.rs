@@ -1,6 +1,6 @@
 use serde::Serialize;
 use uuid::Uuid;
-use xap_specs::protocol::xap::XAPSecureStatus;
+use xap_specs::XAPSecureStatus;
 
 use crate::aggregation::XAPDevice as XAPDeviceDTO;
 

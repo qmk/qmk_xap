@@ -18,14 +18,12 @@ use crossbeam_channel::{select, unbounded, Receiver, Sender};
 use env_logger::Env;
 use log::{error, info};
 use parking_lot::Mutex;
-
 use tauri::{
     plugin::{Builder, TauriPlugin},
     RunEvent, Runtime,
 };
 use tauri::{AppHandle, Manager};
 
-// use commands::*;
 use events::{FrontendEvent, XAPEvent};
 use xap::hid::XAPClient;
 use xap::ClientResult;
@@ -119,32 +117,13 @@ fn main() -> ClientResult<()> {
         .format_timestamp(None)
         .init();
 
+    let specta_builder = xap_spec::get_specta_builder_plugin();
+
     let (event_channel_tx, event_channel_rx): (Sender<XAPEvent>, Receiver<XAPEvent>) = unbounded();
 
     tauri::Builder::default()
         .plugin(shutdown_event_loop(Sender::clone(&event_channel_tx)))
-        .invoke_handler(tauri::generate_handler![
-            // xap_constants_get,
-            // secure_lock,
-            // secure_unlock,
-            // secure_status_get,
-            // jump_to_bootloader,
-            // reset_eeprom,
-            // keycode_get,
-            // keycode_set,
-            // keymap_get,
-            // encoder_keycode_get,
-            // encoder_keycode_set,
-            // backlight_config_get,
-            // backlight_config_set,
-            // backlight_config_save,
-            // rgblight_config_get,
-            // rgblight_config_set,
-            // rgblight_config_save,
-            // rgbmatrix_config_get,
-            // rgbmatrix_config_set,
-            // rgbmatrix_config_save,
-        ])
+        .plugin(specta_builder)
         .setup(move |app| {
             let xap_specs = app
                 .path_resolver()
