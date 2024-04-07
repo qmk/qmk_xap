@@ -1,6 +1,117 @@
 {
     version: 0.3.0
 
+    type_definitions: {
+        backlight_config: {
+            name: Lighting Config
+            description: Config for lighting subsystem
+            type: struct
+            struct_length: 3
+            struct_members: [
+                {
+                    type: u8
+                    name: enable
+                },
+                {
+                    type: u8
+                    name: mode
+                },
+                {
+                    type: u8
+                    name: val
+                },
+            ]
+        }
+
+        rgb_light_config: {
+            name: RGB Light Config
+            description: RGB config for RGB lighting subsystem
+            type: struct
+            struct_length: 6
+            struct_members: [
+                {
+                    type: u8
+                    name: enable
+                },
+                {
+                    type: u8
+                    name: mode
+                },
+                {
+                    type: u8
+                    name: hue
+                },
+                {
+                    type: u8
+                    name: sat
+                },
+                {
+                    type: u8
+                    name: val
+                },
+                {
+                    type: u8
+                    name: speed
+                },
+            ]
+        }
+
+        rgb_matrix_config : {
+            name: RGB Matrix Config
+            description: RGB config for RGB matrix subsystem
+            type: struct
+            struct_length: 7
+            struct_members: [
+                {
+                    type: u8
+                    name: enable
+                },
+                {
+                    type: u8
+                    name: mode
+                },
+                {
+                    type: u8
+                    name: hue
+                },
+                {
+                    type: u8
+                    name: sat
+                },
+                {
+                    type: u8
+                    name: val
+                },
+                {
+                    type: u8
+                    name: speed
+                },
+                {
+                    type: u8
+                    name: flags
+                },
+            ]
+        }
+        
+        audio_config: {
+            name: Audio Config
+            description: Config for audio subsystem
+            type: struct
+            struct_length: 2
+            struct_members: [
+                {
+                    type: u8
+                    name: enable
+                },
+                {
+                    type: u8
+                    name: clicky_enable
+                },
+            ]
+        }
+    }
+
+
     routes: {
 
         0x06: {
@@ -41,22 +152,7 @@
                             name: Get Config
                             define: GET_CONFIG
                             description: Query the current config.
-                            return_type: struct
-                            return_struct_length: 3
-                            return_struct_members: [
-                                {
-                                    type: u8
-                                    name: enable
-                                },
-                                {
-                                    type: u8
-                                    name: mode
-                                },
-                                {
-                                    type: u8
-                                    name: val
-                                },
-                            ]
+                            return_type: backlight_config
                             return_execute: get_backlight_config
                         }
                         0x04: {
@@ -64,22 +160,7 @@
                             name: Set Config
                             define: SET_CONFIG
                             description: Set the current config.
-                            request_type: struct
-                            request_struct_length: 3
-                            request_struct_members: [
-                                {
-                                    type: u8
-                                    name: enable
-                                },
-                                {
-                                    type: u8
-                                    name: mode
-                                },
-                                {
-                                    type: u8
-                                    name: val
-                                },
-                            ]
+                            request_type: backlight_config
                             return_execute: set_backlight_config
                         }
                         0x05: {
@@ -127,34 +208,7 @@
                             name: Get Config
                             define: GET_CONFIG
                             description: Query the current config.
-                            return_type: struct
-                            return_struct_length: 6
-                            return_struct_members: [
-                                {
-                                    type: u8
-                                    name: enable
-                                },
-                                {
-                                    type: u8
-                                    name: mode
-                                },
-                                {
-                                    type: u8
-                                    name: hue
-                                },
-                                {
-                                    type: u8
-                                    name: sat
-                                },
-                                {
-                                    type: u8
-                                    name: val
-                                },
-                                {
-                                    type: u8
-                                    name: speed
-                                },
-                            ]
+                            return_type: rgb_light_config
                             return_execute: get_rgblight_config
                         }
                         0x04: {
@@ -162,34 +216,7 @@
                             name: Set Config
                             define: SET_CONFIG
                             description: Set the current config.
-                            request_type: struct
-                            request_struct_length: 6
-                            request_struct_members: [
-                                {
-                                    type: u8
-                                    name: enable
-                                },
-                                {
-                                    type: u8
-                                    name: mode
-                                },
-                                {
-                                    type: u8
-                                    name: hue
-                                },
-                                {
-                                    type: u8
-                                    name: sat
-                                },
-                                {
-                                    type: u8
-                                    name: val
-                                },
-                                {
-                                    type: u8
-                                    name: speed
-                                },
-                            ]
+                            request_type: rgb_light_config
                             return_execute: set_rgblight_config
                         }
                         0x05: {
@@ -237,38 +264,7 @@
                             name: Get Config
                             define: GET_CONFIG
                             description: Query the current config.
-                            return_type: struct
-                            return_struct_length: 7
-                            return_struct_members: [
-                                {
-                                    type: u8
-                                    name: enable
-                                },
-                                {
-                                    type: u8
-                                    name: mode
-                                },
-                                {
-                                    type: u8
-                                    name: hue
-                                },
-                                {
-                                    type: u8
-                                    name: sat
-                                },
-                                {
-                                    type: u8
-                                    name: val
-                                },
-                                {
-                                    type: u8
-                                    name: speed
-                                },
-                                {
-                                    type: u8
-                                    name: flags
-                                },
-                            ]
+                            return_type: rgb_matrix_config
                             return_execute: get_rgb_matrix_config
                         }
                         0x04: {
@@ -276,38 +272,7 @@
                             name: Set Config
                             define: SET_CONFIG
                             description: Set the current config.
-                            request_type: struct
-                            request_struct_length: 7
-                            request_struct_members: [
-                                {
-                                    type: u8
-                                    name: enable
-                                },
-                                {
-                                    type: u8
-                                    name: mode
-                                },
-                                {
-                                    type: u8
-                                    name: hue
-                                },
-                                {
-                                    type: u8
-                                    name: sat
-                                },
-                                {
-                                    type: u8
-                                    name: val
-                                },
-                                {
-                                    type: u8
-                                    name: speed
-                                },
-                                {
-                                    type: u8
-                                    name: flags
-                                },
-                            ]
+                            request_type: rgb_matrix_config
                             return_execute: set_rgb_matrix_config
                         }
                         0x05: {
@@ -350,18 +315,7 @@
                     name: Get Config
                     define: GET_CONFIG
                     description: Query the current config.
-                    return_type: struct
-                    return_struct_length: 2
-                    return_struct_members: [
-                        {
-                            type: u8
-                            name: enable
-                        },
-                        {
-                            type: u8
-                            name: clicky_enable
-                        },
-                    ]
+                    return_type: audio_config
                     return_execute: get_audio_config
                 }
                 0x04: {
@@ -369,18 +323,7 @@
                     name: Set Config
                     define: SET_CONFIG
                     description: Set the current config.
-                    request_type: struct
-                    request_struct_length: 2
-                    request_struct_members: [
-                        {
-                            type: u8
-                            name: enable
-                        },
-                        {
-                            type: u8
-                            name: clicky_enable
-                        },
-                    ]
+                    request_type: audio_config
                     return_execute: set_audio_config
                 }
                 0x05: {
