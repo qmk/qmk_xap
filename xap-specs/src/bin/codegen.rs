@@ -620,7 +620,7 @@ impl Spec {
         Ok(())
     }
 
-    fn from_spec(path: &Path) -> Result<Spec> {
+    fn from_file(path: impl AsRef<Path>) -> Result<Spec> {
         let content = fs::read_to_string(path)?;
 
         let mut spec = deser_hjson::from_str::<Spec>(&content)?;
@@ -737,28 +737,23 @@ struct Args {
 fn main() -> Result<()> {
     let args = Args::parse();
 
-    let mut specs = read_dir(&args.spec_dir)?
-        .filter_map(|spec| {
-            let spec = spec.ok()?;
-            let spec_name = spec.file_name().to_string_lossy().to_string();
+    let mut specs = Vec::new();
 
-            if !spec_name.ends_with(".hjson") {
-                return None;
-            }
+    for spec in read_dir(&args.spec_dir)?.filter_map(|entry| entry.ok()) {
+        if !spec.file_type()?.is_file() {
+            continue;
+        }
 
-            let spec_path = spec.path();
-            println!("reading spec {}", spec_path.to_string_lossy());
+        let spec_name = spec.file_name().to_string_lossy().to_string();
 
-            Some(
-                Spec::from_spec(&spec_path)
-                    .map_err(|e| {
-                        eprintln!("failed to read spec {spec_name}: {e}");
-                        e
-                    })
-                    .ok()?,
-            )
-        })
-        .collect::<Vec<Spec>>();
+        if !spec_name.ends_with(".hjson") {
+            continue;
+        }
+
+        println!("reading spec {}", spec.path().to_string_lossy());
+
+        specs.push(Spec::from_file(spec.path())?);
+    }
 
     // Make sure we process specs in ascending order, as they build upon eachother
     specs.sort_by(|lhs, rhs| lhs.version.cmp(&rhs.version));
@@ -772,7 +767,7 @@ fn main() -> Result<()> {
 
     // Only render the latest spec as it contains all previous iterations
     if let Some(spec) = specs.last() {
-        println!("rendering spec to {}", &rendered_file);
+        println!("writing rendered spec to {}", &rendered_file);
 
         let mut context = Context {
             rendered: &mut File::create(&args.rendered_file)?,
