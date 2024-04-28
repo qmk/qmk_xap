@@ -30,7 +30,7 @@ pub struct RawResponse {
     flags: ResponseFlags,
     #[br(temp)]
     payload_len: u8,
-    #[br(count = payload_len)]
+    #[br(count = payload_len as usize)]
     payload: Vec<u8>,
 }
 
@@ -87,9 +87,9 @@ impl BinRead for UTF8String {
 #[derive(BinRead, Debug)]
 pub struct SecureActionResponse(u8);
 
-impl Into<XAPResult<()>> for SecureActionResponse {
-    fn into(self) -> XAPResult<()> {
-        if self.0 == 0 {
+impl From<SecureActionResponse> for XAPResult<()> {
+    fn from(val: SecureActionResponse) -> Self {
+        if val.0 == 0 {
             Err(XAPError::SecureLocked)
         } else {
             Ok(())

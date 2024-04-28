@@ -1,10 +1,8 @@
 use std::{
     collections::{BTreeMap, HashMap},
-    ffi::OsString,
     fmt::Display,
     fs::{self, read_dir, File},
     io::Write,
-    mem::replace,
     path::{Path, PathBuf},
     vec,
 };
@@ -235,12 +233,12 @@ impl Route {
             .as_ref()
             .is_some_and(|p| p == "capabilities")
         {
-            let capabilities_name = format!("{}", name.to_case(Case::Pascal));
+            let capabilities_name = name.to_case(Case::Pascal).to_string();
             let mut capabilities_enum = String::new();
             let capabilities_type = self.return_type.as_type();
 
             // TODO: Hardcoded check for XAP enabled subsystems route
-            let toplevel = if self.id == &[0, 2] {
+            let toplevel = if self.id == [0, 2] {
                 &ctx.spec.routes
             } else {
                 &ctx.module_path.last().unwrap().routes
@@ -257,7 +255,7 @@ impl Route {
                 "#
             )?;
 
-            for (_, route) in toplevel {
+            for route in toplevel.values() {
                 writeln!(
                     &mut capabilities_enum,
                     "const {route_name} = 1 << {id};",
@@ -322,7 +320,7 @@ impl Route {
         let name = format!("{}{}", ctx.current_module(), command_name);
         let name_pascal = name.to_case(Case::Pascal);
         let name_snake = name.to_case(Case::Snake);
-        let description = self.description.as_ref().unwrap().replace("\n", "\n/// ");
+        let description = self.description.as_ref().unwrap().replace('\n', "\n/// ");
         let (request_type_name, request_type) = self.render_request_type(ctx)?;
         let (response_type_name, response_type) = self.render_return_type(ctx)?;
         let id = self.render_id();
@@ -427,7 +425,7 @@ impl Route {
             "#
         )?;
 
-        for (_, subroute) in &self.routes {
+        for subroute in self.routes.values() {
             subroute.render(ctx)?;
         }
 
@@ -450,7 +448,7 @@ impl Route {
             }
             RouteType::Command => {
                 self.render_command(ctx)?;
-                for (_, subroute) in &self.routes {
+                for subroute in self.routes.values() {
                     subroute.render(ctx)?;
                 }
             }
@@ -462,7 +460,7 @@ impl Route {
         parent_id.extend_from_slice(&self.id);
         self.id = parent_id.clone();
 
-        for (_, route) in &mut self.routes {
+        for route in self.routes.values_mut() {
             route.expand_ids(&mut parent_id.clone());
         }
     }
@@ -472,7 +470,7 @@ impl Route {
             self.xap_version.replace(xap_version);
         }
 
-        for (_, route) in &mut self.routes {
+        for route in &mut self.routes.values_mut() {
             route.expand_xap_specs(xap_version);
         }
     }
@@ -514,7 +512,7 @@ struct Spec {
 impl Spec {
     fn merge(&mut self, other: &Spec) {
         for (id, route) in &other.routes {
-            match self.routes.get_mut(&id) {
+            match self.routes.get_mut(id) {
                 Some(existing_route) => {
                     existing_route.merge(route);
                 }
@@ -524,7 +522,7 @@ impl Spec {
             }
         }
 
-        for (_, route) in &mut self.routes {
+        for route in &mut self.routes.values_mut() {
             route.expand_xap_specs(self.version)
         }
 
@@ -561,17 +559,11 @@ impl Spec {
             .filter(|(_, ty)| ty.r#type == BasicType::Struct)
         {
             let name = name.to_case(Case::Pascal);
-            let description = ty.description.replace("\n", "\n/// ");
+            let description = ty.description.replace('\n', "\n/// ");
             let members = ty
                 .struct_members
                 .iter()
-                .filter(|member| {
-                    if let BasicType::Predefined(_) = member.r#type {
-                        false
-                    } else {
-                        true
-                    }
-                })
+                .filter(|member| !matches!(member.r#type, BasicType::Predefined(_)))
                 .map(|member| {
                     format!(
                         "    pub {}: {},",
@@ -628,7 +620,7 @@ impl Spec {
 
         let mut spec = deser_hjson::from_str::<Spec>(&content)?;
 
-        for (_, route) in &mut spec.routes {
+        for route in &mut spec.routes.values_mut() {
             route.expand_ids(&mut Vec::new());
             route.expand_xap_specs(spec.version)
         }
@@ -646,7 +638,7 @@ where
     routes
         .into_iter()
         .map(|(id, mut route)| {
-            let id = u8::from_str_radix(&id.trim_start_matches("0x"), 16)
+            let id = u8::from_str_radix(id.trim_start_matches("0x"), 16)
                 .map_err(serde::de::Error::custom)?;
 
             route.name = route
@@ -687,13 +679,11 @@ where
         })?;
     }
 
-    Ok(
-        XAPVersion::try_from(u32::from_le_bytes(version)).map_err(|e| {
-            serde::de::Error::custom(format!(
-                "failed to deserialize XAP version from {raw} with error {e}"
-            ))
-        })?,
-    )
+    XAPVersion::try_from(u32::from_le_bytes(version)).map_err(|e| {
+        serde::de::Error::custom(format!(
+            "failed to deserialize XAP version from {raw} with error {e}"
+        ))
+    })
 }
 
 struct Context<'a> {
@@ -774,7 +764,7 @@ fn main() -> Result<()> {
             rendered: &mut File::create(args.rendered_file)?,
             commands: Vec::new(),
             module_path: Vec::new(),
-            spec: spec,
+            spec,
         };
 
         spec.render(&mut context)?;

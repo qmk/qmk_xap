@@ -25,7 +25,7 @@ pub struct BroadcastRaw {
     broadcast_type: BroadcastType,
     #[br(temp)]
     payload_len: u8,
-    #[br(count = payload_len)]
+    #[br(count = payload_len as usize)]
     payload: Vec<u8>,
 }
 
