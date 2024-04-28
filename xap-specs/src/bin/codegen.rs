@@ -730,25 +730,28 @@ struct Args {
 fn main() -> Result<()> {
     let args = Args::parse();
 
-    let mut specs = read_dir(dbg!(&args.spec_dir))?
+    let mut specs = read_dir(&args.spec_dir)?
         .filter_map(|spec| {
             let spec = spec.ok()?;
-            let spec_name = spec.file_name().to_str().map(|name| name.to_owned())?;
-            if spec_name.ends_with(".hjson") {
-                Some(spec_name)
-            } else {
-                None
+            let spec_name = spec.file_name().to_string_lossy().to_string();
+
+            if !spec_name.ends_with(".hjson") {
+                return None;
             }
+
+            let spec_path = spec.path();
+            println!("reading spec {}", spec_path.to_string_lossy());
+
+            Some(
+                Spec::from_spec(&spec_path)
+                    .map_err(|e| {
+                        eprintln!("failed to read spec {spec_name}: {e}");
+                        e
+                    })
+                    .ok()?,
+            )
         })
-        .map(|spec_name| {
-            println!("reading spec {}", spec_name);
-            Spec::from_spec(Path::new(&format!(
-                "{}/{}",
-                args.spec_dir.to_str().unwrap(),
-                spec_name
-            )))
-        })
-        .collect::<Result<Vec<Spec>>>()?;
+        .collect::<Vec<Spec>>();
 
     // Make sure we process specs in ascending order, as they build upon eachother
     specs.sort_by(|lhs, rhs| lhs.version.cmp(&rhs.version));
@@ -760,6 +763,8 @@ fn main() -> Result<()> {
 
     // Only render the latest spec as it contains all previous iterations
     if let Some(spec) = specs.last() {
+        println!("rendering spec to {}", args.rendered_file.to_string_lossy());
+
         let mut context = Context {
             rendered: &mut File::create(args.rendered_file)?,
             commands: Vec::new(),
