@@ -4,6 +4,7 @@ use std::{
     fs::{self, read_dir, File},
     io::Write,
     path::{Path, PathBuf},
+    process::Command,
     vec,
 };
 
@@ -729,6 +730,8 @@ struct Args {
     spec_dir: PathBuf,
     #[arg(long, default_value = get_default_rendered_file())]
     rendered_file: PathBuf,
+    #[arg(long, default_value_t = true)]
+    format: bool,
 }
 
 fn main() -> Result<()> {
@@ -765,18 +768,32 @@ fn main() -> Result<()> {
         specs[i].merge(&spec_lower_version);
     }
 
+    let rendered_file = args.rendered_file.to_string_lossy().to_string();
+
     // Only render the latest spec as it contains all previous iterations
     if let Some(spec) = specs.last() {
-        println!("rendering spec to {}", args.rendered_file.to_string_lossy());
+        println!("rendering spec to {}", &rendered_file);
 
         let mut context = Context {
-            rendered: &mut File::create(args.rendered_file)?,
+            rendered: &mut File::create(&args.rendered_file)?,
             commands: Vec::new(),
             module_path: Vec::new(),
             spec,
         };
 
         spec.render(&mut context)?;
+    }
+
+    if args.format {
+        // Run `cargo fmt` on the generated file
+        if let Err(e) = Command::new("rustfmt")
+            .arg("--emit")
+            .arg("files")
+            .arg(&rendered_file)
+            .status()
+        {
+            eprintln!("failed to run cargo fmt on {rendered_file}: {e}");
+        }
     }
 
     Ok(())
