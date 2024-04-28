@@ -14,7 +14,8 @@ path = "src/bin/codegen.rs"
 [dependencies]
 anyhow = "1.0"
 binrw = "0.13"
-bitflags = {version = "2.5", features = ["serde"]}
+bitflags = { version = "2.5", features = ["serde"] }
+clap = { version = "4.5.4", features = ["derive"] }
 convert_case = "0.6"
 deser-hjson = "2.2"
 flate2 = "1.0"

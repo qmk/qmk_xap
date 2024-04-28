@@ -1,14 +1,16 @@
 use std::{
     collections::{BTreeMap, HashMap},
+    ffi::OsString,
     fmt::Display,
     fs::{self, read_dir, File},
     io::Write,
     mem::replace,
-    path::Path,
+    path::{Path, PathBuf},
     vec,
 };
 
 use anyhow::{bail, Result};
+use clap::Parser;
 use convert_case::{Case, Casing};
 use serde::{de::Visitor, Deserialize, Deserializer, Serialize};
 
@@ -501,7 +503,6 @@ struct BroadcastMessages {
 #[derive(Debug, Deserialize, Clone)]
 struct Spec {
     #[serde(deserialize_with = "deserialize_xap_version")]
-    // #[serde(skip_deserializing)]
     version: XAPVersion,
     #[serde(default, deserialize_with = "deserialize_routes")]
     routes: BTreeMap<u8, Route>,
@@ -719,8 +720,27 @@ impl Context<'_> {
     }
 }
 
+fn get_default_spec_dir() -> &'static str {
+    concat!(env!("CARGO_MANIFEST_DIR"), "/specs/xap")
+}
+
+fn get_default_rendered_file() -> &'static str {
+    concat!(env!("CARGO_MANIFEST_DIR"), "/../src-tauri/src/xap_spec.rs")
+}
+
+#[derive(Parser, Debug)]
+#[command(version, about, long_about = None)]
+struct Args {
+    #[arg(long, default_value = get_default_spec_dir())]
+    spec_dir: PathBuf,
+    #[arg(long, default_value = get_default_rendered_file())]
+    rendered_file: PathBuf,
+}
+
 fn main() -> Result<()> {
-    let mut specs = read_dir(concat!(env!("CARGO_MANIFEST_DIR"), "/specs/xap"))?
+    let args = Args::parse();
+
+    let mut specs = read_dir(dbg!(&args.spec_dir))?
         .filter_map(|spec| {
             let spec = spec.ok()?;
             let spec_name = spec.file_name().to_str().map(|name| name.to_owned())?;
@@ -731,10 +751,10 @@ fn main() -> Result<()> {
             }
         })
         .map(|spec_name| {
-            eprintln!("Reading spec {}", spec_name);
+            println!("reading spec {}", spec_name);
             Spec::from_spec(Path::new(&format!(
-                "{}/specs/xap/{}",
-                env!("CARGO_MANIFEST_DIR"),
+                "{}/{}",
+                args.spec_dir.to_str().unwrap(),
                 spec_name
             )))
         })
@@ -750,10 +770,8 @@ fn main() -> Result<()> {
 
     // Only render the latest spec as it contains all previous iterations
     if let Some(spec) = specs.last() {
-        let manifest_dir = env!("CARGO_MANIFEST_DIR");
-
         let mut context = Context {
-            rendered: &mut File::create(format!("{manifest_dir}/../src-tauri/src/xap_spec.rs"))?,
+            rendered: &mut File::create(args.rendered_file)?,
             commands: Vec::new(),
             module_path: Vec::new(),
             spec: spec,
