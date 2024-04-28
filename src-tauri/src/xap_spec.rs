@@ -9,6 +9,7 @@ pub mod xap {
     use parking_lot::Mutex;
     use serde::{Deserialize, Serialize};
     use specta::Type;
+    #[cfg(feature = "tauri-codegen")]
     use tauri::State;
     use uuid::Uuid;
 
@@ -44,6 +45,7 @@ pub mod xap {
     #[derive(BinRead, Default, Debug, Clone, Serialize, Type)]
     pub struct XapVersionResponse(pub u32);
 
+    #[cfg(feature = "tauri-codegen")]
     #[tauri::command]
     #[specta::specta]
     pub fn xap_version(
@@ -90,6 +92,7 @@ pub mod xap {
     }
     }
 
+    #[cfg(feature = "tauri-codegen")]
     #[tauri::command]
     #[specta::specta]
     pub fn xap_capabilities(
@@ -138,6 +141,7 @@ pub mod xap {
     }
     }
 
+    #[cfg(feature = "tauri-codegen")]
     #[tauri::command]
     #[specta::specta]
     pub fn xap_enabled_subsystem_capabilities(
@@ -177,6 +181,7 @@ pub mod xap {
     #[derive(BinRead, Default, Debug, Clone, Serialize, Type)]
     pub struct XapSecureStatusResponse(pub u8);
 
+    #[cfg(feature = "tauri-codegen")]
     #[tauri::command]
     #[specta::specta]
     pub fn xap_secure_status(
@@ -206,6 +211,7 @@ pub mod xap {
         }
     }
 
+    #[cfg(feature = "tauri-codegen")]
     #[tauri::command]
     #[specta::specta]
     pub fn xap_secure_unlock(
@@ -235,6 +241,7 @@ pub mod xap {
         }
     }
 
+    #[cfg(feature = "tauri-codegen")]
     #[tauri::command]
     #[specta::specta]
     pub fn xap_secure_lock(id: Uuid, state: State<'_, Arc<Mutex<XAPClient>>>) -> ClientResult<()> {
@@ -252,6 +259,7 @@ pub mod qmk {
     use parking_lot::Mutex;
     use serde::{Deserialize, Serialize};
     use specta::Type;
+    #[cfg(feature = "tauri-codegen")]
     use tauri::State;
     use uuid::Uuid;
 
@@ -287,6 +295,7 @@ pub mod qmk {
     #[derive(BinRead, Default, Debug, Clone, Serialize, Type)]
     pub struct QmkVersionResponse(pub u32);
 
+    #[cfg(feature = "tauri-codegen")]
     #[tauri::command]
     #[specta::specta]
     pub fn qmk_version(
@@ -337,6 +346,7 @@ pub mod qmk {
     }
     }
 
+    #[cfg(feature = "tauri-codegen")]
     #[tauri::command]
     #[specta::specta]
     pub fn qmk_capabilities(
@@ -374,6 +384,7 @@ pub mod qmk {
         pub qmk_unique_identifier: u32,
     }
 
+    #[cfg(feature = "tauri-codegen")]
     #[tauri::command]
     #[specta::specta]
     pub fn qmk_board_identifiers(
@@ -406,6 +417,7 @@ pub mod qmk {
     #[derive(BinRead, Default, Debug, Clone, Serialize, Type)]
     pub struct QmkBoardManufacturerResponse(pub UTF8String);
 
+    #[cfg(feature = "tauri-codegen")]
     #[tauri::command]
     #[specta::specta]
     pub fn qmk_board_manufacturer(
@@ -438,6 +450,7 @@ pub mod qmk {
     #[derive(BinRead, Default, Debug, Clone, Serialize, Type)]
     pub struct QmkProductNameResponse(pub UTF8String);
 
+    #[cfg(feature = "tauri-codegen")]
     #[tauri::command]
     #[specta::specta]
     pub fn qmk_product_name(
@@ -470,6 +483,7 @@ pub mod qmk {
     #[derive(BinRead, Default, Debug, Clone, Serialize, Type)]
     pub struct QmkConfigBlobLengthResponse(pub u16);
 
+    #[cfg(feature = "tauri-codegen")]
     #[tauri::command]
     #[specta::specta]
     pub fn qmk_config_blob_length(
@@ -502,6 +516,7 @@ pub mod qmk {
     #[derive(BinRead, Default, Debug, Clone, Serialize, Type)]
     pub struct QmkConfigBlobChunkResponse(pub [u8; 32]);
 
+    #[cfg(feature = "tauri-codegen")]
     #[tauri::command]
     #[specta::specta]
     pub fn qmk_config_blob_chunk(
@@ -540,6 +555,7 @@ pub mod qmk {
     #[derive(BinRead, Default, Debug, Clone, Serialize, Type)]
     pub struct QmkJumpToBootloaderResponse(pub u8);
 
+    #[cfg(feature = "tauri-codegen")]
     #[tauri::command]
     #[specta::specta]
     pub fn qmk_jump_to_bootloader(
@@ -572,6 +588,7 @@ pub mod qmk {
     #[derive(BinRead, Default, Debug, Clone, Serialize, Type)]
     pub struct QmkHardwareIdentifierResponse(pub [u32; 4]);
 
+    #[cfg(feature = "tauri-codegen")]
     #[tauri::command]
     #[specta::specta]
     pub fn qmk_hardware_identifier(
@@ -609,6 +626,7 @@ pub mod qmk {
     #[derive(BinRead, Default, Debug, Clone, Serialize, Type)]
     pub struct QmkReinitializeEepromResponse(pub u8);
 
+    #[cfg(feature = "tauri-codegen")]
     #[tauri::command]
     #[specta::specta]
     pub fn qmk_reinitialize_eeprom(
@@ -629,6 +647,7 @@ pub mod keyboard {
     use parking_lot::Mutex;
     use serde::{Deserialize, Serialize};
     use specta::Type;
+    #[cfg(feature = "tauri-codegen")]
     use tauri::State;
     use uuid::Uuid;
 
@@ -649,6 +668,7 @@ pub mod user {
     use parking_lot::Mutex;
     use serde::{Deserialize, Serialize};
     use specta::Type;
+    #[cfg(feature = "tauri-codegen")]
     use tauri::State;
     use uuid::Uuid;
 
@@ -669,6 +689,7 @@ pub mod keymap {
     use parking_lot::Mutex;
     use serde::{Deserialize, Serialize};
     use specta::Type;
+    #[cfg(feature = "tauri-codegen")]
     use tauri::State;
     use uuid::Uuid;
 
@@ -713,6 +734,7 @@ pub mod keymap {
     }
     }
 
+    #[cfg(feature = "tauri-codegen")]
     #[tauri::command]
     #[specta::specta]
     pub fn keymap_capabilities(
@@ -745,6 +767,7 @@ pub mod keymap {
     #[derive(BinRead, Default, Debug, Clone, Serialize, Type)]
     pub struct KeymapGetLayerCountResponse(pub u8);
 
+    #[cfg(feature = "tauri-codegen")]
     #[tauri::command]
     #[specta::specta]
     pub fn keymap_get_layer_count(
@@ -784,6 +807,7 @@ pub mod keymap {
     #[derive(BinRead, Default, Debug, Clone, Serialize, Type)]
     pub struct KeymapGetKeycodeResponse(pub u16);
 
+    #[cfg(feature = "tauri-codegen")]
     #[tauri::command]
     #[specta::specta]
     pub fn keymap_get_keycode(
@@ -824,6 +848,7 @@ pub mod keymap {
     #[derive(BinRead, Default, Debug, Clone, Serialize, Type)]
     pub struct KeymapGetEncoderKeycodeResponse(pub u16);
 
+    #[cfg(feature = "tauri-codegen")]
     #[tauri::command]
     #[specta::specta]
     pub fn keymap_get_encoder_keycode(
@@ -845,6 +870,7 @@ pub mod remapping {
     use parking_lot::Mutex;
     use serde::{Deserialize, Serialize};
     use specta::Type;
+    #[cfg(feature = "tauri-codegen")]
     use tauri::State;
     use uuid::Uuid;
 
@@ -889,6 +915,7 @@ pub mod remapping {
     }
     }
 
+    #[cfg(feature = "tauri-codegen")]
     #[tauri::command]
     #[specta::specta]
     pub fn remapping_capabilities(
@@ -921,6 +948,7 @@ pub mod remapping {
     #[derive(BinRead, Default, Debug, Clone, Serialize, Type)]
     pub struct RemappingGetLayerCountResponse(pub u8);
 
+    #[cfg(feature = "tauri-codegen")]
     #[tauri::command]
     #[specta::specta]
     pub fn remapping_get_layer_count(
@@ -958,6 +986,7 @@ pub mod remapping {
         }
     }
 
+    #[cfg(feature = "tauri-codegen")]
     #[tauri::command]
     #[specta::specta]
     pub fn remapping_set_keycode(
@@ -996,6 +1025,7 @@ pub mod remapping {
         }
     }
 
+    #[cfg(feature = "tauri-codegen")]
     #[tauri::command]
     #[specta::specta]
     pub fn remapping_set_encoder_keycode(
@@ -1019,6 +1049,7 @@ pub mod lighting {
     use parking_lot::Mutex;
     use serde::{Deserialize, Serialize};
     use specta::Type;
+    #[cfg(feature = "tauri-codegen")]
     use tauri::State;
     use uuid::Uuid;
 
@@ -1063,6 +1094,7 @@ pub mod lighting {
     }
     }
 
+    #[cfg(feature = "tauri-codegen")]
     #[tauri::command]
     #[specta::specta]
     pub fn lighting_capabilities(
@@ -1082,6 +1114,7 @@ pub mod lighting {
         use parking_lot::Mutex;
         use serde::{Deserialize, Serialize};
         use specta::Type;
+        #[cfg(feature = "tauri-codegen")]
         use tauri::State;
         use uuid::Uuid;
 
@@ -1127,6 +1160,7 @@ pub mod lighting {
         }
         }
 
+        #[cfg(feature = "tauri-codegen")]
         #[tauri::command]
         #[specta::specta]
         pub fn backlight_capabilities(
@@ -1159,6 +1193,7 @@ pub mod lighting {
         #[derive(BinRead, Default, Debug, Clone, Serialize, Type)]
         pub struct BacklightGetEnabledEffectsResponse(pub u8);
 
+        #[cfg(feature = "tauri-codegen")]
         #[tauri::command]
         #[specta::specta]
         pub fn backlight_get_enabled_effects(
@@ -1190,6 +1225,7 @@ pub mod lighting {
             }
         }
 
+        #[cfg(feature = "tauri-codegen")]
         #[tauri::command]
         #[specta::specta]
         pub fn backlight_get_config(
@@ -1219,6 +1255,7 @@ pub mod lighting {
             }
         }
 
+        #[cfg(feature = "tauri-codegen")]
         #[tauri::command]
         #[specta::specta]
         pub fn backlight_set_config(
@@ -1249,6 +1286,7 @@ pub mod lighting {
             }
         }
 
+        #[cfg(feature = "tauri-codegen")]
         #[tauri::command]
         #[specta::specta]
         pub fn backlight_save_config(
@@ -1269,6 +1307,7 @@ pub mod lighting {
         use parking_lot::Mutex;
         use serde::{Deserialize, Serialize};
         use specta::Type;
+        #[cfg(feature = "tauri-codegen")]
         use tauri::State;
         use uuid::Uuid;
 
@@ -1314,6 +1353,7 @@ pub mod lighting {
         }
         }
 
+        #[cfg(feature = "tauri-codegen")]
         #[tauri::command]
         #[specta::specta]
         pub fn rgblight_capabilities(
@@ -1346,6 +1386,7 @@ pub mod lighting {
         #[derive(BinRead, Default, Debug, Clone, Serialize, Type)]
         pub struct RgblightGetEnabledEffectsResponse(pub u64);
 
+        #[cfg(feature = "tauri-codegen")]
         #[tauri::command]
         #[specta::specta]
         pub fn rgblight_get_enabled_effects(
@@ -1375,6 +1416,7 @@ pub mod lighting {
             }
         }
 
+        #[cfg(feature = "tauri-codegen")]
         #[tauri::command]
         #[specta::specta]
         pub fn rgblight_get_config(
@@ -1404,6 +1446,7 @@ pub mod lighting {
             }
         }
 
+        #[cfg(feature = "tauri-codegen")]
         #[tauri::command]
         #[specta::specta]
         pub fn rgblight_set_config(
@@ -1434,6 +1477,7 @@ pub mod lighting {
             }
         }
 
+        #[cfg(feature = "tauri-codegen")]
         #[tauri::command]
         #[specta::specta]
         pub fn rgblight_save_config(
@@ -1454,6 +1498,7 @@ pub mod lighting {
         use parking_lot::Mutex;
         use serde::{Deserialize, Serialize};
         use specta::Type;
+        #[cfg(feature = "tauri-codegen")]
         use tauri::State;
         use uuid::Uuid;
 
@@ -1499,6 +1544,7 @@ pub mod lighting {
         }
         }
 
+        #[cfg(feature = "tauri-codegen")]
         #[tauri::command]
         #[specta::specta]
         pub fn rgbmatrix_capabilities(
@@ -1531,6 +1577,7 @@ pub mod lighting {
         #[derive(BinRead, Default, Debug, Clone, Serialize, Type)]
         pub struct RgbmatrixGetEnabledEffectsResponse(pub u64);
 
+        #[cfg(feature = "tauri-codegen")]
         #[tauri::command]
         #[specta::specta]
         pub fn rgbmatrix_get_enabled_effects(
@@ -1562,6 +1609,7 @@ pub mod lighting {
             }
         }
 
+        #[cfg(feature = "tauri-codegen")]
         #[tauri::command]
         #[specta::specta]
         pub fn rgbmatrix_get_config(
@@ -1591,6 +1639,7 @@ pub mod lighting {
             }
         }
 
+        #[cfg(feature = "tauri-codegen")]
         #[tauri::command]
         #[specta::specta]
         pub fn rgbmatrix_set_config(
@@ -1621,6 +1670,7 @@ pub mod lighting {
             }
         }
 
+        #[cfg(feature = "tauri-codegen")]
         #[tauri::command]
         #[specta::specta]
         pub fn rgbmatrix_save_config(
@@ -1642,6 +1692,7 @@ pub mod audio {
     use parking_lot::Mutex;
     use serde::{Deserialize, Serialize};
     use specta::Type;
+    #[cfg(feature = "tauri-codegen")]
     use tauri::State;
     use uuid::Uuid;
 
@@ -1686,6 +1737,7 @@ pub mod audio {
     }
     }
 
+    #[cfg(feature = "tauri-codegen")]
     #[tauri::command]
     #[specta::specta]
     pub fn audio_capabilities(
@@ -1715,6 +1767,7 @@ pub mod audio {
         }
     }
 
+    #[cfg(feature = "tauri-codegen")]
     #[tauri::command]
     #[specta::specta]
     pub fn audio_get_config(
@@ -1744,6 +1797,7 @@ pub mod audio {
         }
     }
 
+    #[cfg(feature = "tauri-codegen")]
     #[tauri::command]
     #[specta::specta]
     pub fn audio_set_config(
@@ -1774,6 +1828,7 @@ pub mod audio {
         }
     }
 
+    #[cfg(feature = "tauri-codegen")]
     #[tauri::command]
     #[specta::specta]
     pub fn audio_save_config(
@@ -1789,25 +1844,22 @@ pub mod types {
     use serde::{Deserialize, Serialize};
     use specta::Type;
 
+    /// RGB config for RGB lighting subsystem
+    #[derive(BinRead, BinWrite, Default, Debug, Clone, Serialize, Deserialize, Type)]
+    pub struct RgbLightConfig {
+        pub enable: u8,
+        pub mode: u8,
+        pub hue: u8,
+        pub sat: u8,
+        pub val: u8,
+        pub speed: u8,
+    }
+
     /// Packet format for broadcast messages.
     #[derive(BinRead, BinWrite, Default, Debug, Clone, Serialize, Deserialize, Type)]
     pub struct BroadcastHeader {
         pub r#type: u8,
         pub length: u8,
-    }
-
-    /// Packet format for inbound data.
-    #[derive(BinRead, BinWrite, Default, Debug, Clone, Serialize, Deserialize, Type)]
-    pub struct RequestHeader {
-        pub length: u8,
-    }
-
-    /// Config for lighting subsystem
-    #[derive(BinRead, BinWrite, Default, Debug, Clone, Serialize, Deserialize, Type)]
-    pub struct BacklightConfig {
-        pub enable: u8,
-        pub mode: u8,
-        pub val: u8,
     }
 
     /// RGB config for RGB matrix subsystem
@@ -1822,15 +1874,18 @@ pub mod types {
         pub flags: u8,
     }
 
-    /// RGB config for RGB lighting subsystem
+    /// Config for lighting subsystem
     #[derive(BinRead, BinWrite, Default, Debug, Clone, Serialize, Deserialize, Type)]
-    pub struct RgbLightConfig {
+    pub struct BacklightConfig {
         pub enable: u8,
         pub mode: u8,
-        pub hue: u8,
-        pub sat: u8,
         pub val: u8,
-        pub speed: u8,
+    }
+
+    /// Packet format for outbound data.
+    #[derive(BinRead, BinWrite, Default, Debug, Clone, Serialize, Deserialize, Type)]
+    pub struct ResponseHeader {
+        pub length: u8,
     }
 
     /// Config for audio subsystem
@@ -1840,13 +1895,14 @@ pub mod types {
         pub clicky_enable: u8,
     }
 
-    /// Packet format for outbound data.
+    /// Packet format for inbound data.
     #[derive(BinRead, BinWrite, Default, Debug, Clone, Serialize, Deserialize, Type)]
-    pub struct ResponseHeader {
+    pub struct RequestHeader {
         pub length: u8,
     }
 }
 
+#[cfg(feature = "tauri-codegen")]
 #[macro_export]
 macro_rules! generate_specta_builder {
                 (commands: [$($command:ident),*], events: [$($event:ident),*]) => {{

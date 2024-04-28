@@ -359,6 +359,7 @@ impl Route {
                 writeln!(
                     &mut ctx.rendered,
                     r#"
+                    #[cfg(feature = "tauri-codegen")]
                     #[tauri::command]
                     #[specta::specta]
                     pub fn {name_snake}(
@@ -376,6 +377,7 @@ impl Route {
                 writeln!(
                     &mut ctx.rendered,
                     r#"
+                    #[cfg(feature = "tauri-codegen")]
                     #[tauri::command]
                     #[specta::specta]
                     pub fn {name_snake}(
@@ -414,6 +416,7 @@ impl Route {
                 use parking_lot::Mutex;
                 use serde::{{Serialize, Deserialize}};
                 use specta::Type;
+                #[cfg(feature = "tauri-codegen")]
                 use tauri::State;
                 use uuid::Uuid;
 
@@ -592,6 +595,7 @@ impl Spec {
         writeln!(
             &mut ctx.rendered,
             r#"
+            #[cfg(feature = "tauri-codegen")]
             #[macro_export]
             macro_rules! generate_specta_builder {{
                 (commands: [$($command:ident),*], events: [$($event:ident),*]) => {{{{
