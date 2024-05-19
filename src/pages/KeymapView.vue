@@ -4,11 +4,10 @@
     import type { Ref } from 'vue'
 
     import { useXapDeviceStore as useXapDeviceStore } from '@/stores/devices'
-    import { KeyPosition, XapKeyCodeCategory } from '@generated/xap'
+    import { KeyPosition, XapConstants } from '@generated/xap'
     import { commands } from '@generated/xap'
     import { notifyError } from '@/utils/utils'
 
-    type XapConstants = { keycodes: XapKeyCodeCategory[] }
     const store = useXapDeviceStore()
     const { device } = storeToRefs(store)
 

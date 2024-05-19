@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 use specta::Type;
 use uuid::Uuid;
 use xap_specs::{
-    constants::keycode::{XapKeyCode, XapKeyCodeConfig},
+    constants::keycode::{LightingEffect, LightingEffects, XapKeyCode, XapKeyCodeConfig},
     XapSecureStatus,
 };
 
@@ -74,7 +74,7 @@ pub struct LightingInfo {
 
 #[derive(Debug, Serialize, Clone, Type)]
 pub struct LightingCapabilities {
-    pub effects: Vec<u8>,
+    pub effects: Vec<LightingEffect>,
     pub get_config_enabled: bool,
     pub set_config_enabled: bool,
     pub save_config_enabled: bool,
@@ -82,20 +82,13 @@ pub struct LightingCapabilities {
 
 impl LightingCapabilities {
     pub fn new(
-        effects: u64,
+        mut effects: Vec<LightingEffect>,
         get_config_enabled: bool,
         set_config_enabled: bool,
         save_config_enabled: bool,
     ) -> Self {
-        let effects = (0..u64::BITS as u8)
-            .filter_map(|i| {
-                if (effects >> i) & 1 == 1 {
-                    Some(i)
-                } else {
-                    None
-                }
-            })
-            .collect();
+
+        effects.sort_by(|lhs, rhs| lhs.label.cmp(&rhs.label));
 
         Self {
             effects,
@@ -115,6 +108,9 @@ pub struct XapKeyCodeCategory {
 #[derive(Debug, Serialize, Clone, Type)]
 pub struct XapConstants {
     keycodes: Vec<XapKeyCodeCategory>,
+    rgblight_modes: LightingEffects,
+    rgb_matrix_modes: LightingEffects,
+    led_matrix_modes: LightingEffects,
 }
 
 impl From<xap_specs::constants::XapConstants> for XapConstants {
@@ -140,6 +136,11 @@ impl From<xap_specs::constants::XapConstants> for XapConstants {
             })
             .collect();
 
-        Self { keycodes }
+        Self {
+            keycodes,
+            rgblight_modes: constants.rgblight_modes,
+            rgb_matrix_modes: constants.rgb_matrix_modes,
+            led_matrix_modes: constants.led_matrix_modes,
+        }
     }
 }

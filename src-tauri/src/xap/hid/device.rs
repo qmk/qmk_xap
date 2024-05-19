@@ -351,7 +351,10 @@ impl XapDevice {
                     };
 
                 Some(LightingCapabilities::new(
-                    effects as u64,
+                    // Todo: implement backlight effects
+                    self.constants
+                        .led_matrix_modes
+                        .get_effect_map(effects as u64),
                     backlight_caps.contains(BacklightCapabilitiesFlags::GetConfig),
                     backlight_caps.contains(BacklightCapabilitiesFlags::SetConfig),
                     backlight_caps.contains(BacklightCapabilitiesFlags::SaveConfig),
@@ -371,7 +374,7 @@ impl XapDevice {
                     };
 
                 Some(LightingCapabilities::new(
-                    effects,
+                    self.constants.rgblight_modes.get_effect_map(effects),
                     rgblight_caps.contains(RgblightCapabilitiesFlags::GetConfig),
                     rgblight_caps.contains(RgblightCapabilitiesFlags::SetConfig),
                     rgblight_caps.contains(RgblightCapabilitiesFlags::SaveConfig),
@@ -391,7 +394,7 @@ impl XapDevice {
                     };
 
                 Some(LightingCapabilities::new(
-                    effects,
+                    self.constants.rgb_matrix_modes.get_effect_map(effects),
                     rgbmatrix_caps.contains(RgbmatrixCapabilitiesFlags::GetConfig),
                     rgbmatrix_caps.contains(RgbmatrixCapabilitiesFlags::SetConfig),
                     rgbmatrix_caps.contains(RgbmatrixCapabilitiesFlags::SaveConfig),

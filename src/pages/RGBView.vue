@@ -102,8 +102,11 @@
                     <q-select
                         v-model.number.lazy="RgbConfig.mode"
                         :options="device?.info?.lighting?.rgblight?.effects ?? []"
+                        :option-label="effect => effect.label"
+                        :option-value="effect => effect.code"
                         label="Mode"
                         emit-value
+                        map-options
                     />
                     <q-badge> Hue </q-badge>
                     <q-slider

@@ -487,12 +487,18 @@ export type KeymapInfo = {
     get_encoder_keycode_enabled: boolean
 }
 export type LightingCapabilities = {
-    effects: number[]
+    effects: LightingEffect[]
     get_config_enabled: boolean
     set_config_enabled: boolean
     save_config_enabled: boolean
 }
 export type LightingCapabilitiesFlags = number
+export type LightingEffect = { code?: number; key: string; group: string | null; label?: string }
+export type LightingEffects = {
+    groups: { [key in string]: LightingGroup } | null
+    effects: { [key in number]: LightingEffect }
+}
+export type LightingGroup = { define: string }
 export type LightingInfo = {
     backlight: LightingCapabilities | null
     rgblight: LightingCapabilities | null
@@ -600,7 +606,12 @@ export type RgbmatrixCapabilitiesFlags = number
 export type RgbmatrixGetEnabledEffectsResponse = bigint
 export type UTF8String = string
 export type XapCapabilitiesFlags = number
-export type XapConstants = { keycodes: XapKeyCodeCategory[] }
+export type XapConstants = {
+    keycodes: XapKeyCodeCategory[]
+    rgblight_modes: LightingEffects
+    rgb_matrix_modes: LightingEffects
+    led_matrix_modes: LightingEffects
+}
 export type XapDevice = {
     id: string
     info: XapDeviceInfo
