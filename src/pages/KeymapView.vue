@@ -3,20 +3,20 @@
     import { ref, watch, onMounted } from 'vue'
     import type { Ref } from 'vue'
 
-    import { useXAPDeviceStore } from '@/stores/devices'
-    import { KeyPosition, XAPKeyCodeCategory } from '@generated/xap'
+    import { useXapDeviceStore as useXapDeviceStore } from '@/stores/devices'
+    import { KeyPosition, XapKeyCodeCategory } from '@generated/xap'
     import { commands } from '@generated/xap'
     import { notifyError } from '@/utils/utils'
 
-    type XAPConstants = { keycodes: XAPKeyCodeCategory[] }
-    const store = useXAPDeviceStore()
+    type XapConstants = { keycodes: XapKeyCodeCategory[] }
+    const store = useXapDeviceStore()
     const { device } = storeToRefs(store)
 
     const splitter: Ref<number> = ref(15)
     const keycodeTab: Ref<string> = ref('basic')
     const layerTab: Ref<number> = ref(0)
     const selectedKey: Ref<KeyPosition | null> = ref(null)
-    const xapConstants: Ref<XAPConstants | null> = ref(null)
+    const xapConstants: Ref<XapConstants | null> = ref(null)
 
     async function set(code: number) {
         if (selectedKey.value) {

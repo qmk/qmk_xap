@@ -4,36 +4,36 @@ use serde::{Deserialize, Serialize};
 use specta::Type;
 use uuid::Uuid;
 use xap_specs::{
-    constants::keycode::{XAPKeyCode, XAPKeyCodeConfig},
-    XAPSecureStatus,
+    constants::keycode::{XapKeyCode, XapKeyCodeConfig},
+    XapSecureStatus,
 };
 
 use crate::xap_spec::qmk::QmkBoardIdentifiersResponse;
 
 #[derive(Clone, Serialize, Type)]
-pub struct XAPDevice {
+pub struct XapDevice {
     pub id: Uuid,
-    pub info: XAPDeviceInfo,
-    pub keymap: Vec<Vec<Vec<XAPKeyCodeConfig>>>,
-    pub secure_status: XAPSecureStatus,
+    pub info: XapDeviceInfo,
+    pub keymap: Vec<Vec<Vec<XapKeyCodeConfig>>>,
+    pub secure_status: XapSecureStatus,
 }
 
 #[derive(Debug, Serialize, Clone, Type)]
-pub struct XAPDeviceInfo {
-    pub xap: XAPInfo,
-    pub qmk: QMKInfo,
+pub struct XapDeviceInfo {
+    pub xap: XapInfo,
+    pub qmk: QmkInfo,
     pub keymap: Option<KeymapInfo>,
     pub remap: Option<RemapInfo>,
     pub lighting: Option<LightingInfo>,
 }
 
 #[derive(Debug, Serialize, Clone, Type)]
-pub struct XAPInfo {
+pub struct XapInfo {
     pub version: u32,
 }
 
 #[derive(Debug, Serialize, Clone, Type)]
-pub struct QMKInfo {
+pub struct QmkInfo {
     pub version: String,
     pub board_ids: QmkBoardIdentifiersResponse,
     pub manufacturer: String,
@@ -107,18 +107,18 @@ impl LightingCapabilities {
 }
 
 #[derive(Debug, Serialize, Clone, Type)]
-pub struct XAPKeyCodeCategory {
+pub struct XapKeyCodeCategory {
     name: String,
-    codes: Vec<XAPKeyCode>,
+    codes: Vec<XapKeyCode>,
 }
 
 #[derive(Debug, Serialize, Clone, Type)]
-pub struct XAPConstants {
-    keycodes: Vec<XAPKeyCodeCategory>,
+pub struct XapConstants {
+    keycodes: Vec<XapKeyCodeCategory>,
 }
 
-impl From<xap_specs::constants::XAPConstants> for XAPConstants {
-    fn from(constants: xap_specs::constants::XAPConstants) -> Self {
+impl From<xap_specs::constants::XapConstants> for XapConstants {
+    fn from(constants: xap_specs::constants::XapConstants) -> Self {
         let keycodes =
             constants
                 .keycodes
@@ -136,7 +136,7 @@ impl From<xap_specs::constants::XAPConstants> for XAPConstants {
             .into_iter()
             .map(|(name, mut codes)| {
                 codes.sort_by_key(|code| code.code);
-                XAPKeyCodeCategory { name, codes }
+                XapKeyCodeCategory { name, codes }
             })
             .collect();
 

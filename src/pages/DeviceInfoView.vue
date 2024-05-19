@@ -1,11 +1,11 @@
 <script setup lang="ts">
     import { storeToRefs } from 'pinia'
 
-    import { useXAPDeviceStore } from '@/stores/devices'
-    import { XAPSecureStatus } from '@generated/xap'
+    import { useXapDeviceStore } from '@/stores/devices'
+    import { XapSecureStatus } from '@generated/xap'
     import { commands } from '@generated/xap'
 
-    const store = useXAPDeviceStore()
+    const store = useXapDeviceStore()
     const { device } = storeToRefs(store)
 
     async function lock() {
@@ -115,7 +115,7 @@
                 <q-btn
                     v-else
                     class="full-width"
-                    :loading="(device?.secure_status as XAPSecureStatus) == 'Unlocking'"
+                    :loading="(device?.secure_status as XapSecureStatus) == 'Unlocking'"
                     color="primary"
                     text-color="white"
                     label="Lock"
@@ -124,7 +124,7 @@
             </div>
             <div v-if="device?.info.qmk.jump_to_bootloader_enabled">
                 <q-btn
-                    :disable="(device?.secure_status as XAPSecureStatus) != 'Unlocked'"
+                    :disable="(device?.secure_status as XapSecureStatus) != 'Unlocked'"
                     class="full-width"
                     color="primary"
                     text-color="white"
@@ -137,7 +137,7 @@
             </div>
             <div v-if="device?.info.qmk.eeprom_reset_enabled">
                 <q-btn
-                    :disable="(device?.secure_status as XAPSecureStatus) != 'Unlocked'"
+                    :disable="(device?.secure_status as XapSecureStatus) != 'Unlocked'"
                     class="full-width"
                     color="primary"
                     text-color="white"

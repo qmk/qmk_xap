@@ -6,11 +6,11 @@
     import ColorPicker from '@radial-color-picker/vue-color-picker'
 
     import { RgbLightConfig } from '@generated/xap'
-    import { useXAPDeviceStore } from '@/stores/devices'
+    import { useXapDeviceStore } from '@/stores/devices'
     import { commands } from '@generated/xap'
     import { notifyError } from '@/utils/utils'
 
-    const store = useXAPDeviceStore()
+    const store = useXapDeviceStore()
     const { device } = storeToRefs(store)
 
     const RgbConfig: Ref<RgbLightConfig> = ref({

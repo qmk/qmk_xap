@@ -8,12 +8,12 @@ repository = ""
 edition = "2021"
 
 [build-dependencies]
-tauri-build = { version = "1.5.1", features = [] }
+tauri-build = { version = "2.0.0-beta", features = [] }
 
 [dependencies]
 anyhow = "1.0"
 binrw = "0.13"
-bitflags = { version = "2.5.0", features = ["serde"] }
+bitflags = { version = "2.5", features = ["serde"] }
 crossbeam-channel = "0.5"
 deser-hjson = "2.2"
 env_logger = "0.11"
@@ -24,14 +24,19 @@ parking_lot = "0.12"
 rand = "0.8"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
-serde_with = "3.6"
-specta = { version = "=2.0.0-rc.7", features = ["uuid"] }
-tauri = { version = "1.6.1", features = ["api-all"] }
-tauri-specta = { git = "https://github.com/oscartbeaumont/tauri-specta.git", branch = "main", commit = "4e48b7b378ce89590a9e9befe29a83b0cd4b322a", features = [
+serde_with = "3.8"
+specta = { version = "=2.0.0-rc.12", features = ["uuid"] }
+tauri = { version = "2.0.0-beta", features = [] }
+tauri-plugin-fs = "2.0.0-beta.7"
+tauri-plugin-shell = "2.0.0-beta.5"
+# Workaround for compilation error with tauri 2.0.0-beta.17
+# See https://github.com/oscartbeaumont/tauri-specta/pull/94
+# Remove once the PR or another fix is merged
+tauri-specta = { git = "https://github.com/nashaofu/tauri-specta.git", rev = "8eaf3494", features = [
     "typescript",
 ] }
 thiserror = "1.0"
-uuid = { version = "1.7", features = ["serde", "v4"] }
+uuid = { version = "1.8", features = ["serde", "v4"] }
 xap-specs = { path = "../xap-specs" }
 
 [dev-dependencies]

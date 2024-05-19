@@ -9,12 +9,12 @@ use serde::{de::Error, Deserialize, Deserializer, Serialize};
 use serde_with::{serde_as, skip_serializing_none, NoneAsEmptyString};
 use specta::Type;
 
-use crate::{error::XAPResult, KeyPosition};
+use crate::{error::XapResult, KeyPosition};
 
 #[serde_as]
 #[skip_serializing_none]
 #[derive(Deserialize, Clone, Serialize, Default, Debug, PartialEq, Eq, Type)]
-pub struct XAPKeyCode {
+pub struct XapKeyCode {
     #[serde(default)]
     pub code: u16,
     pub key: String,
@@ -27,7 +27,7 @@ pub struct XAPKeyCode {
     pub aliases: Vec<String>,
 }
 
-impl XAPKeyCode {
+impl XapKeyCode {
     pub fn new_custom(code: u16) -> Self {
         Self {
             code,
@@ -42,27 +42,31 @@ impl XAPKeyCode {
 #[derive(Deserialize, Debug)]
 struct KeyCodes {
     #[serde(deserialize_with = "from_hex_keycode")]
-    keycodes: HashMap<u16, XAPKeyCode>,
+    keycodes: HashMap<u16, XapKeyCode>,
 }
 
-pub(crate) fn read_xap_keycodes(path: PathBuf) -> XAPResult<HashMap<u16, XAPKeyCode>> {
+pub(crate) fn read_xap_keycodes(path: PathBuf) -> XapResult<HashMap<u16, XapKeyCode>> {
     let mut all = HashMap::new();
 
-    for entry in fs::read_dir(path)? {
-        let entry = entry?;
+    for entry in fs::read_dir(path)?.filter_map(|e| e.ok()) {
         let path = entry.path();
-        if !path.is_dir() {
-            let input = read_to_string(&path)?;
-            match deser_hjson::from_str::<KeyCodes>(&input) {
-                Ok(codes) => {
-                    all.extend(codes.keycodes);
-                }
-                Err(err) => {
-                    error!(
-                        "failed to deserialize keycodes from file {} with error: {err}",
-                        path.to_string_lossy()
-                    );
-                }
+
+        if path.is_dir()
+            || path
+                .file_name()
+                .is_some_and(|filename| !filename.to_string_lossy().starts_with("keycodes"))
+        {
+            continue;
+        }
+
+        let raw_hjson = read_to_string(&path)?;
+
+        match deser_hjson::from_str::<KeyCodes>(&raw_hjson) {
+            Ok(codes) => {
+                all.extend(codes.keycodes);
+            }
+            Err(err) => {
+                error!("failed to deserialize keycodes from file {path:?} with error: {err}",);
             }
         }
     }
@@ -70,12 +74,12 @@ pub(crate) fn read_xap_keycodes(path: PathBuf) -> XAPResult<HashMap<u16, XAPKeyC
     Ok(all)
 }
 
-fn from_hex_keycode<'de, D>(deserializer: D) -> Result<HashMap<u16, XAPKeyCode>, D::Error>
+fn from_hex_keycode<'de, D>(deserializer: D) -> Result<HashMap<u16, XapKeyCode>, D::Error>
 where
     D: Deserializer<'de>,
 {
-    let map: HashMap<String, XAPKeyCode> = Deserialize::deserialize(deserializer)?;
-    let mut result: HashMap<u16, XAPKeyCode> = HashMap::with_capacity(map.len());
+    let map: HashMap<String, XapKeyCode> = Deserialize::deserialize(deserializer)?;
+    let mut result: HashMap<u16, XapKeyCode> = HashMap::with_capacity(map.len());
 
     for code_keycode in map.into_iter().map(|(raw_code, mut keycode)| {
         let code =
@@ -91,8 +95,8 @@ where
 }
 
 #[derive(Debug, Default, Clone, Serialize, Type)]
-pub struct XAPKeyCodeConfig {
-    pub code: XAPKeyCode,
+pub struct XapKeyCodeConfig {
+    pub code: XapKeyCode,
     pub position: KeyPosition,
 }
 
@@ -142,7 +146,7 @@ mod test {
 
         assert_eq!(
             codes.keycodes.get(&0),
-            Some(&XAPKeyCode {
+            Some(&XapKeyCode {
                 code: 0,
                 group: Some("internal".to_owned()),
                 key: "KC_NO".to_owned(),
@@ -153,7 +157,7 @@ mod test {
 
         assert_eq!(
             codes.keycodes.get(&1),
-            Some(&XAPKeyCode {
+            Some(&XapKeyCode {
                 code: 1,
                 group: Some("internal".to_owned()),
                 key: "KC_TRANSPARENT".to_owned(),
@@ -164,7 +168,7 @@ mod test {
 
         assert_eq!(
             codes.keycodes.get(&4),
-            Some(&XAPKeyCode {
+            Some(&XapKeyCode {
                 code: 4,
                 group: Some("basic".to_owned()),
                 key: "KC_A".to_owned(),
@@ -175,7 +179,7 @@ mod test {
 
         assert_eq!(
             codes.keycodes.get(&5),
-            Some(&XAPKeyCode {
+            Some(&XapKeyCode {
                 code: 5,
                 group: Some("basic".to_owned()),
                 key: "KC_B".to_owned(),

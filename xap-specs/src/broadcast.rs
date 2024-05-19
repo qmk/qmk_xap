@@ -4,9 +4,9 @@ use std::io::Cursor;
 use binrw::{binread, BinRead, BinReaderExt, Endian};
 use log::trace;
 
-use crate::error::XAPResult;
+use crate::error::XapResult;
 use crate::token::Token;
-use crate::XAPSecureStatus;
+use crate::XapSecureStatus;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 #[binread]
@@ -34,23 +34,23 @@ impl BroadcastRaw {
         &self.broadcast_type
     }
 
-    pub fn from_raw_report(report: &[u8]) -> XAPResult<Self> {
+    pub fn from_raw_report(report: &[u8]) -> XapResult<Self> {
         let mut reader = Cursor::new(report);
         let broadcast = Self::read_le(&mut reader)?;
         trace!("received raw XAP broadcast: {:#?}", broadcast);
         Ok(broadcast)
     }
 
-    pub fn into_xap_broadcast<T>(self) -> XAPResult<T>
+    pub fn into_xap_broadcast<T>(self) -> XapResult<T>
     where
-        T: XAPBroadcast,
+        T: XapBroadcast,
     {
         let mut reader = Cursor::new(&self.payload);
         Ok(T::read_le(&mut reader)?)
     }
 }
 
-pub trait XAPBroadcast: Sized + Debug + for<'a> BinRead<Args<'a> = ()> {}
+pub trait XapBroadcast: Sized + Debug + for<'a> BinRead<Args<'a> = ()> {}
 
 #[derive(Debug)]
 pub struct LogBroadcast(pub String);
@@ -71,9 +71,9 @@ impl BinRead for LogBroadcast {
     }
 }
 
-impl XAPBroadcast for LogBroadcast {}
+impl XapBroadcast for LogBroadcast {}
 
 #[derive(BinRead, Debug)]
-pub struct SecureStatusBroadcast(pub XAPSecureStatus);
+pub struct SecureStatusBroadcast(pub XapSecureStatus);
 
-impl XAPBroadcast for SecureStatusBroadcast {}
+impl XapBroadcast for SecureStatusBroadcast {}

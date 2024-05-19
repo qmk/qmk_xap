@@ -1,7 +1,7 @@
 use std::fmt::Display;
 
 use binrw::{BinRead, BinReaderExt, BinResult, BinWrite, Endian};
-use error::XAPError;
+use error::XapError;
 use serde::{Deserialize, Serialize};
 use specta::Type;
 
@@ -53,13 +53,13 @@ pub struct EncoderPositionConfig {
 }
 
 #[derive(Debug, Serialize, Clone, Copy, Type)]
-pub enum XAPSecureStatus {
+pub enum XapSecureStatus {
     Locked,
     Unlocking,
     Unlocked,
 }
 
-impl From<u8> for XAPSecureStatus {
+impl From<u8> for XapSecureStatus {
     fn from(value: u8) -> Self {
         match value {
             1 => Self::Unlocking,
@@ -69,13 +69,13 @@ impl From<u8> for XAPSecureStatus {
     }
 }
 
-impl Default for XAPSecureStatus {
+impl Default for XapSecureStatus {
     fn default() -> Self {
         Self::Locked
     }
 }
 
-impl BinRead for XAPSecureStatus {
+impl BinRead for XapSecureStatus {
     type Args<'a> = ();
 
     fn read_options<R: std::io::Read + std::io::Seek>(
@@ -92,33 +92,33 @@ impl BinRead for XAPSecureStatus {
     }
 }
 
-impl Display for XAPSecureStatus {
+impl Display for XapSecureStatus {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            XAPSecureStatus::Locked => write!(f, "Locked"),
-            XAPSecureStatus::Unlocking => write!(f, "Unlocking"),
-            XAPSecureStatus::Unlocked => write!(f, "Unlocked"),
+            XapSecureStatus::Locked => write!(f, "Locked"),
+            XapSecureStatus::Unlocking => write!(f, "Unlocking"),
+            XapSecureStatus::Unlocked => write!(f, "Unlocked"),
         }
     }
 }
 
 #[derive(Debug, Default, PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
-pub struct XAPVersion(u32);
+pub struct XapVersion(u32);
 
-impl TryFrom<u32> for XAPVersion {
-    type Error = XAPError;
+impl TryFrom<u32> for XapVersion {
+    type Error = XapError;
 
     fn try_from(value: u32) -> Result<Self, Self::Error> {
         match value {
             0x01 | 0x0100 | 0x0200 | 0x0300 => Ok(Self(value)),
-            _ => Err(XAPError::Protocol(format!(
-                "{value:06X} is not a valid BCD encoded XAP version"
+            _ => Err(XapError::Protocol(format!(
+                "{value:06X} is not a valid BCD encoded Xap version"
             ))),
         }
     }
 }
 
-impl Display for XAPVersion {
+impl Display for XapVersion {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         for digit in self.0.to_be_bytes() {
             write!(f, "{digit:02X}")?;

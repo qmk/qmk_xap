@@ -2,22 +2,22 @@ use serde::Serialize;
 use specta::Type;
 use tauri_specta::Event;
 use uuid::Uuid;
-use xap_specs::XAPSecureStatus;
+use xap_specs::XapSecureStatus;
 
-use crate::aggregation::XAPDevice as XAPDeviceDTO;
+use crate::aggregation::XapDevice as XapDeviceDTO;
 
 #[derive(Clone, Serialize, Type, Event)]
 #[serde(tag = "kind", content = "data")]
 pub(crate) enum FrontendEvent {
     NewDevice {
-        device: XAPDeviceDTO,
+        device: XapDeviceDTO,
     },
     RemovedDevice {
         id: Uuid,
     },
     SecureStatusChanged {
         id: Uuid,
-        secure_status: XAPSecureStatus,
+        secure_status: XapSecureStatus,
     },
     LogReceived {
         id: Uuid,
@@ -25,14 +25,14 @@ pub(crate) enum FrontendEvent {
     },
 }
 
-pub(crate) enum XAPEvent {
+pub(crate) enum XapEvent {
     LogReceived {
         id: Uuid,
         log: String,
     },
     SecureStatusChanged {
         id: Uuid,
-        secure_status: XAPSecureStatus,
+        secure_status: XapSecureStatus,
     },
     NewDevice(Uuid),
     RemovedDevice(Uuid),

@@ -4,11 +4,11 @@
     import type { Ref } from 'vue'
 
     import { commands } from '@generated/xap'
-    import { useXAPDeviceStore } from '@/stores/devices'
+    import { useXapDeviceStore } from '@/stores/devices'
     import { XAPDevice } from '@generated/xap'
     import { XAPSecureStatus } from '@generated/xap'
 
-    const store = useXAPDeviceStore()
+    const store = useXapDeviceStore()
     const { device, devices } = storeToRefs(store)
     const devicesA: Ref<Array<XAPDevice>> = computed(() => Array.from(devices.value.values()))
 

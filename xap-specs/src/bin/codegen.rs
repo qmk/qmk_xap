@@ -11,12 +11,14 @@ use std::{
 use anyhow::{bail, Result};
 use clap::Parser;
 use convert_case::{Case, Casing};
+use env_logger::Env;
+use log::{error, info};
 use serde::{de::Visitor, Deserialize, Deserializer, Serialize};
 
 #[derive(Debug, Default, PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
-pub struct XAPVersion(u32);
+pub struct XapVersion(u32);
 
-impl TryFrom<u32> for XAPVersion {
+impl TryFrom<u32> for XapVersion {
     type Error = anyhow::Error;
 
     fn try_from(value: u32) -> Result<Self, Self::Error> {
@@ -29,7 +31,7 @@ impl TryFrom<u32> for XAPVersion {
     }
 }
 
-impl Display for XAPVersion {
+impl Display for XapVersion {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         for digit in self.0.to_be_bytes() {
             write!(f, "{digit:02X}")?;
@@ -137,7 +139,7 @@ struct Route {
     #[serde(skip_deserializing)]
     id: Vec<u8>,
     #[serde(skip_deserializing)]
-    xap_version: Option<XAPVersion>,
+    xap_version: Option<XapVersion>,
     name: Option<String>,
     description: Option<String>,
     r#type: Option<RouteType>,
@@ -158,7 +160,7 @@ impl Route {
 
         let mut bytes = self.id.iter().peekable();
         while let Some(byte) = bytes.next() {
-            rendered.push_str(&format!("{byte:02x}"));
+            rendered.push_str(&format!("0x{byte:02x}"));
 
             if bytes.peek().is_some() {
                 rendered.push_str(", ");
@@ -170,13 +172,13 @@ impl Route {
 
     fn merge(&mut self, other: &Route) {
         if other.name.is_some() {
-            self.name = other.name.clone();
+            self.name.clone_from(&other.name);
         }
         if other.description.is_some() {
-            self.description = other.description.clone();
+            self.description.clone_from(&other.description);
         }
         if other.r#type.is_some() {
-            self.r#type = other.r#type.clone();
+            self.r#type.clone_from(&other.r#type);
         }
         for (key, other_route) in &other.routes {
             if let Some(route) = self.routes.get_mut(key) {
@@ -234,7 +236,7 @@ impl Route {
             .as_ref()
             .is_some_and(|p| p == "capabilities")
         {
-            let capabilities_name = name.to_case(Case::Pascal).to_string();
+            let capabilities_name = format!("{name}Flags", name = name.to_case(Case::Pascal));
             let mut capabilities_enum = String::new();
             let capabilities_type = self.return_type.as_type();
 
@@ -340,7 +342,7 @@ impl Route {
 
             {request_type}
 
-            impl XAPRequest for {name_pascal}Request {{
+            impl XapRequest for {name_pascal}Request {{
                 type Response = {response_type_name};
 
                 fn id() -> &'static [u8] {{
@@ -365,11 +367,12 @@ impl Route {
                     #[specta::specta]
                     pub fn {name_snake}(
                         id: Uuid,
-                        state: State<'_, Arc<Mutex<XAPClient>>>,
-                    ) -> ClientResult<{response_type_name}> {{
+                        state: State<'_, Arc<Mutex<XapClient>>>,
+                    ) -> FrontendResult<{response_type_name}> {{
                         state
                             .lock()
                             .query(id, {name_pascal}Request(()))
+                            .map_err(Into::into)
                     }}
                     "#
                 )?;
@@ -384,11 +387,12 @@ impl Route {
                     pub fn {name_snake}(
                         id: Uuid,
                         arg: {request_type_name},
-                        state: State<'_, Arc<Mutex<XAPClient>>>,
-                    ) -> ClientResult<{response_type_name}> {{
+                        state: State<'_, Arc<Mutex<XapClient>>>,
+                    ) -> FrontendResult<{response_type_name}> {{
                         state
                             .lock()
                             .query(id, {name_pascal}Request(arg))
+                            .map_err(Into::into)
                     }}
                     "#
                 )?;
@@ -421,10 +425,10 @@ impl Route {
                 use tauri::State;
                 use uuid::Uuid;
 
-                use xap_specs::request::XAPRequest;
+                use xap_specs::request::XapRequest;
                 use xap_specs::response::UTF8String;
-                use crate::xap::hid::XAPClient;
-                use crate::xap::ClientResult;
+                use crate::xap::hid::XapClient;
+                use crate::xap::FrontendResult;
                 use crate::xap_spec::types::*;
             "#
         )?;
@@ -462,14 +466,14 @@ impl Route {
 
     fn expand_ids(&mut self, parent_id: &mut Vec<u8>) {
         parent_id.extend_from_slice(&self.id);
-        self.id = parent_id.clone();
+        self.id.clone_from(parent_id);
 
         for route in self.routes.values_mut() {
             route.expand_ids(&mut parent_id.clone());
         }
     }
 
-    fn expand_xap_specs(&mut self, xap_version: XAPVersion) {
+    fn expand_xap_specs(&mut self, xap_version: XapVersion) {
         if self.xap_version.is_none() || self.xap_version > Some(xap_version) {
             self.xap_version.replace(xap_version);
         }
@@ -505,7 +509,7 @@ struct BroadcastMessages {
 #[derive(Debug, Deserialize, Clone)]
 struct Spec {
     #[serde(deserialize_with = "deserialize_xap_version")]
-    version: XAPVersion,
+    version: XapVersion,
     #[serde(default, deserialize_with = "deserialize_routes")]
     routes: BTreeMap<u8, Route>,
     broadcast_messages: Option<BroadcastMessages>,
@@ -668,7 +672,7 @@ where
         .collect::<Result<BTreeMap<u8, Route>, D::Error>>()
 }
 
-fn deserialize_xap_version<'de, D>(d: D) -> Result<XAPVersion, D::Error>
+fn deserialize_xap_version<'de, D>(d: D) -> Result<XapVersion, D::Error>
 where
     D: Deserializer<'de>,
 {
@@ -684,7 +688,7 @@ where
         })?;
     }
 
-    XAPVersion::try_from(u32::from_le_bytes(version)).map_err(|e| {
+    XapVersion::try_from(u32::from_le_bytes(version)).map_err(|e| {
         serde::de::Error::custom(format!(
             "failed to deserialize XAP version from {raw} with error {e}"
         ))
@@ -716,7 +720,7 @@ impl Context<'_> {
 }
 
 fn get_default_spec_dir() -> &'static str {
-    concat!(env!("CARGO_MANIFEST_DIR"), "/specs/xap")
+    concat!(env!("CARGO_MANIFEST_DIR"), "/assets")
 }
 
 fn get_default_rendered_file() -> &'static str {
@@ -735,24 +739,29 @@ struct Args {
 }
 
 fn main() -> Result<()> {
+    env_logger::Builder::from_env(Env::default().default_filter_or("info")).init();
+
     let args = Args::parse();
 
     let mut specs = Vec::new();
 
-    for spec in read_dir(&args.spec_dir)?.filter_map(|entry| entry.ok()) {
-        if !spec.file_type()?.is_file() {
+    for entry in read_dir(&args.spec_dir)?.filter_map(|entry| entry.ok()) {
+        let path = entry.path();
+
+        if path.is_dir() {
             continue;
         }
 
-        let spec_name = spec.file_name().to_string_lossy().to_string();
-
-        if !spec_name.ends_with(".hjson") {
-            continue;
+        if let Some(filename) = path.file_name().map(|name| name.to_string_lossy()) {
+            if !filename.starts_with("xap") || !filename.ends_with(".hjson") {
+                info!("skipping file {filename}");
+                continue;
+            }
+            info!("reading spec {filename}");
+            specs.push(Spec::from_file(path)?);
+        } else {
+            info!("skipping file without filename {path:?}");
         }
-
-        println!("reading spec {}", spec.path().to_string_lossy());
-
-        specs.push(Spec::from_file(spec.path())?);
     }
 
     // Make sure we process specs in ascending order, as they build upon eachother
@@ -767,7 +776,7 @@ fn main() -> Result<()> {
 
     // Only render the latest spec as it contains all previous iterations
     if let Some(spec) = specs.last() {
-        println!("writing rendered spec to {}", &rendered_file);
+        info!("writing rendered spec to {}", &rendered_file);
 
         let mut context = Context {
             rendered: &mut File::create(&args.rendered_file)?,
@@ -787,7 +796,7 @@ fn main() -> Result<()> {
             .arg(&rendered_file)
             .status()
         {
-            eprintln!("failed to run cargo fmt on {rendered_file}: {e}");
+            error!("failed to run cargo fmt on {rendered_file}: {e}");
         }
     }
 

@@ -8,8 +8,8 @@ use serde::Serialize;
 use specta::Type;
 
 use crate::{
-    error::{XAPError, XAPResult},
-    request::XAPRequest,
+    error::{XapError, XapResult},
+    request::XapRequest,
     token::Token,
 };
 
@@ -35,7 +35,7 @@ pub struct RawResponse {
 }
 
 impl RawResponse {
-    pub fn from_raw_report(report: &[u8]) -> XAPResult<Self> {
+    pub fn from_raw_report(report: &[u8]) -> XapResult<Self> {
         let mut reader = Cursor::new(report);
         let response = RawResponse::read_le(&mut reader)?;
 
@@ -43,8 +43,8 @@ impl RawResponse {
 
         match response.flags {
             ResponseFlags::SUCCESS => Ok(response),
-            ResponseFlags::SECURE_FAILURE => Err(XAPError::SecureLocked),
-            _ => Err(XAPError::Protocol(format!(
+            ResponseFlags::SECURE_FAILURE => Err(XapError::SecureLocked),
+            _ => Err(XapError::Protocol(format!(
                 "unknown response flag {:?}",
                 response.flags
             ))),
@@ -59,9 +59,9 @@ impl RawResponse {
         &self.payload
     }
 
-    pub fn into_xap_response<T>(self) -> XAPResult<T::Response>
+    pub fn into_xap_response<T>(self) -> XapResult<T::Response>
     where
-        T: XAPRequest,
+        T: XapRequest,
     {
         let mut reader = Cursor::new(self.payload);
 
@@ -87,10 +87,10 @@ impl BinRead for UTF8String {
 #[derive(BinRead, Debug)]
 pub struct SecureActionResponse(u8);
 
-impl From<SecureActionResponse> for XAPResult<()> {
+impl From<SecureActionResponse> for XapResult<()> {
     fn from(val: SecureActionResponse) -> Self {
         if val.0 == 0 {
-            Err(XAPError::SecureLocked)
+            Err(XapError::SecureLocked)
         } else {
             Ok(())
         }

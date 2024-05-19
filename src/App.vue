@@ -4,11 +4,11 @@
     import { listen, emit, Event, UnlistenFn } from '@tauri-apps/api/event'
     import { Notify, Loading } from 'quasar'
 
-    import { useXAPDeviceStore } from '@/stores/devices'
+    import { useXapDeviceStore } from '@/stores/devices'
     import { FrontendEvent } from '@generated/xap'
     import router from '@/router/routes'
 
-    const store = useXAPDeviceStore()
+    const store = useXapDeviceStore()
     const { device, devices } = storeToRefs(store)
 
     let unlistenNewDevice: UnlistenFn

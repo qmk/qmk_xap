@@ -1,9 +1,9 @@
 use serde::Serialize;
 
-pub type XAPResult<T> = core::result::Result<T, XAPError>;
+pub type XapResult<T> = core::result::Result<T, XapError>;
 
 #[derive(thiserror::Error, Debug)]
-pub enum XAPError {
+pub enum XapError {
     #[error("bit marshalling failed {0}")]
     BitHandling(#[from] binrw::Error),
     #[error("XAP communication failed {0}")]
@@ -20,7 +20,7 @@ pub enum XAPError {
     HJSONError(#[from] deser_hjson::Error),
 }
 
-impl Serialize for XAPError {
+impl Serialize for XapError {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: serde::Serializer,

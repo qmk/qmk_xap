@@ -3,26 +3,26 @@ use std::{collections::HashMap, fmt::Debug, sync::Arc};
 use crossbeam_channel::Sender;
 use hidapi::{DeviceInfo, HidApi};
 use uuid::Uuid;
-use xap_specs::{constants::XAPConstants, request::XAPRequest};
+use xap_specs::{constants::XapConstants, request::XapRequest};
 
 use crate::{
     xap::{ClientError, ClientResult},
-    XAPEvent,
+    XapEvent,
 };
 
-use super::XAPDevice;
+use super::XapDevice;
 
 const XAP_USAGE_PAGE: u16 = 0xFF51;
 const XAP_USAGE: u16 = 0x0058;
 
-pub(crate) struct XAPClient {
+pub(crate) struct XapClient {
     hid: HidApi,
-    devices: HashMap<Uuid, XAPDevice>,
-    event_channel: Sender<XAPEvent>,
-    constants: Arc<XAPConstants>,
+    devices: HashMap<Uuid, XapDevice>,
+    event_channel: Sender<XapEvent>,
+    constants: Arc<XapConstants>,
 }
 
-impl Debug for XAPClient {
+impl Debug for XapClient {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("AppState")
             .field("device", &self.devices)
@@ -30,8 +30,8 @@ impl Debug for XAPClient {
     }
 }
 
-impl XAPClient {
-    pub fn new(event_channel: Sender<XAPEvent>, xap_constants: XAPConstants) -> ClientResult<Self> {
+impl XapClient {
+    pub fn new(event_channel: Sender<XapEvent>, xap_constants: XapConstants) -> ClientResult<Self> {
         Ok(Self {
             devices: HashMap::new(),
             hid: HidApi::new_without_enumerate()?,
@@ -42,7 +42,7 @@ impl XAPClient {
 
     pub fn query<T>(&self, id: Uuid, request: T) -> ClientResult<T::Response>
     where
-        T: XAPRequest,
+        T: XapRequest,
     {
         match self.devices.get(&id) {
             Some(device) => device.query(request),
@@ -50,7 +50,7 @@ impl XAPClient {
         }
     }
 
-    pub fn xap_constants(&self) -> XAPConstants {
+    pub fn xap_constants(&self) -> XapConstants {
         self.constants.as_ref().clone()
     }
 
@@ -76,7 +76,7 @@ impl XAPClient {
                 true
             } else {
                 self.event_channel
-                    .send(XAPEvent::RemovedDevice(*id))
+                    .send(XapEvent::RemovedDevice(*id))
                     .expect("failed to announce removal of xap device");
                 false
             }
@@ -91,7 +91,7 @@ impl XAPClient {
                 continue;
             }
 
-            let new_device = XAPDevice::new(
+            let new_device = XapDevice::new(
                 device.clone(),
                 Arc::clone(&self.constants),
                 self.event_channel.clone(),
@@ -101,24 +101,24 @@ impl XAPClient {
             let id = new_device.id();
             self.devices.insert(id, new_device);
             self.event_channel
-                .send(XAPEvent::NewDevice(id))
+                .send(XapEvent::NewDevice(id))
                 .expect("failed to announce new xap device");
         }
 
         Ok(())
     }
 
-    pub fn get_device(&self, id: &Uuid) -> ClientResult<&XAPDevice> {
+    pub fn get_device(&self, id: &Uuid) -> ClientResult<&XapDevice> {
         self.devices.get(id).ok_or(ClientError::UnknownDevice(*id))
     }
 
-    pub fn get_device_mut(&mut self, id: &Uuid) -> ClientResult<&mut XAPDevice> {
+    pub fn get_device_mut(&mut self, id: &Uuid) -> ClientResult<&mut XapDevice> {
         self.devices
             .get_mut(id)
             .ok_or(ClientError::UnknownDevice(*id))
     }
 
-    pub fn get_devices(&self) -> Vec<&XAPDevice> {
+    pub fn get_devices(&self) -> Vec<&XapDevice> {
         self.devices.values().collect()
     }
 }

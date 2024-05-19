@@ -18,86 +18,87 @@ use uuid::Uuid;
 
 use xap_specs::{
     broadcast::{BroadcastRaw, BroadcastType, LogBroadcast, SecureStatusBroadcast},
-    constants::{keycode::XAPKeyCodeConfig, XAPConstants},
-    error::{XAPError, XAPResult},
-    request::{RawRequest, XAPRequest},
+    constants::{keycode::XapKeyCodeConfig, XapConstants},
+    error::{XapError, XapResult},
+    request::{RawRequest, XapRequest},
     response::RawResponse,
     token::Token,
-    KeyPosition, KeyPositionConfig, XAPSecureStatus,
+    KeyPosition, KeyPositionConfig, XapSecureStatus,
 };
 
 use crate::{
     aggregation::{
-        KeymapInfo, LightingCapabilities as LightingCapabilitiesDto, LightingInfo, QMKInfo,
-        RemapInfo, XAPDevice as XAPDeviceDto, XAPDeviceInfo, XAPInfo,
+        KeymapInfo, LightingCapabilities, LightingInfo, QmkInfo, RemapInfo,
+        XapDevice as XapDeviceDto, XapDeviceInfo, XapInfo,
     },
     xap::{ClientError, ClientResult},
     xap_spec::{
         keymap::{
-            KeymapCapabilities, KeymapCapabilitiesRequest, KeymapGetKeycodeArg,
+            KeymapCapabilitiesFlags, KeymapCapabilitiesRequest, KeymapGetKeycodeArg,
             KeymapGetKeycodeRequest, KeymapGetKeycodeResponse, KeymapGetLayerCountRequest,
         },
         lighting::{
             backlight::{
-                BacklightCapabilities, BacklightCapabilitiesRequest,
+                BacklightCapabilitiesFlags, BacklightCapabilitiesRequest,
                 BacklightGetEnabledEffectsRequest,
             },
             rgblight::{
-                RgblightCapabilities, RgblightCapabilitiesRequest, RgblightGetEnabledEffectsRequest,
+                RgblightCapabilitiesFlags, RgblightCapabilitiesRequest,
+                RgblightGetEnabledEffectsRequest,
             },
             rgbmatrix::{
-                RgbmatrixCapabilities, RgbmatrixCapabilitiesRequest,
+                RgbmatrixCapabilitiesFlags, RgbmatrixCapabilitiesRequest,
                 RgbmatrixGetEnabledEffectsRequest,
             },
-            LightingCapabilities, LightingCapabilitiesRequest,
+            LightingCapabilitiesFlags, LightingCapabilitiesRequest,
         },
         qmk::{
-            QmkBoardIdentifiersRequest, QmkBoardManufacturerRequest, QmkCapabilities,
+            QmkBoardIdentifiersRequest, QmkBoardManufacturerRequest, QmkCapabilitiesFlags,
             QmkCapabilitiesRequest, QmkConfigBlobChunkRequest, QmkConfigBlobLengthRequest,
             QmkHardwareIdentifierRequest, QmkProductNameRequest, QmkVersionRequest,
         },
         remapping::{
-            RemappingCapabilities, RemappingCapabilitiesRequest, RemappingGetLayerCountRequest,
-            RemappingSetKeycodeArg, RemappingSetKeycodeRequest,
+            RemappingCapabilitiesFlags, RemappingCapabilitiesRequest,
+            RemappingGetLayerCountRequest, RemappingSetKeycodeArg, RemappingSetKeycodeRequest,
         },
         xap::{
-            XapEnabledSubsystemCapabilities, XapEnabledSubsystemCapabilitiesRequest,
+            XapEnabledSubsystemCapabilitiesFlags, XapEnabledSubsystemCapabilitiesRequest,
             XapSecureStatusRequest, XapVersionRequest,
         },
     },
-    XAPEvent,
+    XapEvent,
 };
 
 const XAP_REPORT_SIZE: usize = 64;
 
 #[derive(Debug, Default)]
-struct XAPDeviceState {
-    xap_info: Option<XAPDeviceInfo>,
-    keymap: Vec<Vec<Vec<XAPKeyCodeConfig>>>,
-    secure_status: XAPSecureStatus,
+struct XapDeviceState {
+    xap_info: Option<XapDeviceInfo>,
+    keymap: Vec<Vec<Vec<XapKeyCodeConfig>>>,
+    secure_status: XapSecureStatus,
 }
 
 #[derive(Debug)]
-pub struct XAPDevice {
+pub struct XapDevice {
     id: Uuid,
     info: DeviceInfo,
     rx_thread: JoinHandle<()>,
     tx_device: HidDevice,
     rx_channel: Receiver<RawResponse>,
-    constants: Arc<XAPConstants>,
-    state: Arc<RwLock<XAPDeviceState>>,
+    constants: Arc<XapConstants>,
+    state: Arc<RwLock<XapDeviceState>>,
 }
 
-impl XAPDevice {
+impl XapDevice {
     pub(crate) fn new(
         info: DeviceInfo,
-        constants: Arc<XAPConstants>,
-        event_channel: Sender<XAPEvent>,
+        constants: Arc<XapConstants>,
+        event_channel: Sender<XapEvent>,
         rx_device: HidDevice,
         tx_device: HidDevice,
     ) -> ClientResult<Self> {
         let id = Uuid::new_v4();
-        let state = Arc::new(RwLock::new(XAPDeviceState::default()));
+        let state = Arc::new(RwLock::new(XapDeviceState::default()));
 
         let (tx_channel, rx_channel) = unbounded();
 
@@ -130,7 +131,7 @@ impl XAPDevice {
         !self.rx_thread.is_finished()
     }
 
-    pub fn xap_info(&self) -> XAPDeviceInfo {
+    pub fn xap_info(&self) -> XapDeviceInfo {
         self.state
             .read()
             .xap_info
@@ -138,13 +139,13 @@ impl XAPDevice {
             .expect("XAP device wasn't properly initialized")
     }
 
-    pub fn keymap(&self) -> Vec<Vec<Vec<XAPKeyCodeConfig>>> {
+    pub fn keymap(&self) -> Vec<Vec<Vec<XapKeyCodeConfig>>> {
         self.state.read().keymap.clone()
     }
 
-    pub fn as_dto(&self) -> XAPDeviceDto {
+    pub fn as_dto(&self) -> XapDeviceDto {
         let state = self.state.read();
-        XAPDeviceDto {
+        XapDeviceDto {
             id: self.id,
             info: state
                 .xap_info
@@ -177,7 +178,7 @@ impl XAPDevice {
         self.query(RemappingSetKeycodeRequest(arg))?;
 
         self.state.write().keymap[layer as usize][row as usize][column as usize] =
-            XAPKeyCodeConfig {
+            XapKeyCodeConfig {
                 code: self.constants.get_keycode(keycode),
                 position: KeyPosition { layer, row, column },
             };
@@ -193,10 +194,10 @@ impl XAPDevice {
         }))
     }
 
-    pub fn query<T: XAPRequest>(&self, request: T) -> ClientResult<T::Response> {
+    pub fn query<T: XapRequest>(&self, request: T) -> ClientResult<T::Response> {
         if let Some(xap_info) = &self.state.read().xap_info {
             if !T::xap_version() < xap_info.xap.version {
-                return Err(ClientError::ProtocolError(XAPError::Protocol(format!(
+                return Err(ClientError::ProtocolError(XapError::Protocol(format!(
                     "can't do xap request [{:?}] with client of version {}",
                     T::id(),
                     xap_info.xap.version
@@ -211,7 +212,7 @@ impl XAPDevice {
         let mut writer = Cursor::new(&mut report[1..]);
         writer
             .write_le(&request)
-            .map_err(|err| ClientError::from(XAPError::BitHandling(err)))?;
+            .map_err(|err| ClientError::from(XapError::BitHandling(err)))?;
 
         trace!("send XAP report with payload {:?}", &report[1..]);
 
@@ -223,13 +224,13 @@ impl XAPDevice {
             let response = self
                 .rx_channel
                 .recv_timeout(Duration::from_millis(500))
-                .map_err(|err| XAPError::Protocol(format!("failed to reveice response {}", err)))?;
+                .map_err(|err| XapError::Protocol(format!("failed to reveice response {}", err)))?;
 
             if response.token() == request.token() {
                 break response;
             }
             if start.elapsed() > Duration::from_secs(5) {
-                return Err(XAPError::Protocol(format!(
+                return Err(XapError::Protocol(format!(
                     "failed to receive XAP response for request {:?} in 5 seconds",
                     request.token()
                 ))
@@ -240,7 +241,7 @@ impl XAPDevice {
         response.into_xap_response::<T>().map_err(ClientError::from)
     }
 
-    pub fn query_secure_status(&self) -> ClientResult<XAPSecureStatus> {
+    pub fn query_secure_status(&self) -> ClientResult<XapSecureStatus> {
         let status = self.query(XapSecureStatusRequest(()))?.0.into();
         self.state.write().secure_status = status;
         Ok(status)
@@ -249,7 +250,7 @@ impl XAPDevice {
     fn query_device_info(&self) -> ClientResult<()> {
         let subsystems = self.query(XapEnabledSubsystemCapabilitiesRequest(()))?;
 
-        let xap_info = XAPInfo {
+        let xap_info = XapInfo {
             version: self.query(XapVersionRequest(()))?.0,
         };
 
@@ -272,7 +273,7 @@ impl XAPDevice {
         let config = self.query_config_blob()?;
         let hardware_id = self.query(QmkHardwareIdentifierRequest(()))?.0;
 
-        let qmk_info = QMKInfo {
+        let qmk_info = QmkInfo {
             version: self.query(QmkVersionRequest(()))?.0.to_string(),
             board_ids,
             manufacturer,
@@ -282,14 +283,14 @@ impl XAPDevice {
                 "{}{}{}{}",
                 hardware_id[0], hardware_id[1], hardware_id[2], hardware_id[3]
             ),
-            jump_to_bootloader_enabled: qmk_caps.contains(QmkCapabilities::JumpToBootloader),
-            eeprom_reset_enabled: qmk_caps.contains(QmkCapabilities::ReinitializeEeprom),
+            jump_to_bootloader_enabled: qmk_caps.contains(QmkCapabilitiesFlags::JumpToBootloader),
+            eeprom_reset_enabled: qmk_caps.contains(QmkCapabilitiesFlags::ReinitializeEeprom),
         };
 
-        let keymap_info = if subsystems.contains(XapEnabledSubsystemCapabilities::Keymap) {
+        let keymap_info = if subsystems.contains(XapEnabledSubsystemCapabilitiesFlags::Keymap) {
             let keymap_caps = self.query(KeymapCapabilitiesRequest(()))?;
 
-            let layer_count = if keymap_caps.contains(KeymapCapabilities::GetLayerCount) {
+            let layer_count = if keymap_caps.contains(KeymapCapabilitiesFlags::GetLayerCount) {
                 Some(self.query(KeymapGetLayerCountRequest(()))?.0)
             } else {
                 None
@@ -308,19 +309,19 @@ impl XAPDevice {
             Some(KeymapInfo {
                 matrix,
                 layer_count,
-                get_keycode_enabled: keymap_caps.contains(KeymapCapabilities::GetKeycode),
+                get_keycode_enabled: keymap_caps.contains(KeymapCapabilitiesFlags::GetKeycode),
                 get_encoder_keycode_enabled: keymap_caps
-                    .contains(KeymapCapabilities::GetEncoderKeycode),
+                    .contains(KeymapCapabilitiesFlags::GetEncoderKeycode),
             })
         } else {
             info!("keymap subsystem not active!");
             None
         };
 
-        let remap_info = if subsystems.contains(XapEnabledSubsystemCapabilities::Remapping) {
+        let remap_info = if subsystems.contains(XapEnabledSubsystemCapabilitiesFlags::Remapping) {
             let keymap_caps = self.query(RemappingCapabilitiesRequest(()))?;
 
-            let layer_count = if keymap_caps.contains(RemappingCapabilities::GetLayerCount) {
+            let layer_count = if keymap_caps.contains(RemappingCapabilitiesFlags::GetLayerCount) {
                 Some(self.query(RemappingGetLayerCountRequest(()))?.0)
             } else {
                 None
@@ -328,69 +329,72 @@ impl XAPDevice {
 
             Some(RemapInfo {
                 layer_count,
-                set_keycode_enabled: keymap_caps.contains(RemappingCapabilities::SetKeycode),
+                set_keycode_enabled: keymap_caps.contains(RemappingCapabilitiesFlags::SetKeycode),
                 set_encoder_keycode_enabled: keymap_caps
-                    .contains(RemappingCapabilities::SetEncoderKeycode),
+                    .contains(RemappingCapabilitiesFlags::SetEncoderKeycode),
             })
         } else {
             None
         };
 
-        let lighting_info = if subsystems.contains(XapEnabledSubsystemCapabilities::Lighting) {
+        let lighting_info = if subsystems.contains(XapEnabledSubsystemCapabilitiesFlags::Lighting) {
             let lighting_caps = self.query(LightingCapabilitiesRequest(()))?;
 
-            let backlight_info = if lighting_caps.contains(LightingCapabilities::Backlight) {
+            let backlight_info = if lighting_caps.contains(LightingCapabilitiesFlags::Backlight) {
                 let backlight_caps = self.query(BacklightCapabilitiesRequest(()))?;
 
-                let effects = if backlight_caps.contains(BacklightCapabilities::GetEnabledEffects) {
-                    self.query(BacklightGetEnabledEffectsRequest(()))?.0
-                } else {
-                    0
-                };
+                let effects =
+                    if backlight_caps.contains(BacklightCapabilitiesFlags::GetEnabledEffects) {
+                        self.query(BacklightGetEnabledEffectsRequest(()))?.0
+                    } else {
+                        0
+                    };
 
-                Some(LightingCapabilitiesDto::new(
+                Some(LightingCapabilities::new(
                     effects as u64,
-                    backlight_caps.contains(BacklightCapabilities::GetConfig),
-                    backlight_caps.contains(BacklightCapabilities::SetConfig),
-                    backlight_caps.contains(BacklightCapabilities::SaveConfig),
+                    backlight_caps.contains(BacklightCapabilitiesFlags::GetConfig),
+                    backlight_caps.contains(BacklightCapabilitiesFlags::SetConfig),
+                    backlight_caps.contains(BacklightCapabilitiesFlags::SaveConfig),
                 ))
             } else {
                 None
             };
 
-            let rgblight_info = if lighting_caps.contains(LightingCapabilities::Rgblight) {
+            let rgblight_info = if lighting_caps.contains(LightingCapabilitiesFlags::Rgblight) {
                 let rgblight_caps = self.query(RgblightCapabilitiesRequest(()))?;
 
-                let effects = if rgblight_caps.contains(RgblightCapabilities::GetEnabledEffects) {
-                    self.query(RgblightGetEnabledEffectsRequest(()))?.0
-                } else {
-                    0
-                };
+                let effects =
+                    if rgblight_caps.contains(RgblightCapabilitiesFlags::GetEnabledEffects) {
+                        self.query(RgblightGetEnabledEffectsRequest(()))?.0
+                    } else {
+                        0
+                    };
 
-                Some(LightingCapabilitiesDto::new(
+                Some(LightingCapabilities::new(
                     effects,
-                    rgblight_caps.contains(RgblightCapabilities::GetConfig),
-                    rgblight_caps.contains(RgblightCapabilities::SetConfig),
-                    rgblight_caps.contains(RgblightCapabilities::SaveConfig),
+                    rgblight_caps.contains(RgblightCapabilitiesFlags::GetConfig),
+                    rgblight_caps.contains(RgblightCapabilitiesFlags::SetConfig),
+                    rgblight_caps.contains(RgblightCapabilitiesFlags::SaveConfig),
                 ))
             } else {
                 None
             };
 
-            let rgbmatrix_info = if lighting_caps.contains(LightingCapabilities::Rgbmatrix) {
+            let rgbmatrix_info = if lighting_caps.contains(LightingCapabilitiesFlags::Rgbmatrix) {
                 let rgbmatrix_caps = self.query(RgbmatrixCapabilitiesRequest(()))?;
 
-                let effects = if rgbmatrix_caps.contains(RgbmatrixCapabilities::GetEnabledEffects) {
-                    self.query(RgbmatrixGetEnabledEffectsRequest(()))?.0
-                } else {
-                    0
-                };
+                let effects =
+                    if rgbmatrix_caps.contains(RgbmatrixCapabilitiesFlags::GetEnabledEffects) {
+                        self.query(RgbmatrixGetEnabledEffectsRequest(()))?.0
+                    } else {
+                        0
+                    };
 
-                Some(LightingCapabilitiesDto::new(
+                Some(LightingCapabilities::new(
                     effects,
-                    rgbmatrix_caps.contains(RgbmatrixCapabilities::GetConfig),
-                    rgbmatrix_caps.contains(RgbmatrixCapabilities::SetConfig),
-                    rgbmatrix_caps.contains(RgbmatrixCapabilities::SaveConfig),
+                    rgbmatrix_caps.contains(RgbmatrixCapabilitiesFlags::GetConfig),
+                    rgbmatrix_caps.contains(RgbmatrixCapabilitiesFlags::SetConfig),
+                    rgbmatrix_caps.contains(RgbmatrixCapabilitiesFlags::SaveConfig),
                 ))
             } else {
                 None
@@ -405,7 +409,7 @@ impl XAPDevice {
             None
         };
 
-        self.state.write().xap_info = Some(XAPDeviceInfo {
+        self.state.write().xap_info = Some(XapDeviceInfo {
             xap: xap_info,
             qmk: qmk_info,
             keymap: keymap_info,
@@ -451,7 +455,7 @@ impl XAPDevice {
             let cols = keymap.matrix.cols;
             let rows = keymap.matrix.rows;
 
-            let keymap: Result<Vec<Vec<Vec<XAPKeyCodeConfig>>>, ClientError> = (0..layers)
+            let keymap: Result<Vec<Vec<Vec<XapKeyCodeConfig>>>, ClientError> = (0..layers)
                 .map(|layer| {
                     (0..rows)
                         .map(|row| {
@@ -463,7 +467,7 @@ impl XAPDevice {
                                         column: col,
                                     })?;
 
-                                    let xap = XAPKeyCodeConfig {
+                                    let xap = XapKeyCodeConfig {
                                         code: self.constants.get_keycode(keycode.0),
                                         position: KeyPosition {
                                             layer,
@@ -489,9 +493,9 @@ impl XAPDevice {
 
 fn start_rx_thread(
     id: Uuid,
-    state: Arc<RwLock<XAPDeviceState>>,
+    state: Arc<RwLock<XapDeviceState>>,
     rx: HidDevice,
-    event_channel: Sender<XAPEvent>,
+    event_channel: Sender<XapEvent>,
     tx_channel: Sender<RawResponse>,
 ) -> std::thread::JoinHandle<()> {
     std::thread::spawn(move || {
@@ -500,7 +504,7 @@ fn start_rx_thread(
             if let Err(err) = rx.read(&mut report) {
                 error!("failed to receive HID report: {err}");
                 event_channel
-                    .send(XAPEvent::RxError)
+                    .send(XapEvent::RxError)
                     .expect("failed to send error event");
                 break;
             }
@@ -514,11 +518,11 @@ fn start_rx_thread(
 
 fn handle_report(
     id: Uuid,
-    state: &Arc<RwLock<XAPDeviceState>>,
+    state: &Arc<RwLock<XapDeviceState>>,
     report: [u8; XAP_REPORT_SIZE],
     tx_channel: &Sender<RawResponse>,
-    event_channel: &Sender<XAPEvent>,
-) -> XAPResult<()> {
+    event_channel: &Sender<XapEvent>,
+) -> XapResult<()> {
     let mut reader = Cursor::new(&report);
     let token = Token::read_le(&mut reader)?;
 
@@ -529,14 +533,14 @@ fn handle_report(
             BroadcastType::Log => {
                 let log: LogBroadcast = broadcast.into_xap_broadcast()?;
                 event_channel
-                    .send(XAPEvent::LogReceived { id, log: log.0 })
+                    .send(XapEvent::LogReceived { id, log: log.0 })
                     .expect("failed to send broadcast event!");
             }
             BroadcastType::SecureStatus => {
                 let secure_status: SecureStatusBroadcast = broadcast.into_xap_broadcast()?;
                 state.write().secure_status = secure_status.0;
                 event_channel
-                    .send(XAPEvent::SecureStatusChanged {
+                    .send(XapEvent::SecureStatusChanged {
                         id,
                         secure_status: secure_status.0,
                     })

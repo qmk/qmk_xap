@@ -13,10 +13,10 @@ pub mod xap {
     use tauri::State;
     use uuid::Uuid;
 
-    use crate::xap::hid::XAPClient;
-    use crate::xap::ClientResult;
+    use crate::xap::hid::XapClient;
+    use crate::xap::FrontendResult;
     use crate::xap_spec::types::*;
-    use xap_specs::request::XAPRequest;
+    use xap_specs::request::XapRequest;
     use xap_specs::response::UTF8String;
 
     /// ======================================================================
@@ -30,11 +30,11 @@ pub mod xap {
     #[derive(BinWrite, Default, Debug, Clone, Serialize, Type)]
     pub struct XapVersionRequest(pub ());
 
-    impl XAPRequest for XapVersionRequest {
+    impl XapRequest for XapVersionRequest {
         type Response = XapVersionResponse;
 
         fn id() -> &'static [u8] {
-            &[00, 00]
+            &[0x00, 0x00]
         }
 
         fn xap_version() -> u32 {
@@ -50,9 +50,12 @@ pub mod xap {
     #[specta::specta]
     pub fn xap_version(
         id: Uuid,
-        state: State<'_, Arc<Mutex<XAPClient>>>,
-    ) -> ClientResult<XapVersionResponse> {
-        state.lock().query(id, XapVersionRequest(()))
+        state: State<'_, Arc<Mutex<XapClient>>>,
+    ) -> FrontendResult<XapVersionResponse> {
+        state
+            .lock()
+            .query(id, XapVersionRequest(()))
+            .map_err(Into::into)
     }
 
     /// ======================================================================
@@ -63,11 +66,11 @@ pub mod xap {
     #[derive(BinWrite, Default, Debug, Clone, Serialize, Type)]
     pub struct XapCapabilitiesRequest(pub ());
 
-    impl XAPRequest for XapCapabilitiesRequest {
-        type Response = XapCapabilities;
+    impl XapRequest for XapCapabilitiesRequest {
+        type Response = XapCapabilitiesFlags;
 
         fn id() -> &'static [u8] {
-            &[00, 01]
+            &[0x00, 0x01]
         }
 
         fn xap_version() -> u32 {
@@ -78,10 +81,10 @@ pub mod xap {
     #[derive(
         BinRead, PartialEq, Eq, PartialOrd, Ord, Hash, Debug, Clone, Copy, Serialize, Type,
     )]
-    pub struct XapCapabilities(u32);
+    pub struct XapCapabilitiesFlags(u32);
 
     bitflags! {
-                    impl XapCapabilities: u32 {
+                    impl XapCapabilitiesFlags: u32 {
 
     const Version = 1 << 0;
     const Capabilities = 1 << 1;
@@ -97,9 +100,12 @@ pub mod xap {
     #[specta::specta]
     pub fn xap_capabilities(
         id: Uuid,
-        state: State<'_, Arc<Mutex<XAPClient>>>,
-    ) -> ClientResult<XapCapabilities> {
-        state.lock().query(id, XapCapabilitiesRequest(()))
+        state: State<'_, Arc<Mutex<XapClient>>>,
+    ) -> FrontendResult<XapCapabilitiesFlags> {
+        state
+            .lock()
+            .query(id, XapCapabilitiesRequest(()))
+            .map_err(Into::into)
     }
 
     /// ======================================================================
@@ -110,11 +116,11 @@ pub mod xap {
     #[derive(BinWrite, Default, Debug, Clone, Serialize, Type)]
     pub struct XapEnabledSubsystemCapabilitiesRequest(pub ());
 
-    impl XAPRequest for XapEnabledSubsystemCapabilitiesRequest {
-        type Response = XapEnabledSubsystemCapabilities;
+    impl XapRequest for XapEnabledSubsystemCapabilitiesRequest {
+        type Response = XapEnabledSubsystemCapabilitiesFlags;
 
         fn id() -> &'static [u8] {
-            &[00, 02]
+            &[0x00, 0x02]
         }
 
         fn xap_version() -> u32 {
@@ -125,10 +131,10 @@ pub mod xap {
     #[derive(
         BinRead, PartialEq, Eq, PartialOrd, Ord, Hash, Debug, Clone, Copy, Serialize, Type,
     )]
-    pub struct XapEnabledSubsystemCapabilities(u32);
+    pub struct XapEnabledSubsystemCapabilitiesFlags(u32);
 
     bitflags! {
-                    impl XapEnabledSubsystemCapabilities: u32 {
+                    impl XapEnabledSubsystemCapabilitiesFlags: u32 {
 
     const Xap = 1 << 0;
     const Qmk = 1 << 1;
@@ -146,11 +152,12 @@ pub mod xap {
     #[specta::specta]
     pub fn xap_enabled_subsystem_capabilities(
         id: Uuid,
-        state: State<'_, Arc<Mutex<XAPClient>>>,
-    ) -> ClientResult<XapEnabledSubsystemCapabilities> {
+        state: State<'_, Arc<Mutex<XapClient>>>,
+    ) -> FrontendResult<XapEnabledSubsystemCapabilitiesFlags> {
         state
             .lock()
             .query(id, XapEnabledSubsystemCapabilitiesRequest(()))
+            .map_err(Into::into)
     }
 
     /// ======================================================================
@@ -166,11 +173,11 @@ pub mod xap {
     #[derive(BinWrite, Default, Debug, Clone, Serialize, Type)]
     pub struct XapSecureStatusRequest(pub ());
 
-    impl XAPRequest for XapSecureStatusRequest {
+    impl XapRequest for XapSecureStatusRequest {
         type Response = XapSecureStatusResponse;
 
         fn id() -> &'static [u8] {
-            &[00, 03]
+            &[0x00, 0x03]
         }
 
         fn xap_version() -> u32 {
@@ -186,9 +193,12 @@ pub mod xap {
     #[specta::specta]
     pub fn xap_secure_status(
         id: Uuid,
-        state: State<'_, Arc<Mutex<XAPClient>>>,
-    ) -> ClientResult<XapSecureStatusResponse> {
-        state.lock().query(id, XapSecureStatusRequest(()))
+        state: State<'_, Arc<Mutex<XapClient>>>,
+    ) -> FrontendResult<XapSecureStatusResponse> {
+        state
+            .lock()
+            .query(id, XapSecureStatusRequest(()))
+            .map_err(Into::into)
     }
 
     /// ======================================================================
@@ -199,11 +209,11 @@ pub mod xap {
     #[derive(BinWrite, Default, Debug, Clone, Serialize, Type)]
     pub struct XapSecureUnlockRequest(pub ());
 
-    impl XAPRequest for XapSecureUnlockRequest {
+    impl XapRequest for XapSecureUnlockRequest {
         type Response = ();
 
         fn id() -> &'static [u8] {
-            &[00, 04]
+            &[0x00, 0x04]
         }
 
         fn xap_version() -> u32 {
@@ -216,9 +226,12 @@ pub mod xap {
     #[specta::specta]
     pub fn xap_secure_unlock(
         id: Uuid,
-        state: State<'_, Arc<Mutex<XAPClient>>>,
-    ) -> ClientResult<()> {
-        state.lock().query(id, XapSecureUnlockRequest(()))
+        state: State<'_, Arc<Mutex<XapClient>>>,
+    ) -> FrontendResult<()> {
+        state
+            .lock()
+            .query(id, XapSecureUnlockRequest(()))
+            .map_err(Into::into)
     }
 
     /// ======================================================================
@@ -229,11 +242,11 @@ pub mod xap {
     #[derive(BinWrite, Default, Debug, Clone, Serialize, Type)]
     pub struct XapSecureLockRequest(pub ());
 
-    impl XAPRequest for XapSecureLockRequest {
+    impl XapRequest for XapSecureLockRequest {
         type Response = ();
 
         fn id() -> &'static [u8] {
-            &[00, 05]
+            &[0x00, 0x05]
         }
 
         fn xap_version() -> u32 {
@@ -244,8 +257,14 @@ pub mod xap {
     #[cfg(feature = "tauri-codegen")]
     #[tauri::command]
     #[specta::specta]
-    pub fn xap_secure_lock(id: Uuid, state: State<'_, Arc<Mutex<XAPClient>>>) -> ClientResult<()> {
-        state.lock().query(id, XapSecureLockRequest(()))
+    pub fn xap_secure_lock(
+        id: Uuid,
+        state: State<'_, Arc<Mutex<XapClient>>>,
+    ) -> FrontendResult<()> {
+        state
+            .lock()
+            .query(id, XapSecureLockRequest(()))
+            .map_err(Into::into)
     }
 }
 
@@ -263,10 +282,10 @@ pub mod qmk {
     use tauri::State;
     use uuid::Uuid;
 
-    use crate::xap::hid::XAPClient;
-    use crate::xap::ClientResult;
+    use crate::xap::hid::XapClient;
+    use crate::xap::FrontendResult;
     use crate::xap_spec::types::*;
-    use xap_specs::request::XAPRequest;
+    use xap_specs::request::XapRequest;
     use xap_specs::response::UTF8String;
 
     /// ======================================================================
@@ -280,11 +299,11 @@ pub mod qmk {
     #[derive(BinWrite, Default, Debug, Clone, Serialize, Type)]
     pub struct QmkVersionRequest(pub ());
 
-    impl XAPRequest for QmkVersionRequest {
+    impl XapRequest for QmkVersionRequest {
         type Response = QmkVersionResponse;
 
         fn id() -> &'static [u8] {
-            &[01, 00]
+            &[0x01, 0x00]
         }
 
         fn xap_version() -> u32 {
@@ -300,9 +319,12 @@ pub mod qmk {
     #[specta::specta]
     pub fn qmk_version(
         id: Uuid,
-        state: State<'_, Arc<Mutex<XAPClient>>>,
-    ) -> ClientResult<QmkVersionResponse> {
-        state.lock().query(id, QmkVersionRequest(()))
+        state: State<'_, Arc<Mutex<XapClient>>>,
+    ) -> FrontendResult<QmkVersionResponse> {
+        state
+            .lock()
+            .query(id, QmkVersionRequest(()))
+            .map_err(Into::into)
     }
 
     /// ======================================================================
@@ -313,11 +335,11 @@ pub mod qmk {
     #[derive(BinWrite, Default, Debug, Clone, Serialize, Type)]
     pub struct QmkCapabilitiesRequest(pub ());
 
-    impl XAPRequest for QmkCapabilitiesRequest {
-        type Response = QmkCapabilities;
+    impl XapRequest for QmkCapabilitiesRequest {
+        type Response = QmkCapabilitiesFlags;
 
         fn id() -> &'static [u8] {
-            &[01, 01]
+            &[0x01, 0x01]
         }
 
         fn xap_version() -> u32 {
@@ -328,10 +350,10 @@ pub mod qmk {
     #[derive(
         BinRead, PartialEq, Eq, PartialOrd, Ord, Hash, Debug, Clone, Copy, Serialize, Type,
     )]
-    pub struct QmkCapabilities(u32);
+    pub struct QmkCapabilitiesFlags(u32);
 
     bitflags! {
-                    impl QmkCapabilities: u32 {
+                    impl QmkCapabilitiesFlags: u32 {
 
     const Version = 1 << 0;
     const Capabilities = 1 << 1;
@@ -351,9 +373,12 @@ pub mod qmk {
     #[specta::specta]
     pub fn qmk_capabilities(
         id: Uuid,
-        state: State<'_, Arc<Mutex<XAPClient>>>,
-    ) -> ClientResult<QmkCapabilities> {
-        state.lock().query(id, QmkCapabilitiesRequest(()))
+        state: State<'_, Arc<Mutex<XapClient>>>,
+    ) -> FrontendResult<QmkCapabilitiesFlags> {
+        state
+            .lock()
+            .query(id, QmkCapabilitiesRequest(()))
+            .map_err(Into::into)
     }
 
     /// ======================================================================
@@ -364,11 +389,11 @@ pub mod qmk {
     #[derive(BinWrite, Default, Debug, Clone, Serialize, Type)]
     pub struct QmkBoardIdentifiersRequest(pub ());
 
-    impl XAPRequest for QmkBoardIdentifiersRequest {
+    impl XapRequest for QmkBoardIdentifiersRequest {
         type Response = QmkBoardIdentifiersResponse;
 
         fn id() -> &'static [u8] {
-            &[01, 02]
+            &[0x01, 0x02]
         }
 
         fn xap_version() -> u32 {
@@ -389,9 +414,12 @@ pub mod qmk {
     #[specta::specta]
     pub fn qmk_board_identifiers(
         id: Uuid,
-        state: State<'_, Arc<Mutex<XAPClient>>>,
-    ) -> ClientResult<QmkBoardIdentifiersResponse> {
-        state.lock().query(id, QmkBoardIdentifiersRequest(()))
+        state: State<'_, Arc<Mutex<XapClient>>>,
+    ) -> FrontendResult<QmkBoardIdentifiersResponse> {
+        state
+            .lock()
+            .query(id, QmkBoardIdentifiersRequest(()))
+            .map_err(Into::into)
     }
 
     /// ======================================================================
@@ -402,11 +430,11 @@ pub mod qmk {
     #[derive(BinWrite, Default, Debug, Clone, Serialize, Type)]
     pub struct QmkBoardManufacturerRequest(pub ());
 
-    impl XAPRequest for QmkBoardManufacturerRequest {
+    impl XapRequest for QmkBoardManufacturerRequest {
         type Response = QmkBoardManufacturerResponse;
 
         fn id() -> &'static [u8] {
-            &[01, 03]
+            &[0x01, 0x03]
         }
 
         fn xap_version() -> u32 {
@@ -422,9 +450,12 @@ pub mod qmk {
     #[specta::specta]
     pub fn qmk_board_manufacturer(
         id: Uuid,
-        state: State<'_, Arc<Mutex<XAPClient>>>,
-    ) -> ClientResult<QmkBoardManufacturerResponse> {
-        state.lock().query(id, QmkBoardManufacturerRequest(()))
+        state: State<'_, Arc<Mutex<XapClient>>>,
+    ) -> FrontendResult<QmkBoardManufacturerResponse> {
+        state
+            .lock()
+            .query(id, QmkBoardManufacturerRequest(()))
+            .map_err(Into::into)
     }
 
     /// ======================================================================
@@ -435,11 +466,11 @@ pub mod qmk {
     #[derive(BinWrite, Default, Debug, Clone, Serialize, Type)]
     pub struct QmkProductNameRequest(pub ());
 
-    impl XAPRequest for QmkProductNameRequest {
+    impl XapRequest for QmkProductNameRequest {
         type Response = QmkProductNameResponse;
 
         fn id() -> &'static [u8] {
-            &[01, 04]
+            &[0x01, 0x04]
         }
 
         fn xap_version() -> u32 {
@@ -455,9 +486,12 @@ pub mod qmk {
     #[specta::specta]
     pub fn qmk_product_name(
         id: Uuid,
-        state: State<'_, Arc<Mutex<XAPClient>>>,
-    ) -> ClientResult<QmkProductNameResponse> {
-        state.lock().query(id, QmkProductNameRequest(()))
+        state: State<'_, Arc<Mutex<XapClient>>>,
+    ) -> FrontendResult<QmkProductNameResponse> {
+        state
+            .lock()
+            .query(id, QmkProductNameRequest(()))
+            .map_err(Into::into)
     }
 
     /// ======================================================================
@@ -468,11 +502,11 @@ pub mod qmk {
     #[derive(BinWrite, Default, Debug, Clone, Serialize, Type)]
     pub struct QmkConfigBlobLengthRequest(pub ());
 
-    impl XAPRequest for QmkConfigBlobLengthRequest {
+    impl XapRequest for QmkConfigBlobLengthRequest {
         type Response = QmkConfigBlobLengthResponse;
 
         fn id() -> &'static [u8] {
-            &[01, 05]
+            &[0x01, 0x05]
         }
 
         fn xap_version() -> u32 {
@@ -488,9 +522,12 @@ pub mod qmk {
     #[specta::specta]
     pub fn qmk_config_blob_length(
         id: Uuid,
-        state: State<'_, Arc<Mutex<XAPClient>>>,
-    ) -> ClientResult<QmkConfigBlobLengthResponse> {
-        state.lock().query(id, QmkConfigBlobLengthRequest(()))
+        state: State<'_, Arc<Mutex<XapClient>>>,
+    ) -> FrontendResult<QmkConfigBlobLengthResponse> {
+        state
+            .lock()
+            .query(id, QmkConfigBlobLengthRequest(()))
+            .map_err(Into::into)
     }
 
     /// ======================================================================
@@ -501,11 +538,11 @@ pub mod qmk {
     #[derive(BinWrite, Default, Debug, Clone, Serialize, Type)]
     pub struct QmkConfigBlobChunkRequest(pub u16);
 
-    impl XAPRequest for QmkConfigBlobChunkRequest {
+    impl XapRequest for QmkConfigBlobChunkRequest {
         type Response = QmkConfigBlobChunkResponse;
 
         fn id() -> &'static [u8] {
-            &[01, 06]
+            &[0x01, 0x06]
         }
 
         fn xap_version() -> u32 {
@@ -522,9 +559,12 @@ pub mod qmk {
     pub fn qmk_config_blob_chunk(
         id: Uuid,
         arg: u16,
-        state: State<'_, Arc<Mutex<XAPClient>>>,
-    ) -> ClientResult<QmkConfigBlobChunkResponse> {
-        state.lock().query(id, QmkConfigBlobChunkRequest(arg))
+        state: State<'_, Arc<Mutex<XapClient>>>,
+    ) -> FrontendResult<QmkConfigBlobChunkResponse> {
+        state
+            .lock()
+            .query(id, QmkConfigBlobChunkRequest(arg))
+            .map_err(Into::into)
     }
 
     /// ======================================================================
@@ -540,11 +580,11 @@ pub mod qmk {
     #[derive(BinWrite, Default, Debug, Clone, Serialize, Type)]
     pub struct QmkJumpToBootloaderRequest(pub ());
 
-    impl XAPRequest for QmkJumpToBootloaderRequest {
+    impl XapRequest for QmkJumpToBootloaderRequest {
         type Response = QmkJumpToBootloaderResponse;
 
         fn id() -> &'static [u8] {
-            &[01, 07]
+            &[0x01, 0x07]
         }
 
         fn xap_version() -> u32 {
@@ -560,9 +600,12 @@ pub mod qmk {
     #[specta::specta]
     pub fn qmk_jump_to_bootloader(
         id: Uuid,
-        state: State<'_, Arc<Mutex<XAPClient>>>,
-    ) -> ClientResult<QmkJumpToBootloaderResponse> {
-        state.lock().query(id, QmkJumpToBootloaderRequest(()))
+        state: State<'_, Arc<Mutex<XapClient>>>,
+    ) -> FrontendResult<QmkJumpToBootloaderResponse> {
+        state
+            .lock()
+            .query(id, QmkJumpToBootloaderRequest(()))
+            .map_err(Into::into)
     }
 
     /// ======================================================================
@@ -573,11 +616,11 @@ pub mod qmk {
     #[derive(BinWrite, Default, Debug, Clone, Serialize, Type)]
     pub struct QmkHardwareIdentifierRequest(pub ());
 
-    impl XAPRequest for QmkHardwareIdentifierRequest {
+    impl XapRequest for QmkHardwareIdentifierRequest {
         type Response = QmkHardwareIdentifierResponse;
 
         fn id() -> &'static [u8] {
-            &[01, 08]
+            &[0x01, 0x08]
         }
 
         fn xap_version() -> u32 {
@@ -593,9 +636,12 @@ pub mod qmk {
     #[specta::specta]
     pub fn qmk_hardware_identifier(
         id: Uuid,
-        state: State<'_, Arc<Mutex<XAPClient>>>,
-    ) -> ClientResult<QmkHardwareIdentifierResponse> {
-        state.lock().query(id, QmkHardwareIdentifierRequest(()))
+        state: State<'_, Arc<Mutex<XapClient>>>,
+    ) -> FrontendResult<QmkHardwareIdentifierResponse> {
+        state
+            .lock()
+            .query(id, QmkHardwareIdentifierRequest(()))
+            .map_err(Into::into)
     }
 
     /// ======================================================================
@@ -611,11 +657,11 @@ pub mod qmk {
     #[derive(BinWrite, Default, Debug, Clone, Serialize, Type)]
     pub struct QmkReinitializeEepromRequest(pub ());
 
-    impl XAPRequest for QmkReinitializeEepromRequest {
+    impl XapRequest for QmkReinitializeEepromRequest {
         type Response = QmkReinitializeEepromResponse;
 
         fn id() -> &'static [u8] {
-            &[01, 09]
+            &[0x01, 0x09]
         }
 
         fn xap_version() -> u32 {
@@ -631,9 +677,12 @@ pub mod qmk {
     #[specta::specta]
     pub fn qmk_reinitialize_eeprom(
         id: Uuid,
-        state: State<'_, Arc<Mutex<XAPClient>>>,
-    ) -> ClientResult<QmkReinitializeEepromResponse> {
-        state.lock().query(id, QmkReinitializeEepromRequest(()))
+        state: State<'_, Arc<Mutex<XapClient>>>,
+    ) -> FrontendResult<QmkReinitializeEepromResponse> {
+        state
+            .lock()
+            .query(id, QmkReinitializeEepromRequest(()))
+            .map_err(Into::into)
     }
 }
 
@@ -651,10 +700,10 @@ pub mod keyboard {
     use tauri::State;
     use uuid::Uuid;
 
-    use crate::xap::hid::XAPClient;
-    use crate::xap::ClientResult;
+    use crate::xap::hid::XapClient;
+    use crate::xap::FrontendResult;
     use crate::xap_spec::types::*;
-    use xap_specs::request::XAPRequest;
+    use xap_specs::request::XapRequest;
     use xap_specs::response::UTF8String;
 }
 
@@ -672,10 +721,10 @@ pub mod user {
     use tauri::State;
     use uuid::Uuid;
 
-    use crate::xap::hid::XAPClient;
-    use crate::xap::ClientResult;
+    use crate::xap::hid::XapClient;
+    use crate::xap::FrontendResult;
     use crate::xap_spec::types::*;
-    use xap_specs::request::XAPRequest;
+    use xap_specs::request::XapRequest;
     use xap_specs::response::UTF8String;
 }
 
@@ -693,10 +742,10 @@ pub mod keymap {
     use tauri::State;
     use uuid::Uuid;
 
-    use crate::xap::hid::XAPClient;
-    use crate::xap::ClientResult;
+    use crate::xap::hid::XapClient;
+    use crate::xap::FrontendResult;
     use crate::xap_spec::types::*;
-    use xap_specs::request::XAPRequest;
+    use xap_specs::request::XapRequest;
     use xap_specs::response::UTF8String;
 
     /// ======================================================================
@@ -707,11 +756,11 @@ pub mod keymap {
     #[derive(BinWrite, Default, Debug, Clone, Serialize, Type)]
     pub struct KeymapCapabilitiesRequest(pub ());
 
-    impl XAPRequest for KeymapCapabilitiesRequest {
-        type Response = KeymapCapabilities;
+    impl XapRequest for KeymapCapabilitiesRequest {
+        type Response = KeymapCapabilitiesFlags;
 
         fn id() -> &'static [u8] {
-            &[04, 01]
+            &[0x04, 0x01]
         }
 
         fn xap_version() -> u32 {
@@ -722,10 +771,10 @@ pub mod keymap {
     #[derive(
         BinRead, PartialEq, Eq, PartialOrd, Ord, Hash, Debug, Clone, Copy, Serialize, Type,
     )]
-    pub struct KeymapCapabilities(u32);
+    pub struct KeymapCapabilitiesFlags(u32);
 
     bitflags! {
-                    impl KeymapCapabilities: u32 {
+                    impl KeymapCapabilitiesFlags: u32 {
 
     const Capabilities = 1 << 1;
     const GetLayerCount = 1 << 2;
@@ -739,9 +788,12 @@ pub mod keymap {
     #[specta::specta]
     pub fn keymap_capabilities(
         id: Uuid,
-        state: State<'_, Arc<Mutex<XAPClient>>>,
-    ) -> ClientResult<KeymapCapabilities> {
-        state.lock().query(id, KeymapCapabilitiesRequest(()))
+        state: State<'_, Arc<Mutex<XapClient>>>,
+    ) -> FrontendResult<KeymapCapabilitiesFlags> {
+        state
+            .lock()
+            .query(id, KeymapCapabilitiesRequest(()))
+            .map_err(Into::into)
     }
 
     /// ======================================================================
@@ -752,11 +804,11 @@ pub mod keymap {
     #[derive(BinWrite, Default, Debug, Clone, Serialize, Type)]
     pub struct KeymapGetLayerCountRequest(pub ());
 
-    impl XAPRequest for KeymapGetLayerCountRequest {
+    impl XapRequest for KeymapGetLayerCountRequest {
         type Response = KeymapGetLayerCountResponse;
 
         fn id() -> &'static [u8] {
-            &[04, 02]
+            &[0x04, 0x02]
         }
 
         fn xap_version() -> u32 {
@@ -772,9 +824,12 @@ pub mod keymap {
     #[specta::specta]
     pub fn keymap_get_layer_count(
         id: Uuid,
-        state: State<'_, Arc<Mutex<XAPClient>>>,
-    ) -> ClientResult<KeymapGetLayerCountResponse> {
-        state.lock().query(id, KeymapGetLayerCountRequest(()))
+        state: State<'_, Arc<Mutex<XapClient>>>,
+    ) -> FrontendResult<KeymapGetLayerCountResponse> {
+        state
+            .lock()
+            .query(id, KeymapGetLayerCountRequest(()))
+            .map_err(Into::into)
     }
 
     /// ======================================================================
@@ -792,11 +847,11 @@ pub mod keymap {
         pub column: u8,
     }
 
-    impl XAPRequest for KeymapGetKeycodeRequest {
+    impl XapRequest for KeymapGetKeycodeRequest {
         type Response = KeymapGetKeycodeResponse;
 
         fn id() -> &'static [u8] {
-            &[04, 03]
+            &[0x04, 0x03]
         }
 
         fn xap_version() -> u32 {
@@ -813,9 +868,12 @@ pub mod keymap {
     pub fn keymap_get_keycode(
         id: Uuid,
         arg: KeymapGetKeycodeArg,
-        state: State<'_, Arc<Mutex<XAPClient>>>,
-    ) -> ClientResult<KeymapGetKeycodeResponse> {
-        state.lock().query(id, KeymapGetKeycodeRequest(arg))
+        state: State<'_, Arc<Mutex<XapClient>>>,
+    ) -> FrontendResult<KeymapGetKeycodeResponse> {
+        state
+            .lock()
+            .query(id, KeymapGetKeycodeRequest(arg))
+            .map_err(Into::into)
     }
 
     /// ======================================================================
@@ -833,11 +891,11 @@ pub mod keymap {
         pub clockwise: u8,
     }
 
-    impl XAPRequest for KeymapGetEncoderKeycodeRequest {
+    impl XapRequest for KeymapGetEncoderKeycodeRequest {
         type Response = KeymapGetEncoderKeycodeResponse;
 
         fn id() -> &'static [u8] {
-            &[04, 04]
+            &[0x04, 0x04]
         }
 
         fn xap_version() -> u32 {
@@ -854,9 +912,12 @@ pub mod keymap {
     pub fn keymap_get_encoder_keycode(
         id: Uuid,
         arg: KeymapGetEncoderKeycodeArg,
-        state: State<'_, Arc<Mutex<XAPClient>>>,
-    ) -> ClientResult<KeymapGetEncoderKeycodeResponse> {
-        state.lock().query(id, KeymapGetEncoderKeycodeRequest(arg))
+        state: State<'_, Arc<Mutex<XapClient>>>,
+    ) -> FrontendResult<KeymapGetEncoderKeycodeResponse> {
+        state
+            .lock()
+            .query(id, KeymapGetEncoderKeycodeRequest(arg))
+            .map_err(Into::into)
     }
 }
 
@@ -874,10 +935,10 @@ pub mod remapping {
     use tauri::State;
     use uuid::Uuid;
 
-    use crate::xap::hid::XAPClient;
-    use crate::xap::ClientResult;
+    use crate::xap::hid::XapClient;
+    use crate::xap::FrontendResult;
     use crate::xap_spec::types::*;
-    use xap_specs::request::XAPRequest;
+    use xap_specs::request::XapRequest;
     use xap_specs::response::UTF8String;
 
     /// ======================================================================
@@ -888,11 +949,11 @@ pub mod remapping {
     #[derive(BinWrite, Default, Debug, Clone, Serialize, Type)]
     pub struct RemappingCapabilitiesRequest(pub ());
 
-    impl XAPRequest for RemappingCapabilitiesRequest {
-        type Response = RemappingCapabilities;
+    impl XapRequest for RemappingCapabilitiesRequest {
+        type Response = RemappingCapabilitiesFlags;
 
         fn id() -> &'static [u8] {
-            &[05, 01]
+            &[0x05, 0x01]
         }
 
         fn xap_version() -> u32 {
@@ -903,10 +964,10 @@ pub mod remapping {
     #[derive(
         BinRead, PartialEq, Eq, PartialOrd, Ord, Hash, Debug, Clone, Copy, Serialize, Type,
     )]
-    pub struct RemappingCapabilities(u32);
+    pub struct RemappingCapabilitiesFlags(u32);
 
     bitflags! {
-                    impl RemappingCapabilities: u32 {
+                    impl RemappingCapabilitiesFlags: u32 {
 
     const Capabilities = 1 << 1;
     const GetLayerCount = 1 << 2;
@@ -920,9 +981,12 @@ pub mod remapping {
     #[specta::specta]
     pub fn remapping_capabilities(
         id: Uuid,
-        state: State<'_, Arc<Mutex<XAPClient>>>,
-    ) -> ClientResult<RemappingCapabilities> {
-        state.lock().query(id, RemappingCapabilitiesRequest(()))
+        state: State<'_, Arc<Mutex<XapClient>>>,
+    ) -> FrontendResult<RemappingCapabilitiesFlags> {
+        state
+            .lock()
+            .query(id, RemappingCapabilitiesRequest(()))
+            .map_err(Into::into)
     }
 
     /// ======================================================================
@@ -933,11 +997,11 @@ pub mod remapping {
     #[derive(BinWrite, Default, Debug, Clone, Serialize, Type)]
     pub struct RemappingGetLayerCountRequest(pub ());
 
-    impl XAPRequest for RemappingGetLayerCountRequest {
+    impl XapRequest for RemappingGetLayerCountRequest {
         type Response = RemappingGetLayerCountResponse;
 
         fn id() -> &'static [u8] {
-            &[05, 02]
+            &[0x05, 0x02]
         }
 
         fn xap_version() -> u32 {
@@ -953,9 +1017,12 @@ pub mod remapping {
     #[specta::specta]
     pub fn remapping_get_layer_count(
         id: Uuid,
-        state: State<'_, Arc<Mutex<XAPClient>>>,
-    ) -> ClientResult<RemappingGetLayerCountResponse> {
-        state.lock().query(id, RemappingGetLayerCountRequest(()))
+        state: State<'_, Arc<Mutex<XapClient>>>,
+    ) -> FrontendResult<RemappingGetLayerCountResponse> {
+        state
+            .lock()
+            .query(id, RemappingGetLayerCountRequest(()))
+            .map_err(Into::into)
     }
 
     /// ======================================================================
@@ -974,11 +1041,11 @@ pub mod remapping {
         pub keycode: u16,
     }
 
-    impl XAPRequest for RemappingSetKeycodeRequest {
+    impl XapRequest for RemappingSetKeycodeRequest {
         type Response = ();
 
         fn id() -> &'static [u8] {
-            &[05, 03]
+            &[0x05, 0x03]
         }
 
         fn xap_version() -> u32 {
@@ -992,9 +1059,12 @@ pub mod remapping {
     pub fn remapping_set_keycode(
         id: Uuid,
         arg: RemappingSetKeycodeArg,
-        state: State<'_, Arc<Mutex<XAPClient>>>,
-    ) -> ClientResult<()> {
-        state.lock().query(id, RemappingSetKeycodeRequest(arg))
+        state: State<'_, Arc<Mutex<XapClient>>>,
+    ) -> FrontendResult<()> {
+        state
+            .lock()
+            .query(id, RemappingSetKeycodeRequest(arg))
+            .map_err(Into::into)
     }
 
     /// ======================================================================
@@ -1013,11 +1083,11 @@ pub mod remapping {
         pub keycode: u16,
     }
 
-    impl XAPRequest for RemappingSetEncoderKeycodeRequest {
+    impl XapRequest for RemappingSetEncoderKeycodeRequest {
         type Response = ();
 
         fn id() -> &'static [u8] {
-            &[05, 04]
+            &[0x05, 0x04]
         }
 
         fn xap_version() -> u32 {
@@ -1031,11 +1101,12 @@ pub mod remapping {
     pub fn remapping_set_encoder_keycode(
         id: Uuid,
         arg: RemappingSetEncoderKeycodeArg,
-        state: State<'_, Arc<Mutex<XAPClient>>>,
-    ) -> ClientResult<()> {
+        state: State<'_, Arc<Mutex<XapClient>>>,
+    ) -> FrontendResult<()> {
         state
             .lock()
             .query(id, RemappingSetEncoderKeycodeRequest(arg))
+            .map_err(Into::into)
     }
 }
 
@@ -1053,10 +1124,10 @@ pub mod lighting {
     use tauri::State;
     use uuid::Uuid;
 
-    use crate::xap::hid::XAPClient;
-    use crate::xap::ClientResult;
+    use crate::xap::hid::XapClient;
+    use crate::xap::FrontendResult;
     use crate::xap_spec::types::*;
-    use xap_specs::request::XAPRequest;
+    use xap_specs::request::XapRequest;
     use xap_specs::response::UTF8String;
 
     /// ======================================================================
@@ -1067,11 +1138,11 @@ pub mod lighting {
     #[derive(BinWrite, Default, Debug, Clone, Serialize, Type)]
     pub struct LightingCapabilitiesRequest(pub ());
 
-    impl XAPRequest for LightingCapabilitiesRequest {
-        type Response = LightingCapabilities;
+    impl XapRequest for LightingCapabilitiesRequest {
+        type Response = LightingCapabilitiesFlags;
 
         fn id() -> &'static [u8] {
-            &[06, 01]
+            &[0x06, 0x01]
         }
 
         fn xap_version() -> u32 {
@@ -1082,10 +1153,10 @@ pub mod lighting {
     #[derive(
         BinRead, PartialEq, Eq, PartialOrd, Ord, Hash, Debug, Clone, Copy, Serialize, Type,
     )]
-    pub struct LightingCapabilities(u32);
+    pub struct LightingCapabilitiesFlags(u32);
 
     bitflags! {
-                    impl LightingCapabilities: u32 {
+                    impl LightingCapabilitiesFlags: u32 {
 
     const Capabilities = 1 << 1;
     const Backlight = 1 << 2;
@@ -1099,9 +1170,12 @@ pub mod lighting {
     #[specta::specta]
     pub fn lighting_capabilities(
         id: Uuid,
-        state: State<'_, Arc<Mutex<XAPClient>>>,
-    ) -> ClientResult<LightingCapabilities> {
-        state.lock().query(id, LightingCapabilitiesRequest(()))
+        state: State<'_, Arc<Mutex<XapClient>>>,
+    ) -> FrontendResult<LightingCapabilitiesFlags> {
+        state
+            .lock()
+            .query(id, LightingCapabilitiesRequest(()))
+            .map_err(Into::into)
     }
 
     #[allow(dead_code)]
@@ -1118,10 +1192,10 @@ pub mod lighting {
         use tauri::State;
         use uuid::Uuid;
 
-        use crate::xap::hid::XAPClient;
-        use crate::xap::ClientResult;
+        use crate::xap::hid::XapClient;
+        use crate::xap::FrontendResult;
         use crate::xap_spec::types::*;
-        use xap_specs::request::XAPRequest;
+        use xap_specs::request::XapRequest;
         use xap_specs::response::UTF8String;
 
         /// ======================================================================
@@ -1132,11 +1206,11 @@ pub mod lighting {
         #[derive(BinWrite, Default, Debug, Clone, Serialize, Type)]
         pub struct BacklightCapabilitiesRequest(pub ());
 
-        impl XAPRequest for BacklightCapabilitiesRequest {
-            type Response = BacklightCapabilities;
+        impl XapRequest for BacklightCapabilitiesRequest {
+            type Response = BacklightCapabilitiesFlags;
 
             fn id() -> &'static [u8] {
-                &[06, 02, 01]
+                &[0x06, 0x02, 0x01]
             }
 
             fn xap_version() -> u32 {
@@ -1147,10 +1221,10 @@ pub mod lighting {
         #[derive(
             BinRead, PartialEq, Eq, PartialOrd, Ord, Hash, Debug, Clone, Copy, Serialize, Type,
         )]
-        pub struct BacklightCapabilities(u32);
+        pub struct BacklightCapabilitiesFlags(u32);
 
         bitflags! {
-                        impl BacklightCapabilities: u32 {
+                        impl BacklightCapabilitiesFlags: u32 {
 
         const Capabilities = 1 << 1;
         const GetEnabledEffects = 1 << 2;
@@ -1165,9 +1239,12 @@ pub mod lighting {
         #[specta::specta]
         pub fn backlight_capabilities(
             id: Uuid,
-            state: State<'_, Arc<Mutex<XAPClient>>>,
-        ) -> ClientResult<BacklightCapabilities> {
-            state.lock().query(id, BacklightCapabilitiesRequest(()))
+            state: State<'_, Arc<Mutex<XapClient>>>,
+        ) -> FrontendResult<BacklightCapabilitiesFlags> {
+            state
+                .lock()
+                .query(id, BacklightCapabilitiesRequest(()))
+                .map_err(Into::into)
         }
 
         /// ======================================================================
@@ -1178,11 +1255,11 @@ pub mod lighting {
         #[derive(BinWrite, Default, Debug, Clone, Serialize, Type)]
         pub struct BacklightGetEnabledEffectsRequest(pub ());
 
-        impl XAPRequest for BacklightGetEnabledEffectsRequest {
+        impl XapRequest for BacklightGetEnabledEffectsRequest {
             type Response = BacklightGetEnabledEffectsResponse;
 
             fn id() -> &'static [u8] {
-                &[06, 02, 02]
+                &[0x06, 0x02, 0x02]
             }
 
             fn xap_version() -> u32 {
@@ -1198,11 +1275,12 @@ pub mod lighting {
         #[specta::specta]
         pub fn backlight_get_enabled_effects(
             id: Uuid,
-            state: State<'_, Arc<Mutex<XAPClient>>>,
-        ) -> ClientResult<BacklightGetEnabledEffectsResponse> {
+            state: State<'_, Arc<Mutex<XapClient>>>,
+        ) -> FrontendResult<BacklightGetEnabledEffectsResponse> {
             state
                 .lock()
                 .query(id, BacklightGetEnabledEffectsRequest(()))
+                .map_err(Into::into)
         }
 
         /// ======================================================================
@@ -1213,11 +1291,11 @@ pub mod lighting {
         #[derive(BinWrite, Default, Debug, Clone, Serialize, Type)]
         pub struct BacklightGetConfigRequest(pub ());
 
-        impl XAPRequest for BacklightGetConfigRequest {
+        impl XapRequest for BacklightGetConfigRequest {
             type Response = BacklightConfig;
 
             fn id() -> &'static [u8] {
-                &[06, 02, 03]
+                &[0x06, 0x02, 0x03]
             }
 
             fn xap_version() -> u32 {
@@ -1230,9 +1308,12 @@ pub mod lighting {
         #[specta::specta]
         pub fn backlight_get_config(
             id: Uuid,
-            state: State<'_, Arc<Mutex<XAPClient>>>,
-        ) -> ClientResult<BacklightConfig> {
-            state.lock().query(id, BacklightGetConfigRequest(()))
+            state: State<'_, Arc<Mutex<XapClient>>>,
+        ) -> FrontendResult<BacklightConfig> {
+            state
+                .lock()
+                .query(id, BacklightGetConfigRequest(()))
+                .map_err(Into::into)
         }
 
         /// ======================================================================
@@ -1243,11 +1324,11 @@ pub mod lighting {
         #[derive(BinWrite, Default, Debug, Clone, Serialize, Type)]
         pub struct BacklightSetConfigRequest(pub BacklightConfig);
 
-        impl XAPRequest for BacklightSetConfigRequest {
+        impl XapRequest for BacklightSetConfigRequest {
             type Response = ();
 
             fn id() -> &'static [u8] {
-                &[06, 02, 04]
+                &[0x06, 0x02, 0x04]
             }
 
             fn xap_version() -> u32 {
@@ -1261,9 +1342,12 @@ pub mod lighting {
         pub fn backlight_set_config(
             id: Uuid,
             arg: BacklightConfig,
-            state: State<'_, Arc<Mutex<XAPClient>>>,
-        ) -> ClientResult<()> {
-            state.lock().query(id, BacklightSetConfigRequest(arg))
+            state: State<'_, Arc<Mutex<XapClient>>>,
+        ) -> FrontendResult<()> {
+            state
+                .lock()
+                .query(id, BacklightSetConfigRequest(arg))
+                .map_err(Into::into)
         }
 
         /// ======================================================================
@@ -1274,11 +1358,11 @@ pub mod lighting {
         #[derive(BinWrite, Default, Debug, Clone, Serialize, Type)]
         pub struct BacklightSaveConfigRequest(pub ());
 
-        impl XAPRequest for BacklightSaveConfigRequest {
+        impl XapRequest for BacklightSaveConfigRequest {
             type Response = ();
 
             fn id() -> &'static [u8] {
-                &[06, 02, 05]
+                &[0x06, 0x02, 0x05]
             }
 
             fn xap_version() -> u32 {
@@ -1291,9 +1375,12 @@ pub mod lighting {
         #[specta::specta]
         pub fn backlight_save_config(
             id: Uuid,
-            state: State<'_, Arc<Mutex<XAPClient>>>,
-        ) -> ClientResult<()> {
-            state.lock().query(id, BacklightSaveConfigRequest(()))
+            state: State<'_, Arc<Mutex<XapClient>>>,
+        ) -> FrontendResult<()> {
+            state
+                .lock()
+                .query(id, BacklightSaveConfigRequest(()))
+                .map_err(Into::into)
         }
     }
 
@@ -1311,10 +1398,10 @@ pub mod lighting {
         use tauri::State;
         use uuid::Uuid;
 
-        use crate::xap::hid::XAPClient;
-        use crate::xap::ClientResult;
+        use crate::xap::hid::XapClient;
+        use crate::xap::FrontendResult;
         use crate::xap_spec::types::*;
-        use xap_specs::request::XAPRequest;
+        use xap_specs::request::XapRequest;
         use xap_specs::response::UTF8String;
 
         /// ======================================================================
@@ -1325,11 +1412,11 @@ pub mod lighting {
         #[derive(BinWrite, Default, Debug, Clone, Serialize, Type)]
         pub struct RgblightCapabilitiesRequest(pub ());
 
-        impl XAPRequest for RgblightCapabilitiesRequest {
-            type Response = RgblightCapabilities;
+        impl XapRequest for RgblightCapabilitiesRequest {
+            type Response = RgblightCapabilitiesFlags;
 
             fn id() -> &'static [u8] {
-                &[06, 03, 01]
+                &[0x06, 0x03, 0x01]
             }
 
             fn xap_version() -> u32 {
@@ -1340,10 +1427,10 @@ pub mod lighting {
         #[derive(
             BinRead, PartialEq, Eq, PartialOrd, Ord, Hash, Debug, Clone, Copy, Serialize, Type,
         )]
-        pub struct RgblightCapabilities(u32);
+        pub struct RgblightCapabilitiesFlags(u32);
 
         bitflags! {
-                        impl RgblightCapabilities: u32 {
+                        impl RgblightCapabilitiesFlags: u32 {
 
         const Capabilities = 1 << 1;
         const GetEnabledEffects = 1 << 2;
@@ -1358,9 +1445,12 @@ pub mod lighting {
         #[specta::specta]
         pub fn rgblight_capabilities(
             id: Uuid,
-            state: State<'_, Arc<Mutex<XAPClient>>>,
-        ) -> ClientResult<RgblightCapabilities> {
-            state.lock().query(id, RgblightCapabilitiesRequest(()))
+            state: State<'_, Arc<Mutex<XapClient>>>,
+        ) -> FrontendResult<RgblightCapabilitiesFlags> {
+            state
+                .lock()
+                .query(id, RgblightCapabilitiesRequest(()))
+                .map_err(Into::into)
         }
 
         /// ======================================================================
@@ -1371,11 +1461,11 @@ pub mod lighting {
         #[derive(BinWrite, Default, Debug, Clone, Serialize, Type)]
         pub struct RgblightGetEnabledEffectsRequest(pub ());
 
-        impl XAPRequest for RgblightGetEnabledEffectsRequest {
+        impl XapRequest for RgblightGetEnabledEffectsRequest {
             type Response = RgblightGetEnabledEffectsResponse;
 
             fn id() -> &'static [u8] {
-                &[06, 03, 02]
+                &[0x06, 0x03, 0x02]
             }
 
             fn xap_version() -> u32 {
@@ -1391,9 +1481,12 @@ pub mod lighting {
         #[specta::specta]
         pub fn rgblight_get_enabled_effects(
             id: Uuid,
-            state: State<'_, Arc<Mutex<XAPClient>>>,
-        ) -> ClientResult<RgblightGetEnabledEffectsResponse> {
-            state.lock().query(id, RgblightGetEnabledEffectsRequest(()))
+            state: State<'_, Arc<Mutex<XapClient>>>,
+        ) -> FrontendResult<RgblightGetEnabledEffectsResponse> {
+            state
+                .lock()
+                .query(id, RgblightGetEnabledEffectsRequest(()))
+                .map_err(Into::into)
         }
 
         /// ======================================================================
@@ -1404,11 +1497,11 @@ pub mod lighting {
         #[derive(BinWrite, Default, Debug, Clone, Serialize, Type)]
         pub struct RgblightGetConfigRequest(pub ());
 
-        impl XAPRequest for RgblightGetConfigRequest {
+        impl XapRequest for RgblightGetConfigRequest {
             type Response = RgbLightConfig;
 
             fn id() -> &'static [u8] {
-                &[06, 03, 03]
+                &[0x06, 0x03, 0x03]
             }
 
             fn xap_version() -> u32 {
@@ -1421,9 +1514,12 @@ pub mod lighting {
         #[specta::specta]
         pub fn rgblight_get_config(
             id: Uuid,
-            state: State<'_, Arc<Mutex<XAPClient>>>,
-        ) -> ClientResult<RgbLightConfig> {
-            state.lock().query(id, RgblightGetConfigRequest(()))
+            state: State<'_, Arc<Mutex<XapClient>>>,
+        ) -> FrontendResult<RgbLightConfig> {
+            state
+                .lock()
+                .query(id, RgblightGetConfigRequest(()))
+                .map_err(Into::into)
         }
 
         /// ======================================================================
@@ -1434,11 +1530,11 @@ pub mod lighting {
         #[derive(BinWrite, Default, Debug, Clone, Serialize, Type)]
         pub struct RgblightSetConfigRequest(pub RgbLightConfig);
 
-        impl XAPRequest for RgblightSetConfigRequest {
+        impl XapRequest for RgblightSetConfigRequest {
             type Response = ();
 
             fn id() -> &'static [u8] {
-                &[06, 03, 04]
+                &[0x06, 0x03, 0x04]
             }
 
             fn xap_version() -> u32 {
@@ -1452,9 +1548,12 @@ pub mod lighting {
         pub fn rgblight_set_config(
             id: Uuid,
             arg: RgbLightConfig,
-            state: State<'_, Arc<Mutex<XAPClient>>>,
-        ) -> ClientResult<()> {
-            state.lock().query(id, RgblightSetConfigRequest(arg))
+            state: State<'_, Arc<Mutex<XapClient>>>,
+        ) -> FrontendResult<()> {
+            state
+                .lock()
+                .query(id, RgblightSetConfigRequest(arg))
+                .map_err(Into::into)
         }
 
         /// ======================================================================
@@ -1465,11 +1564,11 @@ pub mod lighting {
         #[derive(BinWrite, Default, Debug, Clone, Serialize, Type)]
         pub struct RgblightSaveConfigRequest(pub ());
 
-        impl XAPRequest for RgblightSaveConfigRequest {
+        impl XapRequest for RgblightSaveConfigRequest {
             type Response = ();
 
             fn id() -> &'static [u8] {
-                &[06, 03, 05]
+                &[0x06, 0x03, 0x05]
             }
 
             fn xap_version() -> u32 {
@@ -1482,9 +1581,12 @@ pub mod lighting {
         #[specta::specta]
         pub fn rgblight_save_config(
             id: Uuid,
-            state: State<'_, Arc<Mutex<XAPClient>>>,
-        ) -> ClientResult<()> {
-            state.lock().query(id, RgblightSaveConfigRequest(()))
+            state: State<'_, Arc<Mutex<XapClient>>>,
+        ) -> FrontendResult<()> {
+            state
+                .lock()
+                .query(id, RgblightSaveConfigRequest(()))
+                .map_err(Into::into)
         }
     }
 
@@ -1502,10 +1604,10 @@ pub mod lighting {
         use tauri::State;
         use uuid::Uuid;
 
-        use crate::xap::hid::XAPClient;
-        use crate::xap::ClientResult;
+        use crate::xap::hid::XapClient;
+        use crate::xap::FrontendResult;
         use crate::xap_spec::types::*;
-        use xap_specs::request::XAPRequest;
+        use xap_specs::request::XapRequest;
         use xap_specs::response::UTF8String;
 
         /// ======================================================================
@@ -1516,11 +1618,11 @@ pub mod lighting {
         #[derive(BinWrite, Default, Debug, Clone, Serialize, Type)]
         pub struct RgbmatrixCapabilitiesRequest(pub ());
 
-        impl XAPRequest for RgbmatrixCapabilitiesRequest {
-            type Response = RgbmatrixCapabilities;
+        impl XapRequest for RgbmatrixCapabilitiesRequest {
+            type Response = RgbmatrixCapabilitiesFlags;
 
             fn id() -> &'static [u8] {
-                &[06, 04, 01]
+                &[0x06, 0x04, 0x01]
             }
 
             fn xap_version() -> u32 {
@@ -1531,10 +1633,10 @@ pub mod lighting {
         #[derive(
             BinRead, PartialEq, Eq, PartialOrd, Ord, Hash, Debug, Clone, Copy, Serialize, Type,
         )]
-        pub struct RgbmatrixCapabilities(u32);
+        pub struct RgbmatrixCapabilitiesFlags(u32);
 
         bitflags! {
-                        impl RgbmatrixCapabilities: u32 {
+                        impl RgbmatrixCapabilitiesFlags: u32 {
 
         const Capabilities = 1 << 1;
         const GetEnabledEffects = 1 << 2;
@@ -1549,9 +1651,12 @@ pub mod lighting {
         #[specta::specta]
         pub fn rgbmatrix_capabilities(
             id: Uuid,
-            state: State<'_, Arc<Mutex<XAPClient>>>,
-        ) -> ClientResult<RgbmatrixCapabilities> {
-            state.lock().query(id, RgbmatrixCapabilitiesRequest(()))
+            state: State<'_, Arc<Mutex<XapClient>>>,
+        ) -> FrontendResult<RgbmatrixCapabilitiesFlags> {
+            state
+                .lock()
+                .query(id, RgbmatrixCapabilitiesRequest(()))
+                .map_err(Into::into)
         }
 
         /// ======================================================================
@@ -1562,11 +1667,11 @@ pub mod lighting {
         #[derive(BinWrite, Default, Debug, Clone, Serialize, Type)]
         pub struct RgbmatrixGetEnabledEffectsRequest(pub ());
 
-        impl XAPRequest for RgbmatrixGetEnabledEffectsRequest {
+        impl XapRequest for RgbmatrixGetEnabledEffectsRequest {
             type Response = RgbmatrixGetEnabledEffectsResponse;
 
             fn id() -> &'static [u8] {
-                &[06, 04, 02]
+                &[0x06, 0x04, 0x02]
             }
 
             fn xap_version() -> u32 {
@@ -1582,11 +1687,12 @@ pub mod lighting {
         #[specta::specta]
         pub fn rgbmatrix_get_enabled_effects(
             id: Uuid,
-            state: State<'_, Arc<Mutex<XAPClient>>>,
-        ) -> ClientResult<RgbmatrixGetEnabledEffectsResponse> {
+            state: State<'_, Arc<Mutex<XapClient>>>,
+        ) -> FrontendResult<RgbmatrixGetEnabledEffectsResponse> {
             state
                 .lock()
                 .query(id, RgbmatrixGetEnabledEffectsRequest(()))
+                .map_err(Into::into)
         }
 
         /// ======================================================================
@@ -1597,11 +1703,11 @@ pub mod lighting {
         #[derive(BinWrite, Default, Debug, Clone, Serialize, Type)]
         pub struct RgbmatrixGetConfigRequest(pub ());
 
-        impl XAPRequest for RgbmatrixGetConfigRequest {
+        impl XapRequest for RgbmatrixGetConfigRequest {
             type Response = RgbMatrixConfig;
 
             fn id() -> &'static [u8] {
-                &[06, 04, 03]
+                &[0x06, 0x04, 0x03]
             }
 
             fn xap_version() -> u32 {
@@ -1614,9 +1720,12 @@ pub mod lighting {
         #[specta::specta]
         pub fn rgbmatrix_get_config(
             id: Uuid,
-            state: State<'_, Arc<Mutex<XAPClient>>>,
-        ) -> ClientResult<RgbMatrixConfig> {
-            state.lock().query(id, RgbmatrixGetConfigRequest(()))
+            state: State<'_, Arc<Mutex<XapClient>>>,
+        ) -> FrontendResult<RgbMatrixConfig> {
+            state
+                .lock()
+                .query(id, RgbmatrixGetConfigRequest(()))
+                .map_err(Into::into)
         }
 
         /// ======================================================================
@@ -1627,11 +1736,11 @@ pub mod lighting {
         #[derive(BinWrite, Default, Debug, Clone, Serialize, Type)]
         pub struct RgbmatrixSetConfigRequest(pub RgbMatrixConfig);
 
-        impl XAPRequest for RgbmatrixSetConfigRequest {
+        impl XapRequest for RgbmatrixSetConfigRequest {
             type Response = ();
 
             fn id() -> &'static [u8] {
-                &[06, 04, 04]
+                &[0x06, 0x04, 0x04]
             }
 
             fn xap_version() -> u32 {
@@ -1645,9 +1754,12 @@ pub mod lighting {
         pub fn rgbmatrix_set_config(
             id: Uuid,
             arg: RgbMatrixConfig,
-            state: State<'_, Arc<Mutex<XAPClient>>>,
-        ) -> ClientResult<()> {
-            state.lock().query(id, RgbmatrixSetConfigRequest(arg))
+            state: State<'_, Arc<Mutex<XapClient>>>,
+        ) -> FrontendResult<()> {
+            state
+                .lock()
+                .query(id, RgbmatrixSetConfigRequest(arg))
+                .map_err(Into::into)
         }
 
         /// ======================================================================
@@ -1658,11 +1770,11 @@ pub mod lighting {
         #[derive(BinWrite, Default, Debug, Clone, Serialize, Type)]
         pub struct RgbmatrixSaveConfigRequest(pub ());
 
-        impl XAPRequest for RgbmatrixSaveConfigRequest {
+        impl XapRequest for RgbmatrixSaveConfigRequest {
             type Response = ();
 
             fn id() -> &'static [u8] {
-                &[06, 04, 05]
+                &[0x06, 0x04, 0x05]
             }
 
             fn xap_version() -> u32 {
@@ -1675,9 +1787,12 @@ pub mod lighting {
         #[specta::specta]
         pub fn rgbmatrix_save_config(
             id: Uuid,
-            state: State<'_, Arc<Mutex<XAPClient>>>,
-        ) -> ClientResult<()> {
-            state.lock().query(id, RgbmatrixSaveConfigRequest(()))
+            state: State<'_, Arc<Mutex<XapClient>>>,
+        ) -> FrontendResult<()> {
+            state
+                .lock()
+                .query(id, RgbmatrixSaveConfigRequest(()))
+                .map_err(Into::into)
         }
     }
 }
@@ -1696,10 +1811,10 @@ pub mod audio {
     use tauri::State;
     use uuid::Uuid;
 
-    use crate::xap::hid::XAPClient;
-    use crate::xap::ClientResult;
+    use crate::xap::hid::XapClient;
+    use crate::xap::FrontendResult;
     use crate::xap_spec::types::*;
-    use xap_specs::request::XAPRequest;
+    use xap_specs::request::XapRequest;
     use xap_specs::response::UTF8String;
 
     /// ======================================================================
@@ -1710,11 +1825,11 @@ pub mod audio {
     #[derive(BinWrite, Default, Debug, Clone, Serialize, Type)]
     pub struct AudioCapabilitiesRequest(pub ());
 
-    impl XAPRequest for AudioCapabilitiesRequest {
-        type Response = AudioCapabilities;
+    impl XapRequest for AudioCapabilitiesRequest {
+        type Response = AudioCapabilitiesFlags;
 
         fn id() -> &'static [u8] {
-            &[07, 01]
+            &[0x07, 0x01]
         }
 
         fn xap_version() -> u32 {
@@ -1725,10 +1840,10 @@ pub mod audio {
     #[derive(
         BinRead, PartialEq, Eq, PartialOrd, Ord, Hash, Debug, Clone, Copy, Serialize, Type,
     )]
-    pub struct AudioCapabilities(u32);
+    pub struct AudioCapabilitiesFlags(u32);
 
     bitflags! {
-                    impl AudioCapabilities: u32 {
+                    impl AudioCapabilitiesFlags: u32 {
 
     const Capabilities = 1 << 1;
     const GetConfig = 1 << 3;
@@ -1742,9 +1857,12 @@ pub mod audio {
     #[specta::specta]
     pub fn audio_capabilities(
         id: Uuid,
-        state: State<'_, Arc<Mutex<XAPClient>>>,
-    ) -> ClientResult<AudioCapabilities> {
-        state.lock().query(id, AudioCapabilitiesRequest(()))
+        state: State<'_, Arc<Mutex<XapClient>>>,
+    ) -> FrontendResult<AudioCapabilitiesFlags> {
+        state
+            .lock()
+            .query(id, AudioCapabilitiesRequest(()))
+            .map_err(Into::into)
     }
 
     /// ======================================================================
@@ -1755,11 +1873,11 @@ pub mod audio {
     #[derive(BinWrite, Default, Debug, Clone, Serialize, Type)]
     pub struct AudioGetConfigRequest(pub ());
 
-    impl XAPRequest for AudioGetConfigRequest {
+    impl XapRequest for AudioGetConfigRequest {
         type Response = AudioConfig;
 
         fn id() -> &'static [u8] {
-            &[07, 03]
+            &[0x07, 0x03]
         }
 
         fn xap_version() -> u32 {
@@ -1772,9 +1890,12 @@ pub mod audio {
     #[specta::specta]
     pub fn audio_get_config(
         id: Uuid,
-        state: State<'_, Arc<Mutex<XAPClient>>>,
-    ) -> ClientResult<AudioConfig> {
-        state.lock().query(id, AudioGetConfigRequest(()))
+        state: State<'_, Arc<Mutex<XapClient>>>,
+    ) -> FrontendResult<AudioConfig> {
+        state
+            .lock()
+            .query(id, AudioGetConfigRequest(()))
+            .map_err(Into::into)
     }
 
     /// ======================================================================
@@ -1785,11 +1906,11 @@ pub mod audio {
     #[derive(BinWrite, Default, Debug, Clone, Serialize, Type)]
     pub struct AudioSetConfigRequest(pub AudioConfig);
 
-    impl XAPRequest for AudioSetConfigRequest {
+    impl XapRequest for AudioSetConfigRequest {
         type Response = ();
 
         fn id() -> &'static [u8] {
-            &[07, 04]
+            &[0x07, 0x04]
         }
 
         fn xap_version() -> u32 {
@@ -1803,9 +1924,12 @@ pub mod audio {
     pub fn audio_set_config(
         id: Uuid,
         arg: AudioConfig,
-        state: State<'_, Arc<Mutex<XAPClient>>>,
-    ) -> ClientResult<()> {
-        state.lock().query(id, AudioSetConfigRequest(arg))
+        state: State<'_, Arc<Mutex<XapClient>>>,
+    ) -> FrontendResult<()> {
+        state
+            .lock()
+            .query(id, AudioSetConfigRequest(arg))
+            .map_err(Into::into)
     }
 
     /// ======================================================================
@@ -1816,11 +1940,11 @@ pub mod audio {
     #[derive(BinWrite, Default, Debug, Clone, Serialize, Type)]
     pub struct AudioSaveConfigRequest(pub ());
 
-    impl XAPRequest for AudioSaveConfigRequest {
+    impl XapRequest for AudioSaveConfigRequest {
         type Response = ();
 
         fn id() -> &'static [u8] {
-            &[07, 05]
+            &[0x07, 0x05]
         }
 
         fn xap_version() -> u32 {
@@ -1833,9 +1957,12 @@ pub mod audio {
     #[specta::specta]
     pub fn audio_save_config(
         id: Uuid,
-        state: State<'_, Arc<Mutex<XAPClient>>>,
-    ) -> ClientResult<()> {
-        state.lock().query(id, AudioSaveConfigRequest(()))
+        state: State<'_, Arc<Mutex<XapClient>>>,
+    ) -> FrontendResult<()> {
+        state
+            .lock()
+            .query(id, AudioSaveConfigRequest(()))
+            .map_err(Into::into)
     }
 }
 
@@ -1844,19 +1971,15 @@ pub mod types {
     use serde::{Deserialize, Serialize};
     use specta::Type;
 
-    /// Config for lighting subsystem
+    /// RGB config for RGB lighting subsystem
     #[derive(BinRead, BinWrite, Default, Debug, Clone, Serialize, Deserialize, Type)]
-    pub struct BacklightConfig {
+    pub struct RgbLightConfig {
         pub enable: u8,
         pub mode: u8,
+        pub hue: u8,
+        pub sat: u8,
         pub val: u8,
-    }
-
-    /// Packet format for broadcast messages.
-    #[derive(BinRead, BinWrite, Default, Debug, Clone, Serialize, Deserialize, Type)]
-    pub struct BroadcastHeader {
-        pub r#type: u8,
-        pub length: u8,
+        pub speed: u8,
     }
 
     /// RGB config for RGB matrix subsystem
@@ -1871,10 +1994,18 @@ pub mod types {
         pub flags: u8,
     }
 
-    /// Packet format for outbound data.
+    /// Packet format for inbound data.
     #[derive(BinRead, BinWrite, Default, Debug, Clone, Serialize, Deserialize, Type)]
-    pub struct ResponseHeader {
+    pub struct RequestHeader {
         pub length: u8,
+    }
+
+    /// Config for lighting subsystem
+    #[derive(BinRead, BinWrite, Default, Debug, Clone, Serialize, Deserialize, Type)]
+    pub struct BacklightConfig {
+        pub enable: u8,
+        pub mode: u8,
+        pub val: u8,
     }
 
     /// Config for audio subsystem
@@ -1884,21 +2015,17 @@ pub mod types {
         pub clicky_enable: u8,
     }
 
-    /// Packet format for inbound data.
+    /// Packet format for outbound data.
     #[derive(BinRead, BinWrite, Default, Debug, Clone, Serialize, Deserialize, Type)]
-    pub struct RequestHeader {
+    pub struct ResponseHeader {
         pub length: u8,
     }
 
-    /// RGB config for RGB lighting subsystem
+    /// Packet format for broadcast messages.
     #[derive(BinRead, BinWrite, Default, Debug, Clone, Serialize, Deserialize, Type)]
-    pub struct RgbLightConfig {
-        pub enable: u8,
-        pub mode: u8,
-        pub hue: u8,
-        pub sat: u8,
-        pub val: u8,
-        pub speed: u8,
+    pub struct BroadcastHeader {
+        pub r#type: u8,
+        pub length: u8,
     }
 }
 

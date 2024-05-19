@@ -5,7 +5,7 @@ use specta::Type;
 use thiserror::Error;
 use uuid::Uuid;
 
-use xap_specs::error::XAPError;
+use xap_specs::error::XapError;
 
 // pub mod constant;
 pub mod hid;
@@ -25,7 +25,7 @@ pub enum ClientError {
     #[error("unknown error {0}")]
     Other(#[from] anyhow::Error),
     #[error("XAP protocol error {0}")]
-    ProtocolError(#[from] XAPError),
+    ProtocolError(#[from] XapError),
 }
 
 impl Serialize for ClientError {
@@ -37,9 +37,13 @@ impl Serialize for ClientError {
     }
 }
 
-impl Type for ClientError {
-    fn inline(_type_map: &mut specta::TypeMap, generics: &[specta::DataType]) -> specta::DataType {
-        // TODO: this is a hack, but it works for now
-        specta::DataType::Literal(specta::LiteralType::String("Todo".to_string()))
+pub type FrontendResult<T> = Result<T, FrontendError>;
+
+#[derive(Debug, Serialize, Type)]
+pub struct FrontendError(pub String);
+
+impl From<ClientError> for FrontendError {
+    fn from(err: ClientError) -> Self {
+        Self(err.to_string())
     }
 }
