@@ -1,28 +1,11 @@
 <script setup lang="ts">
     import { storeToRefs } from 'pinia'
-    import { computed } from 'vue'
-    import type { Ref } from 'vue'
-
     import { commands } from '@generated/xap'
     import { useXapDeviceStore } from '@/stores/devices'
-    import { XAPDevice } from '@generated/xap'
-    import { XAPSecureStatus } from '@generated/xap'
+    import { XapDevice } from '@generated/xap'
 
     const store = useXapDeviceStore()
     const { device, devices } = storeToRefs(store)
-    const devicesA: Ref<Array<XAPDevice>> = computed(() => Array.from(devices.value.values()))
-
-    async function lock() {
-        if (device.value) {
-            await commands.xapSecureLock(device.value.id)
-        }
-    }
-
-    async function unlock() {
-        if (device.value) {
-            await commands.xapSecureUnlock(device.value.id)
-        }
-    }
 </script>
 
 <template>
@@ -57,9 +40,10 @@
                     label="XAP device"
                     :disable="device == null"
                     filled
-                    :options="devicesA"
+                    :options="() => Array.from(devices.values())"
+                    :option-value="(device: XapDevice) => device.id"
                     :option-label="
-                        (device: XAPDevice) =>
+                        (device: XapDevice) =>
                             device?.info.qmk.manufacturer + ' - ' + device?.info.qmk.product_name
                     "
                     emit-value
@@ -71,22 +55,17 @@
         </q-page-container>
         <q-page-sticky position="bottom-right" :offset="[24, 24]">
             <q-btn
-                v-if="device?.secure_status != 'Unlocked'"
                 fab
-                icon="lock_open"
-                :loading="(device?.secure_status as XAPSecureStatus) == 'Unlocking'"
+                :loading="device?.secure_status == 'Unlocking'"
                 color="secondary"
                 text-color="white"
-                @click="unlock"
-            />
-            <q-btn
-                v-else
-                fab
-                :loading="(device?.secure_status as XAPSecureStatus) == 'Unlocking'"
-                color="secondary"
-                text-color="white"
-                icon="lock"
-                @click="lock"
+                :icon="device?.secure_status == 'Unlocked' ? 'lock' : 'lock_open'"
+                @click="
+                    async () =>
+                        device?.secure_status == 'Unlocked'
+                            ? commands.xapSecureLock(device!.id)
+                            : commands.xapSecureUnlock(device!.id)
+                "
             />
         </q-page-sticky>
     </q-layout>

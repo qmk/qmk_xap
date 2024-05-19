@@ -5,7 +5,7 @@
     import { storeToRefs } from 'pinia'
     import ColorPicker from '@radial-color-picker/vue-color-picker'
 
-    import { RgbLightConfig } from '@generated/xap'
+    import { LightingEffect, RgbLightConfig } from '@generated/xap'
     import { useXapDeviceStore } from '@/stores/devices'
     import { commands } from '@generated/xap'
     import { notifyError } from '@/utils/utils'
@@ -102,8 +102,8 @@
                     <q-select
                         v-model.number.lazy="RgbConfig.mode"
                         :options="device?.info?.lighting?.rgblight?.effects ?? []"
-                        :option-label="effect => effect.label"
-                        :option-value="effect => effect.code"
+                        :option-label="(effect: LightingEffect) => effect.label"
+                        :option-value="(effect: LightingEffect) => effect.code"
                         label="Mode"
                         emit-value
                         map-options
