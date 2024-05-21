@@ -20,12 +20,12 @@ use uuid::Uuid;
 
 use xap_specs::{
     broadcast::{BroadcastRaw, BroadcastType, LogBroadcast, SecureStatusBroadcast},
-    constants::{keycode::XapKeyCodeConfig, XapConstants},
+    constants::{keycode::XapKeyCode, XapConstants},
     error::{XapError, XapResult},
     request::{RawRequest, XapRequest},
     response::RawResponse,
     token::Token,
-    KeyPosition, KeyPositionConfig, XapSecureStatus,
+    XapSecureStatus,
 };
 
 use crate::{
@@ -72,11 +72,17 @@ use crate::{
 };
 
 #[derive(Clone, Debug, Default, Serialize, Type)]
-pub struct Keymap(Vec<Vec<Vec<XapKeyCodeConfig>>>);
+pub struct Keymap(Vec<Vec<Vec<KeymapKey>>>);
+
+#[derive(Debug, Default, Clone, Serialize, Type)]
+pub struct KeymapKey {
+    pub code: XapKeyCode,
+    pub position: KeymapGetKeycodeArg,
+}
 
 impl Keymap {
-    pub fn set_keycode(&mut self, code: XapKeyCodeConfig) {
-        let KeyPosition { layer, row, column } = code.position;
+    pub fn set_keycode(&mut self, code: KeymapKey) {
+        let KeymapGetKeycodeArg { layer, row, column } = code.position;
         self.0[layer as usize][row as usize][column as usize] = code;
     }
 }
@@ -177,21 +183,16 @@ impl XapDevice {
             && candidate.usage() == self.info.usage()
     }
 
-    pub fn set_keycode(&self, config: KeyPositionConfig) -> XapClientResult<()> {
-        let (layer, row, column, keycode) = (config.layer, config.row, config.col, config.keycode);
+    pub fn set_keycode(&self, config: RemappingSetKeycodeArg) -> XapClientResult<()> {
+        self.query(RemappingSetKeycodeRequest(config.clone()))?;
 
-        let arg = RemappingSetKeycodeArg {
-            layer,
-            row,
-            column,
-            keycode,
-        };
-
-        self.query(RemappingSetKeycodeRequest(arg))?;
-
-        self.state.write().keymap.set_keycode(XapKeyCodeConfig {
-            code: self.constants.get_keycode(keycode),
-            position: KeyPosition { layer, row, column },
+        self.state.write().keymap.set_keycode(KeymapKey {
+            code: self.constants.get_keycode(config.keycode),
+            position: KeymapGetKeycodeArg {
+                layer: config.layer,
+                row: config.row,
+                column: config.column,
+            },
         });
 
         Ok(())
@@ -199,7 +200,7 @@ impl XapDevice {
 
     pub fn query_keycode(
         &self,
-        position: KeyPosition,
+        position: KeymapGetKeycodeArg,
     ) -> XapClientResult<KeymapGetKeycodeResponse> {
         self.query(KeymapGetKeycodeRequest(KeymapGetKeycodeArg {
             layer: position.layer,
@@ -472,28 +473,21 @@ impl XapDevice {
 
         if let Some(keymap) = &self.xap_info().keymap {
             let layers = keymap.layer_count.unwrap_or_default();
-            let cols = keymap.matrix.cols;
+            let columns = keymap.matrix.cols;
             let rows = keymap.matrix.rows;
 
-            let keymap: Result<Vec<Vec<Vec<XapKeyCodeConfig>>>, XapClientError> = (0..layers)
+            let keymap: Result<Vec<Vec<Vec<KeymapKey>>>, XapClientError> = (0..layers)
                 .map(|layer| {
                     (0..rows)
                         .map(|row| {
-                            (0..cols)
-                                .map(|col| {
-                                    let keycode = self.query_keycode(KeyPosition {
-                                        layer,
-                                        row,
-                                        column: col,
-                                    })?;
+                            (0..columns)
+                                .map(|column| {
+                                    let position = KeymapGetKeycodeArg { layer, row, column };
+                                    let code = self.query_keycode(position.clone())?;
 
-                                    let xap = XapKeyCodeConfig {
-                                        code: self.constants.get_keycode(keycode.0),
-                                        position: KeyPosition {
-                                            layer,
-                                            row,
-                                            column: col,
-                                        },
+                                    let xap = KeymapKey {
+                                        code: self.constants.get_keycode(code.0),
+                                        position,
                                     };
 
                                     Ok(xap)

@@ -429,7 +429,10 @@ export const commands = {
     async xapConstantsGet(): Promise<XapConstants> {
         return await TAURI_INVOKE('xap_constants_get')
     },
-    async keycodeSet(id: string, arg: KeyPositionConfig): Promise<Result<null, FrontendError>> {
+    async keycodeSet(
+        id: string,
+        arg: RemappingSetKeycodeArg,
+    ): Promise<Result<null, FrontendError>> {
         try {
             return { status: 'ok', data: await TAURI_INVOKE('keycode_set', { id, arg }) }
         } catch (e) {
@@ -472,9 +475,7 @@ export type FrontendEvent =
     | { kind: 'RemovedDevice'; data: { id: string } }
     | { kind: 'SecureStatusChanged'; data: { id: string; secure_status: XapSecureStatus } }
     | { kind: 'LogReceived'; data: { id: string; log: string } }
-export type KeyPosition = { layer: number; row: number; column: number }
-export type KeyPositionConfig = { layer: number; row: number; col: number; keycode: number }
-export type Keymap = XapKeyCodeConfig[][][]
+export type Keymap = KeymapKey[][][]
 export type KeymapCapabilitiesFlags = number
 export type KeymapGetEncoderKeycodeArg = { layer: number; encoder: number; clockwise: number }
 export type KeymapGetEncoderKeycodeResponse = number
@@ -487,6 +488,7 @@ export type KeymapInfo = {
     get_keycode_enabled: boolean
     get_encoder_keycode_enabled: boolean
 }
+export type KeymapKey = { code: XapKeyCode; position: KeymapGetKeycodeArg }
 export type LightingCapabilities = {
     effects: LightingEffect[]
     get_config_enabled: boolean
@@ -636,7 +638,6 @@ export type XapKeyCode = {
     aliases?: string[]
 }
 export type XapKeyCodeCategory = { name: string; codes: XapKeyCode[] }
-export type XapKeyCodeConfig = { code: XapKeyCode; position: KeyPosition }
 export type XapSecureStatus = 'Locked' | 'Unlocking' | 'Unlocked'
 export type XapSecureStatusResponse = number
 export type XapVersionResponse = number

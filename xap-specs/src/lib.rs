@@ -1,8 +1,8 @@
 use std::fmt::Display;
 
-use binrw::{BinRead, BinReaderExt, BinResult, BinWrite, Endian};
+use binrw::{BinRead, BinReaderExt, BinResult, Endian};
 use error::XapError;
-use serde::{Deserialize, Serialize};
+use serde::Serialize;
 use specta::Type;
 
 pub mod broadcast;
@@ -11,45 +11,6 @@ pub mod error;
 pub mod request;
 pub mod response;
 pub mod token;
-
-#[derive(BinWrite, Debug, Default, Clone, Serialize, Deserialize, Type)]
-pub struct KeyPosition {
-    pub layer: u8,
-    pub row: u8,
-    pub column: u8,
-}
-
-// ==============================
-// 0x4 0x4
-#[derive(BinWrite, Debug, Serialize, Deserialize, Type)]
-pub struct EncoderPosition {
-    pub layer: u8,
-    pub encoder: u8,
-    pub clockwise: u8,
-}
-
-#[derive(BinRead, Debug, Serialize, Deserialize, Type)]
-pub struct KeyCode(pub u16);
-
-// ==============================
-// 0x5 0x3
-#[derive(BinWrite, BinRead, Clone, Debug, Default, Serialize, Deserialize, Type)]
-pub struct KeyPositionConfig {
-    pub layer: u8,
-    pub row: u8,
-    pub col: u8,
-    pub keycode: u16,
-}
-
-// ==============================
-// 0x5 0x4
-#[derive(BinWrite, BinRead, Debug, Serialize, Deserialize, Type)]
-pub struct EncoderPositionConfig {
-    pub layer: u8,
-    pub encoder: u8,
-    pub clockwise: u8,
-    pub keycode: u16,
-}
 
 #[derive(Debug, Serialize, Clone, Copy, Type)]
 pub enum XapSecureStatus {

@@ -9,7 +9,7 @@ use serde::{de::Error, Deserialize, Deserializer, Serialize};
 use serde_with::{serde_as, skip_serializing_none, NoneAsEmptyString};
 use specta::Type;
 
-use crate::{error::XapResult, KeyPosition};
+use crate::error::XapResult;
 
 #[serde_as]
 #[skip_serializing_none]
@@ -88,12 +88,6 @@ where
             Some(result)
         })
         .ok_or(D::Error::custom("failed to parse keycode table"))
-}
-
-#[derive(Debug, Default, Clone, Serialize, Type)]
-pub struct XapKeyCodeConfig {
-    pub code: XapKeyCode,
-    pub position: KeyPosition,
 }
 
 #[cfg(test)]

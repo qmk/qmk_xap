@@ -4,7 +4,7 @@
     import type { Ref } from 'vue'
 
     import { useXapDeviceStore as useXapDeviceStore } from '@/stores/devices'
-    import { KeyPosition, XapConstants } from '@generated/xap'
+    import { RemappingSetKeycodeArg, XapConstants } from '@generated/xap'
     import { commands } from '@generated/xap'
     import { notifyError } from '@/utils/utils'
 
@@ -14,7 +14,7 @@
     const splitter: Ref<number> = ref(15)
     const keycodeTab: Ref<string> = ref('basic')
     const layerTab: Ref<number> = ref(0)
-    const selectedKey: Ref<KeyPosition | null> = ref(null)
+    const selectedKey: Ref<RemappingSetKeycodeArg | null> = ref(null)
     const xapConstants: Ref<XapConstants | null> = ref(null)
 
     async function set(code: number) {
@@ -26,7 +26,7 @@
             const ok = await commands.keycodeSet(device.value.id, {
                 layer: selectedKey.value.layer,
                 row: selectedKey.value.row,
-                col: selectedKey.value.column,
+                column: selectedKey.value.column,
                 keycode: code,
             })
             switch (ok.status) {

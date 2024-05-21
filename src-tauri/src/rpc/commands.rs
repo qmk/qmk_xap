@@ -5,13 +5,13 @@ use serde::Serialize;
 use specta::Type;
 use tauri::State;
 use uuid::Uuid;
-use xap_specs::KeyPositionConfig;
 
 use crate::{
     aggregation::XapConstants,
     xap::{
         client::{XapClient, XapClientError},
         device::Keymap,
+        spec::remapping::RemappingSetKeycodeArg,
     },
 };
 
@@ -36,7 +36,7 @@ pub fn xap_constants_get(state: State<'_, Arc<Mutex<XapClient>>>) -> XapConstant
 #[specta::specta]
 pub fn keycode_set(
     id: Uuid,
-    arg: KeyPositionConfig,
+    arg: RemappingSetKeycodeArg,
     state: State<'_, Arc<Mutex<XapClient>>>,
 ) -> FrontendResult<()> {
     state
