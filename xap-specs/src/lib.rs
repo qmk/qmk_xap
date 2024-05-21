@@ -5,10 +5,9 @@ use error::XapError;
 use serde::{Deserialize, Serialize};
 use specta::Type;
 
+pub mod broadcast;
 pub mod constants;
 pub mod error;
-pub mod protocol;
-pub mod broadcast;
 pub mod request;
 pub mod response;
 pub mod token;
