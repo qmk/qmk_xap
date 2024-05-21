@@ -9,7 +9,7 @@ use xap_specs::{
     XapSecureStatus,
 };
 
-use crate::xap_spec::qmk::QmkBoardIdentifiersResponse;
+use crate::xap::spec::qmk::QmkBoardIdentifiersResponse;
 
 #[derive(Clone, Serialize, Type)]
 pub struct XapDevice {

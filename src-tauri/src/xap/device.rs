@@ -31,8 +31,7 @@ use crate::{
         KeymapInfo, LightingCapabilities, LightingInfo, QmkInfo, RemapInfo,
         XapDevice as XapDeviceDto, XapDeviceInfo, XapInfo,
     },
-    xap::{ClientError, ClientResult},
-    xap_spec::{
+    xap::spec::{
         keymap::{
             KeymapCapabilitiesFlags, KeymapCapabilitiesRequest, KeymapGetKeycodeArg,
             KeymapGetKeycodeRequest, KeymapGetKeycodeResponse, KeymapGetLayerCountRequest,
@@ -66,6 +65,7 @@ use crate::{
             XapSecureStatusRequest, XapVersionRequest,
         },
     },
+    xap::client::{XapClientError, XapClientResult},
     XapEvent,
 };
 
@@ -96,7 +96,7 @@ impl XapDevice {
         event_channel: Sender<XapEvent>,
         rx_device: HidDevice,
         tx_device: HidDevice,
-    ) -> ClientResult<Self> {
+    ) -> XapClientResult<Self> {
         let id = Uuid::new_v4();
         let state = Arc::new(RwLock::new(XapDeviceState::default()));
 
@@ -165,7 +165,7 @@ impl XapDevice {
             && candidate.usage() == self.info.usage()
     }
 
-    pub fn set_keycode(&self, config: KeyPositionConfig) -> ClientResult<()> {
+    pub fn set_keycode(&self, config: KeyPositionConfig) -> XapClientResult<()> {
         let (layer, row, column, keycode) = (config.layer, config.row, config.col, config.keycode);
 
         let arg = RemappingSetKeycodeArg {
@@ -186,7 +186,7 @@ impl XapDevice {
         Ok(())
     }
 
-    pub fn query_keycode(&self, position: KeyPosition) -> ClientResult<KeymapGetKeycodeResponse> {
+    pub fn query_keycode(&self, position: KeyPosition) -> XapClientResult<KeymapGetKeycodeResponse> {
         self.query(KeymapGetKeycodeRequest(KeymapGetKeycodeArg {
             layer: position.layer,
             row: position.row,
@@ -194,10 +194,10 @@ impl XapDevice {
         }))
     }
 
-    pub fn query<T: XapRequest>(&self, request: T) -> ClientResult<T::Response> {
+    pub fn query<T: XapRequest>(&self, request: T) -> XapClientResult<T::Response> {
         if let Some(xap_info) = &self.state.read().xap_info {
             if !T::xap_version() < xap_info.xap.version {
-                return Err(ClientError::ProtocolError(XapError::Protocol(format!(
+                return Err(XapClientError::ProtocolError(XapError::Protocol(format!(
                     "can't do xap request [{:?}] with client of version {}",
                     T::id(),
                     xap_info.xap.version
@@ -212,7 +212,7 @@ impl XapDevice {
         let mut writer = Cursor::new(&mut report[1..]);
         writer
             .write_le(&request)
-            .map_err(|err| ClientError::from(XapError::BitHandling(err)))?;
+            .map_err(|err| XapClientError::from(XapError::BitHandling(err)))?;
 
         trace!("send XAP report with payload {:?}", &report[1..]);
 
@@ -238,16 +238,16 @@ impl XapDevice {
             }
         };
 
-        response.into_xap_response::<T>().map_err(ClientError::from)
+        response.into_xap_response::<T>().map_err(XapClientError::from)
     }
 
-    pub fn query_secure_status(&self) -> ClientResult<XapSecureStatus> {
+    pub fn query_secure_status(&self) -> XapClientResult<XapSecureStatus> {
         let status = self.query(XapSecureStatusRequest(()))?.0.into();
         self.state.write().secure_status = status;
         Ok(status)
     }
 
-    fn query_device_info(&self) -> ClientResult<()> {
+    fn query_device_info(&self) -> XapClientResult<()> {
         let subsystems = self.query(XapEnabledSubsystemCapabilitiesRequest(()))?;
 
         let xap_info = XapInfo {
@@ -299,9 +299,9 @@ impl XapDevice {
             // TODO ugly bodge
             let matrix = if let Some(value) = config.get("matrix_size") {
                 serde_json::from_value(value.clone())
-                    .map_err(|err| ClientError::Other(anyhow!("malformed matrix_size entry {err}")))
+                    .map_err(|err| XapClientError::Other(anyhow!("malformed matrix_size entry {err}")))
             } else {
-                return Err(ClientError::Other(anyhow!(
+                return Err(XapClientError::Other(anyhow!(
                     "matrix size not found in JSON config"
                 )));
             }?;
@@ -423,7 +423,7 @@ impl XapDevice {
         Ok(())
     }
 
-    fn query_config_blob(&self) -> ClientResult<Map<String, Value>> {
+    fn query_config_blob(&self) -> XapClientResult<Map<String, Value>> {
         //  data size
         let size = self.query(QmkConfigBlobLengthRequest(()))?.0;
 
@@ -449,7 +449,7 @@ impl XapDevice {
         Ok(serde_json::from_str(&decompressed)?)
     }
 
-    fn query_keymap(&self) -> ClientResult<()> {
+    fn query_keymap(&self) -> XapClientResult<()> {
         // Reset keymap
         self.state.write().keymap = Default::default();
 
@@ -458,7 +458,7 @@ impl XapDevice {
             let cols = keymap.matrix.cols;
             let rows = keymap.matrix.rows;
 
-            let keymap: Result<Vec<Vec<Vec<XapKeyCodeConfig>>>, ClientError> = (0..layers)
+            let keymap: Result<Vec<Vec<Vec<XapKeyCodeConfig>>>, XapClientError> = (0..layers)
                 .map(|layer| {
                     (0..rows)
                         .map(|row| {

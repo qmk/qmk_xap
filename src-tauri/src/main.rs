@@ -3,12 +3,10 @@
     windows_subsystem = "windows"
 )]
 
-#[macro_use]
-mod commands;
 mod aggregation;
 mod events;
+mod rpc;
 mod xap;
-mod xap_spec;
 
 use std::sync::Arc;
 use std::time::Duration;
@@ -25,11 +23,11 @@ use tauri::{
 };
 use tauri::{AppHandle, Manager};
 
-use commands::{keycode_set, keymap_get, xap_constants_get};
 use events::{FrontendEvent, XapEvent};
-use xap::hid::XapClient;
-use xap::ClientResult;
+use rpc::commands::{keycode_set, keymap_get, xap_constants_get};
 use xap_specs::constants::XapConstants;
+use xap::client::XapClient;
+use xap::client::XapClientResult;
 
 fn shutdown_event_loop<R: Runtime>(sender: Sender<XapEvent>) -> TauriPlugin<R> {
     Builder::new("event loop shutdown")
@@ -113,7 +111,7 @@ fn start_event_loop(
     });
 }
 
-fn main() -> ClientResult<()> {
+fn main() -> XapClientResult<()> {
     env_logger::Builder::from_env(Env::default().default_filter_or("info")).init();
 
     let specta_config = specta::ts::ExportConfig::default()
