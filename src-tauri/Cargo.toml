@@ -29,12 +29,7 @@ specta = { version = "=2.0.0-rc.12", features = ["uuid"] }
 tauri = { version = "2.0.0-beta", features = [] }
 tauri-plugin-fs = "2.0.0-beta.7"
 tauri-plugin-shell = "2.0.0-beta.5"
-# Workaround for compilation error with tauri 2.0.0-beta.17
-# See https://github.com/oscartbeaumont/tauri-specta/pull/94
-# Remove once the PR or another fix is merged
-tauri-specta = { git = "https://github.com/nashaofu/tauri-specta.git", rev = "8eaf3494", features = [
-    "typescript",
-] }
+tauri-specta = { version = "2.0.0-rc.10", features = ["typescript"] }
 thiserror = "1.0"
 uuid = { version = "1.8", features = ["serde", "v4"] }
 xap-specs = { path = "../xap-specs" }
