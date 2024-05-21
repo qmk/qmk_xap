@@ -1,14 +1,15 @@
 pub mod keycode;
+pub mod lighting;
 
 use std::collections::HashMap;
 use std::path::PathBuf;
 
 use serde::Serialize;
 
-use crate::constants::keycode::{read_xap_keycodes, XapKeyCode};
 use crate::error::XapResult;
 
-use self::keycode::{read_xap_lighting_effects, LightingEffects};
+use self::keycode::{read_xap_keycodes, XapKeyCode};
+use self::lighting::{read_xap_lighting_effects, LightingEffects};
 
 #[derive(Debug, Clone, Serialize)]
 pub struct XapConstants {

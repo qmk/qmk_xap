@@ -4,7 +4,8 @@ use serde::{Deserialize, Serialize};
 use specta::Type;
 use uuid::Uuid;
 use xap_specs::{
-    constants::keycode::{LightingEffect, LightingEffects, XapKeyCode, XapKeyCodeConfig},
+    constants::keycode::{XapKeyCode, XapKeyCodeConfig},
+    constants::lighting::{LightingEffect, LightingEffects},
     XapSecureStatus,
 };
 
@@ -87,7 +88,6 @@ impl LightingCapabilities {
         set_config_enabled: bool,
         save_config_enabled: bool,
     ) -> Self {
-
         effects.sort_by(|lhs, rhs| lhs.label.cmp(&rhs.label));
 
         Self {
