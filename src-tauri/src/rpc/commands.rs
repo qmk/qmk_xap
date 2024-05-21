@@ -5,11 +5,14 @@ use serde::Serialize;
 use specta::Type;
 use tauri::State;
 use uuid::Uuid;
-use xap_specs::{constants::keycode::XapKeyCodeConfig, KeyPositionConfig};
+use xap_specs::KeyPositionConfig;
 
 use crate::{
     aggregation::XapConstants,
-    xap::client::{XapClient, XapClientError},
+    xap::{
+        client::{XapClient, XapClientError},
+        device::Keymap,
+    },
 };
 
 pub type FrontendResult<T> = Result<T, FrontendError>;
@@ -45,9 +48,6 @@ pub fn keycode_set(
 
 #[tauri::command]
 #[specta::specta]
-pub fn keymap_get(
-    id: Uuid,
-    state: State<'_, Arc<Mutex<XapClient>>>,
-) -> FrontendResult<Vec<Vec<Vec<XapKeyCodeConfig>>>> {
+pub fn keymap_get(id: Uuid, state: State<'_, Arc<Mutex<XapClient>>>) -> FrontendResult<Keymap> {
     Ok(state.lock().get_device(&id)?.keymap())
 }

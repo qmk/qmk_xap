@@ -4,18 +4,18 @@ use serde::{Deserialize, Serialize};
 use specta::Type;
 use uuid::Uuid;
 use xap_specs::{
-    constants::keycode::{XapKeyCode, XapKeyCodeConfig},
+    constants::keycode::{XapKeyCode},
     constants::lighting::{LightingEffect, LightingEffects},
     XapSecureStatus,
 };
 
-use crate::xap::spec::qmk::QmkBoardIdentifiersResponse;
+use crate::xap::{device::Keymap, spec::qmk::QmkBoardIdentifiersResponse};
 
 #[derive(Clone, Serialize, Type)]
 pub struct XapDevice {
     pub id: Uuid,
     pub info: XapDeviceInfo,
-    pub keymap: Vec<Vec<Vec<XapKeyCodeConfig>>>,
+    pub keymap: Keymap,
     pub secure_status: XapSecureStatus,
 }
 

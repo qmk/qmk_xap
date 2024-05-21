@@ -437,7 +437,7 @@ export const commands = {
             else return { status: 'error', error: e as any }
         }
     },
-    async keymapGet(id: string): Promise<Result<XapKeyCodeConfig[][][], FrontendError>> {
+    async keymapGet(id: string): Promise<Result<Keymap, FrontendError>> {
         try {
             return { status: 'ok', data: await TAURI_INVOKE('keymap_get', { id }) }
         } catch (e) {
@@ -474,6 +474,7 @@ export type FrontendEvent =
     | { kind: 'LogReceived'; data: { id: string; log: string } }
 export type KeyPosition = { layer: number; row: number; column: number }
 export type KeyPositionConfig = { layer: number; row: number; col: number; keycode: number }
+export type Keymap = XapKeyCodeConfig[][][]
 export type KeymapCapabilitiesFlags = number
 export type KeymapGetEncoderKeycodeArg = { layer: number; encoder: number; clockwise: number }
 export type KeymapGetEncoderKeycodeResponse = number
@@ -615,7 +616,7 @@ export type XapConstants = {
 export type XapDevice = {
     id: string
     info: XapDeviceInfo
-    keymap: XapKeyCodeConfig[][][]
+    keymap: Keymap
     secure_status: XapSecureStatus
 }
 export type XapDeviceInfo = {

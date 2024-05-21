@@ -13,7 +13,9 @@ use flate2::read::GzDecoder;
 use hidapi::{DeviceInfo, HidDevice};
 use log::{error, info, trace};
 use parking_lot::RwLock;
+use serde::Serialize;
 use serde_json::{Map, Value};
+use specta::Type;
 use uuid::Uuid;
 
 use xap_specs::{
@@ -31,6 +33,7 @@ use crate::{
         KeymapInfo, LightingCapabilities, LightingInfo, QmkInfo, RemapInfo,
         XapDevice as XapDeviceDto, XapDeviceInfo, XapInfo,
     },
+    xap::client::{XapClientError, XapClientResult},
     xap::spec::{
         keymap::{
             KeymapCapabilitiesFlags, KeymapCapabilitiesRequest, KeymapGetKeycodeArg,
@@ -65,18 +68,27 @@ use crate::{
             XapSecureStatusRequest, XapVersionRequest,
         },
     },
-    xap::client::{XapClientError, XapClientResult},
     XapEvent,
 };
 
-const XAP_REPORT_SIZE: usize = 64;
+#[derive(Clone, Debug, Default, Serialize, Type)]
+pub struct Keymap(Vec<Vec<Vec<XapKeyCodeConfig>>>);
+
+impl Keymap {
+    pub fn set_keycode(&mut self, code: XapKeyCodeConfig) {
+        let KeyPosition { layer, row, column } = code.position;
+        self.0[layer as usize][row as usize][column as usize] = code;
+    }
+}
 
 #[derive(Debug, Default)]
 struct XapDeviceState {
     xap_info: Option<XapDeviceInfo>,
-    keymap: Vec<Vec<Vec<XapKeyCodeConfig>>>,
+    keymap: Keymap,
     secure_status: XapSecureStatus,
 }
+
+const XAP_REPORT_SIZE: usize = 64;
 
 #[derive(Debug)]
 pub struct XapDevice {
@@ -139,7 +151,7 @@ impl XapDevice {
             .expect("XAP device wasn't properly initialized")
     }
 
-    pub fn keymap(&self) -> Vec<Vec<Vec<XapKeyCodeConfig>>> {
+    pub fn keymap(&self) -> Keymap {
         self.state.read().keymap.clone()
     }
 
@@ -177,16 +189,18 @@ impl XapDevice {
 
         self.query(RemappingSetKeycodeRequest(arg))?;
 
-        self.state.write().keymap[layer as usize][row as usize][column as usize] =
-            XapKeyCodeConfig {
-                code: self.constants.get_keycode(keycode),
-                position: KeyPosition { layer, row, column },
-            };
+        self.state.write().keymap.set_keycode(XapKeyCodeConfig {
+            code: self.constants.get_keycode(keycode),
+            position: KeyPosition { layer, row, column },
+        });
 
         Ok(())
     }
 
-    pub fn query_keycode(&self, position: KeyPosition) -> XapClientResult<KeymapGetKeycodeResponse> {
+    pub fn query_keycode(
+        &self,
+        position: KeyPosition,
+    ) -> XapClientResult<KeymapGetKeycodeResponse> {
         self.query(KeymapGetKeycodeRequest(KeymapGetKeycodeArg {
             layer: position.layer,
             row: position.row,
@@ -238,7 +252,9 @@ impl XapDevice {
             }
         };
 
-        response.into_xap_response::<T>().map_err(XapClientError::from)
+        response
+            .into_xap_response::<T>()
+            .map_err(XapClientError::from)
     }
 
     pub fn query_secure_status(&self) -> XapClientResult<XapSecureStatus> {
@@ -298,8 +314,9 @@ impl XapDevice {
 
             // TODO ugly bodge
             let matrix = if let Some(value) = config.get("matrix_size") {
-                serde_json::from_value(value.clone())
-                    .map_err(|err| XapClientError::Other(anyhow!("malformed matrix_size entry {err}")))
+                serde_json::from_value(value.clone()).map_err(|err| {
+                    XapClientError::Other(anyhow!("malformed matrix_size entry {err}"))
+                })
             } else {
                 return Err(XapClientError::Other(anyhow!(
                     "matrix size not found in JSON config"
@@ -487,7 +504,7 @@ impl XapDevice {
                 })
                 .collect();
 
-            self.state.write().keymap = keymap?;
+            self.state.write().keymap = Keymap(keymap?);
         }
 
         Ok(())
