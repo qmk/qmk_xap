@@ -830,7 +830,7 @@ fn main() -> Result<()> {
             if let Err(e) = Command::new("rustfmt")
                 .arg("--emit")
                 .arg("files")
-                .arg(&rendered_file)
+                .arg(rendered_file)
                 .status()
             {
                 error!("failed to run cargo fmt on {rendered_file:?}: {e}");
