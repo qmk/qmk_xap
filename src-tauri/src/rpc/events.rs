@@ -8,7 +8,7 @@ use crate::aggregation::XapDevice as XapDeviceDTO;
 
 #[derive(Clone, Serialize, Type, Event)]
 #[serde(tag = "kind", content = "data")]
-pub(crate) enum FrontendEvent {
+pub enum FrontendEvent {
     NewDevice {
         device: XapDeviceDTO,
     },
@@ -25,7 +25,7 @@ pub(crate) enum FrontendEvent {
     },
 }
 
-pub(crate) enum XapEvent {
+pub enum XapEvent {
     LogReceived {
         id: Uuid,
         log: String,

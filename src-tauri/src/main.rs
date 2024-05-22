@@ -4,7 +4,6 @@
 )]
 
 mod aggregation;
-mod events;
 mod rpc;
 mod xap;
 
@@ -23,7 +22,7 @@ use tauri::{
 };
 use tauri::{AppHandle, Manager};
 
-use events::{FrontendEvent, XapEvent};
+use rpc::events::{FrontendEvent, XapEvent};
 use rpc::commands::{keycode_set, keymap_get, xap_constants_get};
 use xap_specs::constants::XapConstants;
 use xap::client::XapClient;
