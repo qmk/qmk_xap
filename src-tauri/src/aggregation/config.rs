@@ -3,12 +3,13 @@ use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
 use specta::Type;
 
-#[derive(Debug, Serialize, Deserialize, Type)]
-pub struct Layouts {
+#[derive(Clone, Debug, Serialize, Deserialize, Type)]
+pub struct Config {
     pub layouts: HashMap<String, Layout>,
+    pub matrix_size: Matrix,
 }
 
-#[derive(Debug, Serialize, Deserialize, Type)]
+#[derive(Debug, Clone, Serialize, Deserialize, Type)]
 pub struct Layout {
     #[serde(skip)]
     pub name: String,
@@ -17,7 +18,7 @@ pub struct Layout {
     pub layout: Vec<LayoutEntry>,
 }
 
-#[derive(Debug, Serialize, Deserialize, Type)]
+#[derive(Debug, Clone, Serialize, Deserialize, Type)]
 pub struct LayoutEntry {
     pub matrix: MatrixPosition,
     pub x: f64,
@@ -32,21 +33,27 @@ fn default_wh() -> f64 {
     1.0
 }
 
-#[derive(Debug, Serialize, Deserialize, Type)]
+#[derive(Debug, Clone, Serialize, Deserialize, Type)]
 pub struct MatrixPosition {
     pub x: u8,
     pub y: u8,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Type)]
+pub struct Matrix {
+    pub cols: u8,
+    pub rows: u8,
 }
 
 #[cfg(test)]
 mod test {
     use similar_asserts::assert_eq;
 
-    use super::Layouts;
+    use crate::aggregation::config::Config;
 
     #[test]
     fn deserialize() {
-let input = r#"{
+        let input = r#"{
 "layouts" : {
     "LAYOUT_75": {
         "layout": [
@@ -576,9 +583,13 @@ let input = r#"{
             {"matrix": [10, 8], "x": 18.25, "y": 5.25}
         ]
     }
-}}"#;
+},
+"matrix_size": {
+    "cols": 9,
+    "rows": 12
+}
+}"#;
 
-    let _layout: Layouts = serde_json::from_str(&input).unwrap();
-
+        let _layout: Config = serde_json::from_str(&input).unwrap();
     }
 }

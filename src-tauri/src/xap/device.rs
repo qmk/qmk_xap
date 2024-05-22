@@ -1,9 +1,5 @@
 use std::{
-    fmt::Debug,
-    io::{Cursor, Read},
-    sync::Arc,
-    thread::JoinHandle,
-    time::{Duration, Instant},
+    collections::HashMap, fmt::Debug, io::{Cursor, Read}, sync::Arc, thread::JoinHandle, time::{Duration, Instant}
 };
 
 use anyhow::anyhow;
@@ -14,7 +10,6 @@ use hidapi::{DeviceInfo, HidDevice};
 use log::{error, info, trace};
 use parking_lot::RwLock;
 use serde::Serialize;
-use serde_json::{Map, Value};
 use specta::Type;
 use uuid::Uuid;
 
@@ -30,51 +25,54 @@ use xap_specs::{
 
 use crate::{
     aggregation::{
+        config::{Config, Matrix},
         KeymapInfo, LightingCapabilities, LightingInfo, QmkInfo, RemapInfo,
         XapDevice as XapDeviceDto, XapDeviceInfo, XapInfo,
     },
-    xap::client::{XapClientError, XapClientResult},
-    xap::spec::{
-        keymap::{
-            KeymapCapabilitiesFlags, KeymapCapabilitiesRequest, KeymapGetKeycodeArg,
-            KeymapGetKeycodeRequest, KeymapGetKeycodeResponse, KeymapGetLayerCountRequest,
-        },
-        lighting::{
-            backlight::{
-                BacklightCapabilitiesFlags, BacklightCapabilitiesRequest,
-                BacklightGetEnabledEffectsRequest,
+    xap::{
+        client::{XapClientError, XapClientResult},
+        spec::{
+            keymap::{
+                KeymapCapabilitiesFlags, KeymapCapabilitiesRequest, KeymapGetKeycodeArg,
+                KeymapGetKeycodeRequest, KeymapGetKeycodeResponse, KeymapGetLayerCountRequest,
             },
-            rgblight::{
-                RgblightCapabilitiesFlags, RgblightCapabilitiesRequest,
-                RgblightGetEnabledEffectsRequest,
+            lighting::{
+                backlight::{
+                    BacklightCapabilitiesFlags, BacklightCapabilitiesRequest,
+                    BacklightGetEnabledEffectsRequest,
+                },
+                rgblight::{
+                    RgblightCapabilitiesFlags, RgblightCapabilitiesRequest,
+                    RgblightGetEnabledEffectsRequest,
+                },
+                rgbmatrix::{
+                    RgbmatrixCapabilitiesFlags, RgbmatrixCapabilitiesRequest,
+                    RgbmatrixGetEnabledEffectsRequest,
+                },
+                LightingCapabilitiesFlags, LightingCapabilitiesRequest,
             },
-            rgbmatrix::{
-                RgbmatrixCapabilitiesFlags, RgbmatrixCapabilitiesRequest,
-                RgbmatrixGetEnabledEffectsRequest,
+            qmk::{
+                QmkBoardIdentifiersRequest, QmkBoardManufacturerRequest, QmkCapabilitiesFlags,
+                QmkCapabilitiesRequest, QmkConfigBlobChunkRequest, QmkConfigBlobLengthRequest,
+                QmkHardwareIdentifierRequest, QmkProductNameRequest, QmkVersionRequest,
             },
-            LightingCapabilitiesFlags, LightingCapabilitiesRequest,
-        },
-        qmk::{
-            QmkBoardIdentifiersRequest, QmkBoardManufacturerRequest, QmkCapabilitiesFlags,
-            QmkCapabilitiesRequest, QmkConfigBlobChunkRequest, QmkConfigBlobLengthRequest,
-            QmkHardwareIdentifierRequest, QmkProductNameRequest, QmkVersionRequest,
-        },
-        remapping::{
-            RemappingCapabilitiesFlags, RemappingCapabilitiesRequest,
-            RemappingGetLayerCountRequest, RemappingSetKeycodeArg, RemappingSetKeycodeRequest,
-        },
-        xap::{
-            XapEnabledSubsystemCapabilitiesFlags, XapEnabledSubsystemCapabilitiesRequest,
-            XapSecureStatusRequest, XapVersionRequest,
+            remapping::{
+                RemappingCapabilitiesFlags, RemappingCapabilitiesRequest,
+                RemappingGetLayerCountRequest, RemappingSetKeycodeArg, RemappingSetKeycodeRequest,
+            },
+            xap::{
+                XapEnabledSubsystemCapabilitiesFlags, XapEnabledSubsystemCapabilitiesRequest,
+                XapSecureStatusRequest, XapVersionRequest,
+            },
         },
     },
     XapEvent,
 };
 
-#[derive(Clone, Debug, Default, Serialize, Type)]
+#[derive(Clone, Debug, Serialize, Type)]
 pub struct Keymap(Vec<Vec<Vec<KeymapKey>>>);
 
-#[derive(Debug, Default, Clone, Serialize, Type)]
+#[derive(Debug, Clone, Serialize, Type)]
 pub struct KeymapKey {
     pub code: XapKeyCode,
     pub position: KeymapGetKeycodeArg,
@@ -87,10 +85,11 @@ impl Keymap {
     }
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug)]
 struct XapDeviceState {
     xap_info: Option<XapDeviceInfo>,
     keymap: Keymap,
+    config: Config,
     secure_status: XapSecureStatus,
 }
 
@@ -116,7 +115,15 @@ impl XapDevice {
         tx_device: HidDevice,
     ) -> XapClientResult<Self> {
         let id = Uuid::new_v4();
-        let state = Arc::new(RwLock::new(XapDeviceState::default()));
+        let state = Arc::new(RwLock::new(XapDeviceState {
+            xap_info: None,
+            keymap: Keymap(vec![]),
+            config: Config{
+                layouts: HashMap::new(),
+                matrix_size: Matrix{ cols: 0, rows: 0 }
+            },
+            secure_status: XapSecureStatus::Unlocked,
+        }));
 
         let (tx_channel, rx_channel) = unbounded();
 
@@ -171,6 +178,7 @@ impl XapDevice {
                 .expect("XAP device wasn't properly initialized")
                 .clone(),
             keymap: state.keymap.clone(),
+            config: state.config.clone(),
             secure_status: state.secure_status,
         }
     }
@@ -287,7 +295,9 @@ impl XapDevice {
              .0
             .trim_matches('"')
             .to_owned();
-        let config = self.query_config_blob()?;
+
+        self.query_config()?;
+
         let hardware_id = self.query(QmkHardwareIdentifierRequest(()))?.0;
 
         let qmk_info = QmkInfo {
@@ -295,7 +305,6 @@ impl XapDevice {
             board_ids,
             manufacturer,
             product_name,
-            config: serde_json::to_string_pretty(&config).unwrap(),
             hardware_id: format!(
                 "{}{}{}{}",
                 hardware_id[0], hardware_id[1], hardware_id[2], hardware_id[3]
@@ -313,19 +322,7 @@ impl XapDevice {
                 None
             };
 
-            // TODO ugly bodge
-            let matrix = if let Some(value) = config.get("matrix_size") {
-                serde_json::from_value(value.clone()).map_err(|err| {
-                    XapClientError::Other(anyhow!("malformed matrix_size entry {err}"))
-                })
-            } else {
-                return Err(XapClientError::Other(anyhow!(
-                    "matrix size not found in JSON config"
-                )));
-            }?;
-
             Some(KeymapInfo {
-                matrix,
                 layer_count,
                 get_keycode_enabled: keymap_caps.contains(KeymapCapabilitiesFlags::GetKeycode),
                 get_encoder_keycode_enabled: keymap_caps
@@ -441,7 +438,7 @@ impl XapDevice {
         Ok(())
     }
 
-    fn query_config_blob(&self) -> XapClientResult<Map<String, Value>> {
+    fn query_config(&self) -> XapClientResult<()> {
         //  data size
         let size = self.query(QmkConfigBlobLengthRequest(()))?.0;
 
@@ -460,46 +457,49 @@ impl XapDevice {
         // Decompress data
         let mut decoder = GzDecoder::new(data);
         let mut decompressed = String::new();
+
         decoder
             .read_to_string(&mut decompressed)
             .map_err(|err| anyhow!("failed to decompress config json blob: {}", err))?;
 
-        Ok(serde_json::from_str(&decompressed)?)
+        self.state.write().config = serde_json::from_str(&decompressed)
+            .map_err(|err| XapClientError::Other(anyhow!("failed to parse config json: {err}")))?;
+
+        Ok(())
     }
 
     fn query_keymap(&self) -> XapClientResult<()> {
-        // Reset keymap
-        self.state.write().keymap = Default::default();
+        let layers = if let Some(keymap) = &self.xap_info().keymap {
+            keymap.layer_count.unwrap_or_default()
+        } else {
+            0
+        };
 
-        if let Some(keymap) = &self.xap_info().keymap {
-            let layers = keymap.layer_count.unwrap_or_default();
-            let columns = keymap.matrix.cols;
-            let rows = keymap.matrix.rows;
+        let Matrix { cols, rows } = self.state.read().config.matrix_size;
 
-            let keymap: Result<Vec<Vec<Vec<KeymapKey>>>, XapClientError> = (0..layers)
-                .map(|layer| {
-                    (0..rows)
-                        .map(|row| {
-                            (0..columns)
-                                .map(|column| {
-                                    let position = KeymapGetKeycodeArg { layer, row, column };
-                                    let code = self.query_keycode(position.clone())?;
+        let keymap: Result<Vec<Vec<Vec<KeymapKey>>>, XapClientError> = (0..layers)
+            .map(|layer| {
+                (0..rows)
+                    .map(|row| {
+                        (0..cols)
+                            .map(|column| {
+                                let position = KeymapGetKeycodeArg { layer, row, column };
+                                let code = self.query_keycode(position.clone())?;
 
-                                    let xap = KeymapKey {
-                                        code: self.constants.get_keycode(code.0),
-                                        position,
-                                    };
+                                let xap = KeymapKey {
+                                    code: self.constants.get_keycode(code.0),
+                                    position,
+                                };
 
-                                    Ok(xap)
-                                })
-                                .collect()
-                        })
-                        .collect()
-                })
-                .collect();
+                                Ok(xap)
+                            })
+                            .collect()
+                    })
+                    .collect()
+            })
+            .collect();
 
-            self.state.write().keymap = Keymap(keymap?);
-        }
+        self.state.write().keymap = Keymap(keymap?);
 
         Ok(())
     }

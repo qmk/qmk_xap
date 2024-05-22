@@ -1,23 +1,26 @@
-pub mod layout;
+pub mod config;
 
 use std::collections::HashMap;
 
-use serde::{Deserialize, Serialize};
+use serde::Serialize;
 use specta::Type;
 use uuid::Uuid;
 use xap_specs::{
-    constants::keycode::{XapKeyCode},
+    constants::keycode::XapKeyCode,
     constants::lighting::{LightingEffect, LightingEffects},
     XapSecureStatus,
 };
 
 use crate::xap::{device::Keymap, spec::qmk::QmkBoardIdentifiersResponse};
 
+use self::config::Config;
+
 #[derive(Clone, Serialize, Type)]
 pub struct XapDevice {
     pub id: Uuid,
     pub info: XapDeviceInfo,
     pub keymap: Keymap,
+    pub config: Config,
     pub secure_status: XapSecureStatus,
 }
 
@@ -41,21 +44,13 @@ pub struct QmkInfo {
     pub board_ids: QmkBoardIdentifiersResponse,
     pub manufacturer: String,
     pub product_name: String,
-    pub config: String,
     pub hardware_id: String,
     pub jump_to_bootloader_enabled: bool,
     pub eeprom_reset_enabled: bool,
 }
 
-#[derive(Deserialize, Debug, Serialize, Clone, Type)]
-pub struct Matrix {
-    pub cols: u8,
-    pub rows: u8,
-}
-
 #[derive(Debug, Serialize, Clone, Type)]
 pub struct KeymapInfo {
-    pub matrix: Matrix,
     pub layer_count: Option<u8>,
     pub get_keycode_enabled: bool,
     pub get_encoder_keycode_enabled: bool,

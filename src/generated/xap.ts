@@ -469,6 +469,7 @@ export type BacklightCapabilitiesFlags = number
  */
 export type BacklightConfig = { enable: number; mode: number; val: number }
 export type BacklightGetEnabledEffectsResponse = number
+export type Config = { layouts: { [key in string]: Layout }; matrix_size: Matrix }
 export type FrontendError = string
 export type FrontendEvent =
     | { kind: 'NewDevice'; data: { device: XapDevice } }
@@ -483,12 +484,13 @@ export type KeymapGetKeycodeArg = { layer: number; row: number; column: number }
 export type KeymapGetKeycodeResponse = number
 export type KeymapGetLayerCountResponse = number
 export type KeymapInfo = {
-    matrix: Matrix
     layer_count: number | null
     get_keycode_enabled: boolean
     get_encoder_keycode_enabled: boolean
 }
 export type KeymapKey = { code: XapKeyCode; position: KeymapGetKeycodeArg }
+export type Layout = { json_layout?: boolean; layout: LayoutEntry[] }
+export type LayoutEntry = { matrix: MatrixPosition; x: number; y: number; w?: number; h?: number }
 export type LightingCapabilities = {
     effects: LightingEffect[]
     get_config_enabled: boolean
@@ -508,6 +510,7 @@ export type LightingInfo = {
     rgbmatrix: LightingCapabilities | null
 }
 export type Matrix = { cols: number; rows: number }
+export type MatrixPosition = { x: number; y: number }
 export type QmkBoardIdentifiersResponse = {
     vendor_id: number
     product_id: number
@@ -557,7 +560,6 @@ export type QmkInfo = {
     board_ids: QmkBoardIdentifiersResponse
     manufacturer: string
     product_name: string
-    config: string
     hardware_id: string
     jump_to_bootloader_enabled: boolean
     eeprom_reset_enabled: boolean
@@ -619,6 +621,7 @@ export type XapDevice = {
     id: string
     info: XapDeviceInfo
     keymap: Keymap
+    config: Config
     secure_status: XapSecureStatus
 }
 export type XapDeviceInfo = {

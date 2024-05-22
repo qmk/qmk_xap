@@ -87,13 +87,6 @@
                     </div>
                 </template>
             </q-field>
-            <q-field v-if="device?.info.qmk.config != null" filled label="Config JSON" stack-label>
-                <template #control>
-                    <div class="self-center full-width no-outline" tabindex="0">
-                        {{ device?.info.qmk.config }}
-                    </div>
-                </template>
-            </q-field>
             <h5>Secure Actions</h5>
             <q-field filled label="Secure Status" stack-label>
                 <template #control>
