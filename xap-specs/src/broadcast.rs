@@ -19,7 +19,7 @@ pub enum BroadcastType {
 }
 
 #[binread]
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct BroadcastRaw {
     _token: Token,
     broadcast_type: BroadcastType,

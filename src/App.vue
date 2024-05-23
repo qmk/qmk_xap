@@ -5,7 +5,9 @@
     import { Notify, Loading } from 'quasar'
 
     import { useXapDeviceStore } from '@/stores/devices'
-    import { FrontendEvent } from '@generated/xap'
+    import { XapEvent } from '@generated/xap'
+    import { commands } from '@generated/xap'
+
     import router from '@/router/routes'
 
     const store = useXapDeviceStore()
@@ -16,23 +18,30 @@
     let unlistenSecureStatusChanged: UnlistenFn
 
     onMounted(async () => {
-        unlistenNewDevice = await listen('new-device', (event: Event<FrontendEvent>) => {
+        unlistenNewDevice = await listen('new-device', async (event: Event<XapEvent>) => {
             if (event.payload.kind != 'NewDevice') {
                 return
             }
+            const { id } = event.payload.data
 
-            const { device } = event.payload.data
-            console.log('new device with id ' + device.id + Date.now())
-
-            if (store.addDevice(device)) {
-                Notify.create({
-                    message: 'New Device ' + device.info.qmk.product_name,
-                    icon: 'power',
-                })
+            const result = await commands.deviceGet(id)
+            switch (result.status) {
+                case 'ok':
+                    console.log('new device with id ' + id + Date.now())
+                    if (store.addDevice(result.data)) {
+                        Notify.create({
+                            message: 'New Device ' + result.data.info.qmk.product_name,
+                            icon: 'power',
+                        })
+                    }
+                    break
+                case 'error':
+                    console.error('error getting device info for device ' + id)
+                    break
             }
         })
 
-        unlistenRemoveDevice = await listen('removed-device', (event: Event<FrontendEvent>) => {
+        unlistenRemoveDevice = await listen('removed-device', (event: Event<XapEvent>) => {
             if (event.payload.kind != 'RemovedDevice') {
                 return
             }
@@ -51,7 +60,7 @@
 
         unlistenSecureStatusChanged = await listen(
             'secure-status-changed',
-            (event: Event<FrontendEvent>) => {
+            (event: Event<XapEvent>) => {
                 if (event.payload.kind != 'SecureStatusChanged') {
                     return
                 }

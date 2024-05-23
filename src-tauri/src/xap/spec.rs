@@ -1303,6 +1303,38 @@ pub mod types {
     use serde::{Deserialize, Serialize};
     use specta::Type;
 
+    /// Config for audio subsystem
+    #[derive(BinRead, BinWrite, Default, Debug, Clone, Serialize, Deserialize, Type)]
+    pub struct AudioConfig {
+        pub enable: u8,
+        pub clicky_enable: u8,
+    }
+
+    /// Packet format for inbound data.
+    #[derive(BinRead, BinWrite, Default, Debug, Clone, Serialize, Deserialize, Type)]
+    pub struct RequestHeader {
+        pub length: u8,
+    }
+
+    /// Config for lighting subsystem
+    #[derive(BinRead, BinWrite, Default, Debug, Clone, Serialize, Deserialize, Type)]
+    pub struct BacklightConfig {
+        pub enable: u8,
+        pub mode: u8,
+        pub val: u8,
+    }
+
+    /// RGB config for RGB lighting subsystem
+    #[derive(BinRead, BinWrite, Default, Debug, Clone, Serialize, Deserialize, Type)]
+    pub struct RgbLightConfig {
+        pub enable: u8,
+        pub mode: u8,
+        pub hue: u8,
+        pub sat: u8,
+        pub val: u8,
+        pub speed: u8,
+    }
+
     /// RGB config for RGB matrix subsystem
     #[derive(BinRead, BinWrite, Default, Debug, Clone, Serialize, Deserialize, Type)]
     pub struct RgbMatrixConfig {
@@ -1322,41 +1354,9 @@ pub mod types {
         pub length: u8,
     }
 
-    /// Config for audio subsystem
-    #[derive(BinRead, BinWrite, Default, Debug, Clone, Serialize, Deserialize, Type)]
-    pub struct AudioConfig {
-        pub enable: u8,
-        pub clicky_enable: u8,
-    }
-
     /// Packet format for outbound data.
     #[derive(BinRead, BinWrite, Default, Debug, Clone, Serialize, Deserialize, Type)]
     pub struct ResponseHeader {
         pub length: u8,
-    }
-
-    /// Packet format for inbound data.
-    #[derive(BinRead, BinWrite, Default, Debug, Clone, Serialize, Deserialize, Type)]
-    pub struct RequestHeader {
-        pub length: u8,
-    }
-
-    /// RGB config for RGB lighting subsystem
-    #[derive(BinRead, BinWrite, Default, Debug, Clone, Serialize, Deserialize, Type)]
-    pub struct RgbLightConfig {
-        pub enable: u8,
-        pub mode: u8,
-        pub hue: u8,
-        pub sat: u8,
-        pub val: u8,
-        pub speed: u8,
-    }
-
-    /// Config for lighting subsystem
-    #[derive(BinRead, BinWrite, Default, Debug, Clone, Serialize, Deserialize, Type)]
-    pub struct BacklightConfig {
-        pub enable: u8,
-        pub mode: u8,
-        pub val: u8,
     }
 }

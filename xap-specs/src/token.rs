@@ -4,7 +4,7 @@ use anyhow::anyhow;
 use binrw::{prelude::*, Endian};
 use rand::distributions::{Distribution, Uniform};
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 #[binwrite]
 #[br(repr = u16)]
 pub enum Token {

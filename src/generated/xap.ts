@@ -448,12 +448,20 @@ export const commands = {
             else return { status: 'error', error: e as any }
         }
     },
+    async deviceGet(id: string): Promise<Result<XapDevice, FrontendError>> {
+        try {
+            return { status: 'ok', data: await TAURI_INVOKE('device_get', { id }) }
+        } catch (e) {
+            if (e instanceof Error) throw e
+            else return { status: 'error', error: e as any }
+        }
+    },
 }
 
 export const events = __makeEvents__<{
-    frontendEvent: FrontendEvent
+    xapEvent: XapEvent
 }>({
-    frontendEvent: 'frontend-event',
+    xapEvent: 'xap-event',
 })
 
 /** user-defined types **/
@@ -471,11 +479,6 @@ export type BacklightConfig = { enable: number; mode: number; val: number }
 export type BacklightGetEnabledEffectsResponse = number
 export type Config = { layouts: { [key in string]: Layout }; matrix_size: Matrix }
 export type FrontendError = string
-export type FrontendEvent =
-    | { kind: 'NewDevice'; data: { device: XapDevice } }
-    | { kind: 'RemovedDevice'; data: { id: string } }
-    | { kind: 'SecureStatusChanged'; data: { id: string; secure_status: XapSecureStatus } }
-    | { kind: 'LogReceived'; data: { id: string; log: string } }
 export type Keymap = KeymapKey[][][]
 export type KeymapCapabilitiesFlags = number
 export type KeymapGetEncoderKeycodeArg = { layer: number; encoder: number; clockwise: number }
@@ -632,6 +635,11 @@ export type XapDeviceInfo = {
     lighting: LightingInfo | null
 }
 export type XapEnabledSubsystemCapabilitiesFlags = number
+export type XapEvent =
+    | { kind: 'LogReceived'; data: { id: string; log: string } }
+    | { kind: 'SecureStatusChanged'; data: { id: string; secure_status: XapSecureStatus } }
+    | { kind: 'NewDevice'; data: { id: string } }
+    | { kind: 'RemovedDevice'; data: { id: string } }
 export type XapInfo = { version: number }
 export type XapKeyCode = {
     code?: number

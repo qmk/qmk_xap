@@ -1,22 +1,24 @@
 use std::{
-    collections::HashMap, fmt::Debug, io::{Cursor, Read}, sync::Arc, thread::JoinHandle, time::{Duration, Instant}
+    collections::{hash_map::Entry, HashMap, VecDeque},
+    fmt::Debug,
+    io::{Cursor, Read},
+    sync::Arc,
+    time::{Duration, Instant},
 };
 
 use anyhow::anyhow;
 use binrw::{BinRead, BinWriterExt};
-use crossbeam_channel::{unbounded, Receiver, Sender};
 use flate2::read::GzDecoder;
 use hidapi::{DeviceInfo, HidDevice};
-use log::{error, info, trace};
-use parking_lot::RwLock;
+use log::{info, trace};
 use serde::Serialize;
 use specta::Type;
 use uuid::Uuid;
 
 use xap_specs::{
-    broadcast::{BroadcastRaw, BroadcastType, LogBroadcast, SecureStatusBroadcast},
+    broadcast::{BroadcastRaw, BroadcastType, SecureStatusBroadcast},
     constants::{keycode::XapKeyCode, XapConstants},
-    error::{XapError, XapResult},
+    error::XapError,
     request::{RawRequest, XapRequest},
     response::RawResponse,
     token::Token,
@@ -66,7 +68,6 @@ use crate::{
             },
         },
     },
-    XapEvent,
 };
 
 #[derive(Clone, Debug, Serialize, Type)]
@@ -99,48 +100,42 @@ const XAP_REPORT_SIZE: usize = 64;
 pub struct XapDevice {
     id: Uuid,
     info: DeviceInfo,
-    rx_thread: JoinHandle<()>,
-    tx_device: HidDevice,
-    rx_channel: Receiver<RawResponse>,
+    hid_device: HidDevice,
     constants: Arc<XapConstants>,
-    state: Arc<RwLock<XapDeviceState>>,
+    state: XapDeviceState,
+    pub broadcast_queue: VecDeque<BroadcastRaw>,
+    responses: HashMap<Token, Option<RawResponse>>,
 }
 
 impl XapDevice {
     pub(crate) fn new(
         info: DeviceInfo,
         constants: Arc<XapConstants>,
-        event_channel: Sender<XapEvent>,
-        rx_device: HidDevice,
-        tx_device: HidDevice,
+        hid_device: HidDevice,
     ) -> XapClientResult<Self> {
+        // We are polling for reports, so we need to set the device to non-blocking mode otherwise
+        // we will block forever in case that there is no report to read
+        hid_device.set_blocking_mode(false)?;
+
         let id = Uuid::new_v4();
-        let state = Arc::new(RwLock::new(XapDeviceState {
+        let state = XapDeviceState {
             xap_info: None,
             keymap: Keymap(vec![]),
-            config: Config{
+            config: Config {
                 layouts: HashMap::new(),
-                matrix_size: Matrix{ cols: 0, rows: 0 }
+                matrix_size: Matrix { cols: 0, rows: 0 },
             },
             secure_status: XapSecureStatus::Unlocked,
-        }));
+        };
 
-        let (tx_channel, rx_channel) = unbounded();
-
-        let device = Self {
+        let mut device = Self {
             id,
             info,
-            tx_device,
-            rx_channel,
-            rx_thread: start_rx_thread(
-                id,
-                Arc::clone(&state),
-                rx_device,
-                event_channel,
-                tx_channel,
-            ),
+            hid_device,
             state,
             constants,
+            responses: HashMap::new(),
+            broadcast_queue: VecDeque::new(),
         };
         device.query_device_info()?;
         device.query_keymap()?;
@@ -152,24 +147,19 @@ impl XapDevice {
         self.id
     }
 
-    pub fn is_running(&self) -> bool {
-        !self.rx_thread.is_finished()
-    }
-
     pub fn xap_info(&self) -> XapDeviceInfo {
         self.state
-            .read()
             .xap_info
             .clone()
             .expect("XAP device wasn't properly initialized")
     }
 
     pub fn keymap(&self) -> Keymap {
-        self.state.read().keymap.clone()
+        self.state.keymap.clone()
     }
 
     pub fn as_dto(&self) -> XapDeviceDto {
-        let state = self.state.read();
+        let state = &self.state;
         XapDeviceDto {
             id: self.id,
             info: state
@@ -191,10 +181,10 @@ impl XapDevice {
             && candidate.usage() == self.info.usage()
     }
 
-    pub fn set_keycode(&self, config: RemappingSetKeycodeArg) -> XapClientResult<()> {
+    pub fn set_keycode(&mut self, config: RemappingSetKeycodeArg) -> XapClientResult<()> {
         self.query(RemappingSetKeycodeRequest(config.clone()))?;
 
-        self.state.write().keymap.set_keycode(KeymapKey {
+        self.state.keymap.set_keycode(KeymapKey {
             code: self.constants.get_keycode(config.keycode),
             position: KeymapGetKeycodeArg {
                 layer: config.layer,
@@ -207,7 +197,7 @@ impl XapDevice {
     }
 
     pub fn query_keycode(
-        &self,
+        &mut self,
         position: KeymapGetKeycodeArg,
     ) -> XapClientResult<KeymapGetKeycodeResponse> {
         self.query(KeymapGetKeycodeRequest(KeymapGetKeycodeArg {
@@ -217,8 +207,8 @@ impl XapDevice {
         }))
     }
 
-    pub fn query<T: XapRequest>(&self, request: T) -> XapClientResult<T::Response> {
-        if let Some(xap_info) = &self.state.read().xap_info {
+    pub fn query<T: XapRequest>(&mut self, request: T) -> XapClientResult<T::Response> {
+        if let Some(xap_info) = &self.state.xap_info {
             if !T::xap_version() < xap_info.xap.version {
                 return Err(XapClientError::ProtocolError(XapError::Protocol(format!(
                     "can't do xap request [{:?}] with client of version {}",
@@ -239,40 +229,44 @@ impl XapDevice {
 
         trace!("send XAP report with payload {:?}", &report[1..]);
 
-        self.tx_device.write(&report)?;
+        self.responses.insert(request.token().clone(), None);
+        self.hid_device.write(&report)?;
 
         let start = Instant::now();
 
-        let response = loop {
-            let response = self
-                .rx_channel
-                .recv_timeout(Duration::from_millis(500))
-                .map_err(|err| XapError::Protocol(format!("failed to reveice response {}", err)))?;
+        loop {
+            let length = self.poll()?;
 
-            if response.token() == request.token() {
-                break response;
+            if length == 0 {
+                if start.elapsed() > Duration::from_secs(5) {
+                    return Err(XapClientError::Timeout);
+                }
+                std::thread::sleep(Duration::from_millis(1));
+                continue;
             }
-            if start.elapsed() > Duration::from_secs(5) {
-                return Err(XapError::Protocol(format!(
-                    "failed to receive XAP response for request {:?} in 5 seconds",
-                    request.token()
-                ))
-                .into());
-            }
-        };
 
-        response
-            .into_xap_response::<T>()
-            .map_err(XapClientError::from)
+            if let Entry::Occupied(response) = self.responses.entry(request.token().clone()) {
+                if response.get().is_none() {
+                    continue;
+                }
+
+                let (_, response) = response.remove_entry();
+
+                return response
+                    .expect("response was just checked for None")
+                    .into_xap_response::<T>()
+                    .map_err(XapClientError::from);
+            }
+        }
     }
 
-    pub fn query_secure_status(&self) -> XapClientResult<XapSecureStatus> {
+    pub fn query_secure_status(&mut self) -> XapClientResult<XapSecureStatus> {
         let status = self.query(XapSecureStatusRequest(()))?.0.into();
-        self.state.write().secure_status = status;
+        self.state.secure_status = status;
         Ok(status)
     }
 
-    fn query_device_info(&self) -> XapClientResult<()> {
+    fn query_device_info(&mut self) -> XapClientResult<()> {
         let subsystems = self.query(XapEnabledSubsystemCapabilitiesRequest(()))?;
 
         let xap_info = XapInfo {
@@ -427,7 +421,7 @@ impl XapDevice {
             None
         };
 
-        self.state.write().xap_info = Some(XapDeviceInfo {
+        self.state.xap_info = Some(XapDeviceInfo {
             xap: xap_info,
             qmk: qmk_info,
             keymap: keymap_info,
@@ -438,7 +432,7 @@ impl XapDevice {
         Ok(())
     }
 
-    fn query_config(&self) -> XapClientResult<()> {
+    fn query_config(&mut self) -> XapClientResult<()> {
         //  data size
         let size = self.query(QmkConfigBlobLengthRequest(()))?.0;
 
@@ -462,20 +456,20 @@ impl XapDevice {
             .read_to_string(&mut decompressed)
             .map_err(|err| anyhow!("failed to decompress config json blob: {}", err))?;
 
-        self.state.write().config = serde_json::from_str(&decompressed)
+        self.state.config = serde_json::from_str(&decompressed)
             .map_err(|err| XapClientError::Other(anyhow!("failed to parse config json: {err}")))?;
 
         Ok(())
     }
 
-    fn query_keymap(&self) -> XapClientResult<()> {
+    fn query_keymap(&mut self) -> XapClientResult<()> {
         let layers = if let Some(keymap) = &self.xap_info().keymap {
             keymap.layer_count.unwrap_or_default()
         } else {
             0
         };
 
-        let Matrix { cols, rows } = self.state.read().config.matrix_size;
+        let Matrix { cols, rows } = self.state.config.matrix_size;
 
         let keymap: Result<Vec<Vec<Vec<KeymapKey>>>, XapClientError> = (0..layers)
             .map(|layer| {
@@ -499,81 +493,71 @@ impl XapDevice {
             })
             .collect();
 
-        self.state.write().keymap = Keymap(keymap?);
+        self.state.keymap = Keymap(keymap?);
 
         Ok(())
     }
-}
 
-fn start_rx_thread(
-    id: Uuid,
-    state: Arc<RwLock<XapDeviceState>>,
-    rx: HidDevice,
-    event_channel: Sender<XapEvent>,
-    tx_channel: Sender<RawResponse>,
-) -> std::thread::JoinHandle<()> {
-    std::thread::spawn(move || {
+    pub fn poll(&mut self) -> XapClientResult<usize> {
         let mut report = [0_u8; XAP_REPORT_SIZE];
-        loop {
-            if let Err(err) = rx.read(&mut report) {
-                error!("failed to receive HID report: {err}");
-                event_channel
-                    .send(XapEvent::RxError)
-                    .expect("failed to send error event");
-                break;
+
+        let length = self.hid_device.read(&mut report)?;
+
+        if length == 0 {
+            return Ok(0);
+        }
+
+        let mut reader = Cursor::new(&report);
+        let token = Token::read_le(&mut reader)?;
+
+        if let Token::Broadcast = token {
+            let broadcast = BroadcastRaw::from_raw_report(&report)?;
+            trace!("received XAP broadcast {:?}", broadcast);
+
+            // TODO nicer way to handle this without clone?
+            if matches!(broadcast.broadcast_type(), BroadcastType::SecureStatus) {
+                broadcast
+                    .clone()
+                    .into_xap_broadcast::<SecureStatusBroadcast>()
+                    .map(|broadcast| {
+                        self.state.secure_status = broadcast.0;
+                    })?;
             }
-            if let Err(err) = handle_report(id, &state, report, &tx_channel, &event_channel) {
-                error!("handling response failed: {err}")
+
+            self.broadcast_queue.push_back(broadcast);
+        } else {
+            let response = RawResponse::from_raw_report(&report)?;
+            trace!(
+                "received XAP package with token {:?} and payload {:#?}",
+                response.token(),
+                response.payload()
+            );
+
+            match self.responses.entry(token) {
+                Entry::Occupied(mut request) => {
+                    if request.get().is_some() {
+                        trace!(
+                            "received duplicate response with token {:?}, discarding",
+                            response.token()
+                        );
+                        return Ok(0);
+                    }
+                    request.insert(Some(response));
+                }
+                Entry::Vacant(_) => {
+                    trace!(
+                        "received unsolicited response with token {:?}, discarding",
+                        response.token()
+                    );
+                    return Ok(0);
+                }
             }
         }
-        info!("terminating capture thread for {id}");
-    })
-}
 
-fn handle_report(
-    id: Uuid,
-    state: &Arc<RwLock<XapDeviceState>>,
-    report: [u8; XAP_REPORT_SIZE],
-    tx_channel: &Sender<RawResponse>,
-    event_channel: &Sender<XapEvent>,
-) -> XapResult<()> {
-    let mut reader = Cursor::new(&report);
-    let token = Token::read_le(&mut reader)?;
-
-    if let Token::Broadcast = token {
-        let broadcast = BroadcastRaw::from_raw_report(&report)?;
-
-        match broadcast.broadcast_type() {
-            BroadcastType::Log => {
-                let log: LogBroadcast = broadcast.into_xap_broadcast()?;
-                event_channel
-                    .send(XapEvent::LogReceived { id, log: log.0 })
-                    .expect("failed to send broadcast event!");
-            }
-            BroadcastType::SecureStatus => {
-                let secure_status: SecureStatusBroadcast = broadcast.into_xap_broadcast()?;
-                state.write().secure_status = secure_status.0;
-                event_channel
-                    .send(XapEvent::SecureStatusChanged {
-                        id,
-                        secure_status: secure_status.0,
-                    })
-                    .expect("failed to send broadcast event!");
-            }
-            BroadcastType::Keyboard => info!("keyboard broadcasts are not implemented!"),
-            BroadcastType::User => info!("user broadcasts are not implemented!"),
-        }
-    } else {
-        let response = RawResponse::from_raw_report(&report)?;
-        trace!(
-            "received XAP package with token {:?} and payload {:#?}",
-            response.token(),
-            response.payload()
-        );
-        tx_channel
-            .send(response)
-            .expect("failed to forward received XAP report");
+        Ok(length)
     }
 
-    Ok(())
+    pub fn secure_status(&self) -> &XapSecureStatus {
+        &self.state.secure_status
+    }
 }

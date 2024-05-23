@@ -7,14 +7,13 @@ mod aggregation;
 mod rpc;
 mod xap;
 
-use std::sync::Arc;
-use std::time::Duration;
+use std::sync::mpsc::{channel, Receiver, Sender, TryRecvError};
+use std::sync::{Arc, Mutex};
+use std::thread::sleep;
+use std::time::{Duration, Instant};
 
-use crossbeam_channel::tick;
-use crossbeam_channel::{select, unbounded, Receiver, Sender};
 use env_logger::Env;
 use log::{error, info};
-use parking_lot::Mutex;
 use tauri::path::BaseDirectory;
 use tauri::{
     plugin::{Builder, TauriPlugin},
@@ -22,92 +21,102 @@ use tauri::{
 };
 use tauri::{AppHandle, Manager};
 
-use rpc::events::{FrontendEvent, XapEvent};
-use rpc::commands::{keycode_set, keymap_get, xap_constants_get};
-use xap_specs::constants::XapConstants;
+use rpc::commands::{device_get, keycode_set, keymap_get, xap_constants_get};
+use rpc::events::XapEvent;
 use xap::client::XapClient;
 use xap::client::XapClientResult;
+use xap_specs::constants::XapConstants;
 
-fn shutdown_event_loop<R: Runtime>(sender: Sender<XapEvent>) -> TauriPlugin<R> {
+enum InternalEvent {
+    Shutdown,
+    FrontendNotify,
+}
+
+fn shutdown_event_loop<R: Runtime>(tx: Sender<InternalEvent>) -> TauriPlugin<R> {
     Builder::new("event loop shutdown")
         .on_event(move |_, event| {
             if let RunEvent::ExitRequested { .. } = event {
-                sender.send(XapEvent::Exit).unwrap();
+                tx.send(InternalEvent::Shutdown).unwrap();
             }
         })
         .build()
 }
 
-fn start_event_loop(
-    app: AppHandle,
+struct App {
+    handle: AppHandle,
     state: Arc<Mutex<XapClient>>,
-    event_channel: Receiver<XapEvent>,
-) {
-    _ = std::thread::spawn(move || {
-        let ticker = tick(Duration::from_millis(500));
-        let state = state;
-        info!("started event loop");
-        'event_loop: loop {
-            select! {
-                recv(event_channel) -> msg => {
-                    match msg {
-                        Ok(XapEvent::Exit) => {
-                            info!("received shutdown signal, exiting!");
-                            break 'event_loop;
-                        },
-                        Ok(XapEvent::LogReceived{id, log}) => {
-                            info!("LOG: {id} {log}");
-                                app.emit("log", FrontendEvent::LogReceived{ id, log }).unwrap();
-                        },
-                        Ok(XapEvent::SecureStatusChanged{id, secure_status}) => {
-                            info!("Secure status changed: {id} - {secure_status}");
-                            app.emit("secure-status-changed", FrontendEvent::SecureStatusChanged{ id, secure_status }).unwrap();
-                        },
-                        Ok(XapEvent::NewDevice(id)) => {
-                            if let Ok(device) = state.lock().get_device(&id){
-                                info!("detected new device - notifying frontend!");
-                                app.emit("new-device", FrontendEvent::NewDevice{ device: device.as_dto() }).unwrap();
-                            }
-                        },
-                        Ok(XapEvent::RemovedDevice(id)) => {
-                            info!("removed device - notifying frontend!");
-                            app.emit("removed-device", FrontendEvent::RemovedDevice{ id }).unwrap();
-                        },
-                        Ok(XapEvent::AnnounceAllDevices) => {
-                            let mut state = state.lock();
-                            info!("announcing all xap devices to the frontend");
-                            if let Ok(()) = state.enumerate_xap_devices() {
-                                for device in state.get_devices() {
-                                    app.emit("new-device", FrontendEvent::NewDevice{ device: device.as_dto() }).unwrap();
-                                }
-                            }
-                        },
-                        Ok(XapEvent::RxError) => {
-                            if let Err(err) = state.lock().enumerate_xap_devices() {
-                                error!("failed to enumerate Xap devices: {err}");
-                            }
-                        },
-                        Err(err) => {
-                            error!("error receiving event {err}");
-                        },
-                    }
+    event_channel: Receiver<InternalEvent>,
+}
 
-                },
-                recv(ticker) -> msg => {
-                    match msg {
-                        Ok(_) => {
-                            if let Err(err) = state.lock().enumerate_xap_devices() {
-                                error!("failed to enumerate Xap devices: {err}");
-                            }
-                        },
-                        Err(err) => {
-                            error!("failed receiving tick {err}");
+impl App {
+    fn new(
+        handle: AppHandle,
+        state: Arc<Mutex<XapClient>>,
+        event_channel: Receiver<InternalEvent>,
+    ) -> Self {
+        Self {
+            handle,
+            state,
+            event_channel,
+        }
+    }
+
+    fn start_event_loop(&mut self) {
+        info!("started event loop");
+
+        let mut last_enumeration = Instant::now();
+
+        loop {
+            match self.event_channel.try_recv() {
+                Ok(InternalEvent::Shutdown) => {
+                    info!("shutting down event loop");
+                    return;
+                }
+                Ok(InternalEvent::FrontendNotify) => {
+                    for device in self.state.lock().unwrap().get_devices() {
+                        let event = XapEvent::NewDevice { id: device.id() };
+                        self.handle.emit(&event.frontend_id(), event).unwrap();
+                    }
+                }
+                Err(TryRecvError::Disconnected) => {
+                    error!("event loop channel disconnected");
+                    return;
+                }
+                _ => {}
+            }
+
+            if last_enumeration.elapsed() > Duration::from_secs(1) {
+                last_enumeration = Instant::now();
+
+                match self.state.lock().unwrap().enumerate_xap_devices() {
+                    Ok(events) => {
+                        for event in events {
+                            self.handle_event(event);
                         }
+                    }
+                    Err(err) => {
+                        error!("failed to enumerate XAP devices: {err}");
                     }
                 }
             }
+
+            match self.state.lock().unwrap().poll_devices() {
+                Ok(events) => {
+                    for event in events {
+                        self.handle_event(event);
+                    }
+                }
+                Err(err) => {
+                    error!("failed to poll XAP devices: {err}");
+                }
+            }
+            sleep(std::time::Duration::from_millis(10));
         }
-    });
+    }
+
+    fn handle_event(&self, event: XapEvent) {
+        self.handle.emit(event.frontend_id(), event).unwrap();
+    }
 }
 
 fn main() -> XapClientResult<()> {
@@ -118,7 +127,7 @@ fn main() -> XapClientResult<()> {
         .formatter(specta::ts::formatter::prettier);
 
     let mut specta_builder =
-        generate_specta_builder!(commands: [xap_constants_get, keycode_set, keymap_get], events: [FrontendEvent])
+        generate_specta_builder!(commands: [xap_constants_get, keycode_set, keymap_get, device_get], events: [XapEvent])
             .config(specta_config);
 
     if cfg!(debug_assertions) {
@@ -126,12 +135,11 @@ fn main() -> XapClientResult<()> {
     }
 
     let (xap_handler, xap_events) = specta_builder.build().expect("failed to build specta");
-
-    let (event_channel_tx, event_channel_rx): (Sender<XapEvent>, Receiver<XapEvent>) = unbounded();
+    let (tx, rx) = channel();
 
     tauri::Builder::default()
         .invoke_handler(xap_handler)
-        .plugin(shutdown_event_loop(Sender::clone(&event_channel_tx)))
+        .plugin(shutdown_event_loop(tx.clone()))
         .setup(move |app| {
             xap_events(app);
 
@@ -139,19 +147,16 @@ fn main() -> XapClientResult<()> {
                 .path()
                 .resolve("../xap-specs/specs", BaseDirectory::Resource)?;
 
-            let state = Arc::new(Mutex::new(XapClient::new(
-                Sender::clone(&event_channel_tx),
-                XapConstants::new(xap_specs)?,
-            )?));
+            let state = Arc::new(Mutex::new(XapClient::new(XapConstants::new(xap_specs)?)?));
 
             app.manage(Arc::clone(&state));
 
-            start_event_loop(app.handle().clone(), state, event_channel_rx);
+            let handle = app.handle().clone();
+
+            std::thread::spawn(|| App::new(handle, state, rx).start_event_loop());
 
             app.listen("frontend-loaded", move |_| {
-                info!("frontend loaded - announcing all devices");
-                let event_tx = event_channel_tx.clone();
-                event_tx.send(XapEvent::AnnounceAllDevices).unwrap();
+                tx.clone().send(InternalEvent::FrontendNotify).unwrap();
             });
 
             Ok(())

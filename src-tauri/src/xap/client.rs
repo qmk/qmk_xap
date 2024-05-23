@@ -1,11 +1,16 @@
 use std::{collections::HashMap, fmt::Debug, sync::Arc};
 
-use crossbeam_channel::Sender;
 use hidapi::{DeviceInfo, HidApi};
+use log::error;
 use serde::Serialize;
 use thiserror::Error;
 use uuid::Uuid;
-use xap_specs::{constants::XapConstants, error::XapError, request::XapRequest};
+use xap_specs::{
+    broadcast::{BroadcastType, LogBroadcast},
+    constants::XapConstants,
+    error::XapError,
+    request::XapRequest,
+};
 
 use crate::XapEvent;
 
@@ -17,7 +22,6 @@ const XAP_USAGE: u16 = 0x0058;
 pub(crate) struct XapClient {
     hid: HidApi,
     devices: HashMap<Uuid, XapDevice>,
-    event_channel: Sender<XapEvent>,
     constants: Arc<XapConstants>,
 }
 
@@ -30,20 +34,49 @@ impl Debug for XapClient {
 }
 
 impl XapClient {
-    pub fn new(event_channel: Sender<XapEvent>, xap_constants: XapConstants) -> XapClientResult<Self> {
+    pub fn new(xap_constants: XapConstants) -> XapClientResult<Self> {
         Ok(Self {
             devices: HashMap::new(),
             hid: HidApi::new_without_enumerate()?,
-            event_channel,
             constants: Arc::new(xap_constants),
         })
     }
 
-    pub fn query<T>(&self, id: Uuid, request: T) -> XapClientResult<T::Response>
+    pub fn poll_devices(&mut self) -> XapClientResult<Vec<XapEvent>> {
+        // TODO: implement as callback functions?
+        let mut events = Vec::new();
+        for device in self.devices.values_mut() {
+            device.poll()?;
+
+            while let Some(broadcast) = device.broadcast_queue.pop_front() {
+                match broadcast.broadcast_type() {
+                    BroadcastType::Log => {
+                        let log: LogBroadcast = broadcast.into_xap_broadcast()?;
+                        events.push(XapEvent::LogReceived {
+                            id: device.id(),
+                            log: log.0,
+                        });
+                    }
+                    BroadcastType::SecureStatus => {
+                        events.push(XapEvent::SecureStatusChanged {
+                            id: device.id(),
+                            secure_status: device.secure_status().clone(),
+                        });
+                    }
+                    BroadcastType::Keyboard => error!("keyboard broadcasts are not implemented!"),
+                    BroadcastType::User => error!("user broadcasts are not implemented!"),
+                }
+            }
+        }
+
+        Ok(events)
+    }
+
+    pub fn query<T>(&mut self, id: Uuid, request: T) -> XapClientResult<T::Response>
     where
         T: XapRequest,
     {
-        match self.devices.get(&id) {
+        match self.devices.get_mut(&id) {
             Some(device) => device.query(request),
             None => Err(XapClientError::UnknownDevice(id)),
         }
@@ -53,7 +86,9 @@ impl XapClient {
         self.constants.as_ref().clone()
     }
 
-    pub fn enumerate_xap_devices(&mut self) -> XapClientResult<()> {
+    pub fn enumerate_xap_devices(&mut self) -> XapClientResult<Vec<XapEvent>> {
+        // TODO: implement as callback functions?
+        let mut events = Vec::new();
         // 1. Device already enumerated - don't start new capturing thread (announce nothing)
         // 2. Device already enumerated but error occured - remove old device and restart device (announce removal + announce new device)
         // 3. Device not enumerated - add device and start capturing (announce new device)
@@ -67,16 +102,13 @@ impl XapClient {
             .collect();
 
         self.devices.retain(|id, known_device| {
-            if known_device.is_running()
-                || xap_devices
-                    .iter()
-                    .any(|candidate| known_device.is_hid_device(candidate))
+            if xap_devices
+                .iter()
+                .any(|candidate| known_device.is_hid_device(candidate))
             {
                 true
             } else {
-                self.event_channel
-                    .send(XapEvent::RemovedDevice(*id))
-                    .expect("failed to announce removal of xap device");
+                events.push(XapEvent::RemovedDevice { id: *id });
                 false
             }
         });
@@ -93,22 +125,20 @@ impl XapClient {
             let new_device = XapDevice::new(
                 device.clone(),
                 Arc::clone(&self.constants),
-                self.event_channel.clone(),
-                device.open_device(&self.hid)?,
                 device.open_device(&self.hid)?,
             )?;
             let id = new_device.id();
             self.devices.insert(id, new_device);
-            self.event_channel
-                .send(XapEvent::NewDevice(id))
-                .expect("failed to announce new xap device");
+            events.push(XapEvent::NewDevice { id: id });
         }
 
-        Ok(())
+        Ok(events)
     }
 
     pub fn get_device(&self, id: &Uuid) -> XapClientResult<&XapDevice> {
-        self.devices.get(id).ok_or(XapClientError::UnknownDevice(*id))
+        self.devices
+            .get(id)
+            .ok_or(XapClientError::UnknownDevice(*id))
     }
 
     pub fn get_device_mut(&mut self, id: &Uuid) -> XapClientResult<&mut XapDevice> {
@@ -138,6 +168,10 @@ pub enum XapClientError {
     Other(#[from] anyhow::Error),
     #[error("XAP protocol error {0}")]
     ProtocolError(#[from] XapError),
+    #[error("bit handling error {0}")]
+    BitHandlingError(#[from] binrw::Error),
+    #[error("Timout waitung for response")]
+    Timeout,
 }
 
 impl Serialize for XapClientError {

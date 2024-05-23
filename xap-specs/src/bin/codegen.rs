@@ -370,6 +370,7 @@ impl Route {
                     ) -> FrontendResult<{response_type_name}> {{
                         state
                             .lock()
+                            .unwrap()
                             .query(id, {name_pascal}Request(()))
                             .map_err(Into::into)
                     }}
@@ -389,6 +390,7 @@ impl Route {
                     ) -> FrontendResult<{response_type_name}> {{
                         state
                             .lock()
+                            .unwrap()
                             .query(id, {name_pascal}Request(arg))
                             .map_err(Into::into)
                     }}
@@ -431,10 +433,9 @@ impl Route {
             #[allow(dead_code)]
             #[allow(unused_imports)]
             pub mod {module_name} {{
-                use std::sync::Arc;
+                use std::sync::{{Arc, Mutex}};
 
                 use tauri::State;
-                use parking_lot::Mutex;
                 use uuid::Uuid;
 
                 use crate::rpc::commands::FrontendResult;

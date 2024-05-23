@@ -3,9 +3,8 @@
 #[allow(dead_code)]
 #[allow(unused_imports)]
 pub mod xap {
-    use std::sync::Arc;
+    use std::sync::{Arc, Mutex};
 
-    use parking_lot::Mutex;
     use tauri::State;
     use uuid::Uuid;
 
@@ -22,6 +21,7 @@ pub mod xap {
     ) -> FrontendResult<XapVersionResponse> {
         state
             .lock()
+            .unwrap()
             .query(id, XapVersionRequest(()))
             .map_err(Into::into)
     }
@@ -34,6 +34,7 @@ pub mod xap {
     ) -> FrontendResult<XapCapabilitiesFlags> {
         state
             .lock()
+            .unwrap()
             .query(id, XapCapabilitiesRequest(()))
             .map_err(Into::into)
     }
@@ -46,6 +47,7 @@ pub mod xap {
     ) -> FrontendResult<XapEnabledSubsystemCapabilitiesFlags> {
         state
             .lock()
+            .unwrap()
             .query(id, XapEnabledSubsystemCapabilitiesRequest(()))
             .map_err(Into::into)
     }
@@ -58,6 +60,7 @@ pub mod xap {
     ) -> FrontendResult<XapSecureStatusResponse> {
         state
             .lock()
+            .unwrap()
             .query(id, XapSecureStatusRequest(()))
             .map_err(Into::into)
     }
@@ -70,6 +73,7 @@ pub mod xap {
     ) -> FrontendResult<()> {
         state
             .lock()
+            .unwrap()
             .query(id, XapSecureUnlockRequest(()))
             .map_err(Into::into)
     }
@@ -82,6 +86,7 @@ pub mod xap {
     ) -> FrontendResult<()> {
         state
             .lock()
+            .unwrap()
             .query(id, XapSecureLockRequest(()))
             .map_err(Into::into)
     }
@@ -90,9 +95,8 @@ pub mod xap {
 #[allow(dead_code)]
 #[allow(unused_imports)]
 pub mod qmk {
-    use std::sync::Arc;
+    use std::sync::{Arc, Mutex};
 
-    use parking_lot::Mutex;
     use tauri::State;
     use uuid::Uuid;
 
@@ -109,6 +113,7 @@ pub mod qmk {
     ) -> FrontendResult<QmkVersionResponse> {
         state
             .lock()
+            .unwrap()
             .query(id, QmkVersionRequest(()))
             .map_err(Into::into)
     }
@@ -121,6 +126,7 @@ pub mod qmk {
     ) -> FrontendResult<QmkCapabilitiesFlags> {
         state
             .lock()
+            .unwrap()
             .query(id, QmkCapabilitiesRequest(()))
             .map_err(Into::into)
     }
@@ -133,6 +139,7 @@ pub mod qmk {
     ) -> FrontendResult<QmkBoardIdentifiersResponse> {
         state
             .lock()
+            .unwrap()
             .query(id, QmkBoardIdentifiersRequest(()))
             .map_err(Into::into)
     }
@@ -145,6 +152,7 @@ pub mod qmk {
     ) -> FrontendResult<QmkBoardManufacturerResponse> {
         state
             .lock()
+            .unwrap()
             .query(id, QmkBoardManufacturerRequest(()))
             .map_err(Into::into)
     }
@@ -157,6 +165,7 @@ pub mod qmk {
     ) -> FrontendResult<QmkProductNameResponse> {
         state
             .lock()
+            .unwrap()
             .query(id, QmkProductNameRequest(()))
             .map_err(Into::into)
     }
@@ -169,6 +178,7 @@ pub mod qmk {
     ) -> FrontendResult<QmkConfigBlobLengthResponse> {
         state
             .lock()
+            .unwrap()
             .query(id, QmkConfigBlobLengthRequest(()))
             .map_err(Into::into)
     }
@@ -182,6 +192,7 @@ pub mod qmk {
     ) -> FrontendResult<QmkConfigBlobChunkResponse> {
         state
             .lock()
+            .unwrap()
             .query(id, QmkConfigBlobChunkRequest(arg))
             .map_err(Into::into)
     }
@@ -194,6 +205,7 @@ pub mod qmk {
     ) -> FrontendResult<QmkJumpToBootloaderResponse> {
         state
             .lock()
+            .unwrap()
             .query(id, QmkJumpToBootloaderRequest(()))
             .map_err(Into::into)
     }
@@ -206,6 +218,7 @@ pub mod qmk {
     ) -> FrontendResult<QmkHardwareIdentifierResponse> {
         state
             .lock()
+            .unwrap()
             .query(id, QmkHardwareIdentifierRequest(()))
             .map_err(Into::into)
     }
@@ -218,6 +231,7 @@ pub mod qmk {
     ) -> FrontendResult<QmkReinitializeEepromResponse> {
         state
             .lock()
+            .unwrap()
             .query(id, QmkReinitializeEepromRequest(()))
             .map_err(Into::into)
     }
@@ -226,9 +240,8 @@ pub mod qmk {
 #[allow(dead_code)]
 #[allow(unused_imports)]
 pub mod keyboard {
-    use std::sync::Arc;
+    use std::sync::{Arc, Mutex};
 
-    use parking_lot::Mutex;
     use tauri::State;
     use uuid::Uuid;
 
@@ -241,9 +254,8 @@ pub mod keyboard {
 #[allow(dead_code)]
 #[allow(unused_imports)]
 pub mod user {
-    use std::sync::Arc;
+    use std::sync::{Arc, Mutex};
 
-    use parking_lot::Mutex;
     use tauri::State;
     use uuid::Uuid;
 
@@ -256,9 +268,8 @@ pub mod user {
 #[allow(dead_code)]
 #[allow(unused_imports)]
 pub mod keymap {
-    use std::sync::Arc;
+    use std::sync::{Arc, Mutex};
 
-    use parking_lot::Mutex;
     use tauri::State;
     use uuid::Uuid;
 
@@ -275,6 +286,7 @@ pub mod keymap {
     ) -> FrontendResult<KeymapCapabilitiesFlags> {
         state
             .lock()
+            .unwrap()
             .query(id, KeymapCapabilitiesRequest(()))
             .map_err(Into::into)
     }
@@ -287,6 +299,7 @@ pub mod keymap {
     ) -> FrontendResult<KeymapGetLayerCountResponse> {
         state
             .lock()
+            .unwrap()
             .query(id, KeymapGetLayerCountRequest(()))
             .map_err(Into::into)
     }
@@ -300,6 +313,7 @@ pub mod keymap {
     ) -> FrontendResult<KeymapGetKeycodeResponse> {
         state
             .lock()
+            .unwrap()
             .query(id, KeymapGetKeycodeRequest(arg))
             .map_err(Into::into)
     }
@@ -313,6 +327,7 @@ pub mod keymap {
     ) -> FrontendResult<KeymapGetEncoderKeycodeResponse> {
         state
             .lock()
+            .unwrap()
             .query(id, KeymapGetEncoderKeycodeRequest(arg))
             .map_err(Into::into)
     }
@@ -321,9 +336,8 @@ pub mod keymap {
 #[allow(dead_code)]
 #[allow(unused_imports)]
 pub mod remapping {
-    use std::sync::Arc;
+    use std::sync::{Arc, Mutex};
 
-    use parking_lot::Mutex;
     use tauri::State;
     use uuid::Uuid;
 
@@ -340,6 +354,7 @@ pub mod remapping {
     ) -> FrontendResult<RemappingCapabilitiesFlags> {
         state
             .lock()
+            .unwrap()
             .query(id, RemappingCapabilitiesRequest(()))
             .map_err(Into::into)
     }
@@ -352,6 +367,7 @@ pub mod remapping {
     ) -> FrontendResult<RemappingGetLayerCountResponse> {
         state
             .lock()
+            .unwrap()
             .query(id, RemappingGetLayerCountRequest(()))
             .map_err(Into::into)
     }
@@ -365,6 +381,7 @@ pub mod remapping {
     ) -> FrontendResult<()> {
         state
             .lock()
+            .unwrap()
             .query(id, RemappingSetKeycodeRequest(arg))
             .map_err(Into::into)
     }
@@ -378,6 +395,7 @@ pub mod remapping {
     ) -> FrontendResult<()> {
         state
             .lock()
+            .unwrap()
             .query(id, RemappingSetEncoderKeycodeRequest(arg))
             .map_err(Into::into)
     }
@@ -386,9 +404,8 @@ pub mod remapping {
 #[allow(dead_code)]
 #[allow(unused_imports)]
 pub mod lighting {
-    use std::sync::Arc;
+    use std::sync::{Arc, Mutex};
 
-    use parking_lot::Mutex;
     use tauri::State;
     use uuid::Uuid;
 
@@ -405,6 +422,7 @@ pub mod lighting {
     ) -> FrontendResult<LightingCapabilitiesFlags> {
         state
             .lock()
+            .unwrap()
             .query(id, LightingCapabilitiesRequest(()))
             .map_err(Into::into)
     }
@@ -412,9 +430,8 @@ pub mod lighting {
     #[allow(dead_code)]
     #[allow(unused_imports)]
     pub mod backlight {
-        use std::sync::Arc;
+        use std::sync::{Arc, Mutex};
 
-        use parking_lot::Mutex;
         use tauri::State;
         use uuid::Uuid;
 
@@ -431,6 +448,7 @@ pub mod lighting {
         ) -> FrontendResult<BacklightCapabilitiesFlags> {
             state
                 .lock()
+                .unwrap()
                 .query(id, BacklightCapabilitiesRequest(()))
                 .map_err(Into::into)
         }
@@ -443,6 +461,7 @@ pub mod lighting {
         ) -> FrontendResult<BacklightGetEnabledEffectsResponse> {
             state
                 .lock()
+                .unwrap()
                 .query(id, BacklightGetEnabledEffectsRequest(()))
                 .map_err(Into::into)
         }
@@ -455,6 +474,7 @@ pub mod lighting {
         ) -> FrontendResult<BacklightConfig> {
             state
                 .lock()
+                .unwrap()
                 .query(id, BacklightGetConfigRequest(()))
                 .map_err(Into::into)
         }
@@ -468,6 +488,7 @@ pub mod lighting {
         ) -> FrontendResult<()> {
             state
                 .lock()
+                .unwrap()
                 .query(id, BacklightSetConfigRequest(arg))
                 .map_err(Into::into)
         }
@@ -480,6 +501,7 @@ pub mod lighting {
         ) -> FrontendResult<()> {
             state
                 .lock()
+                .unwrap()
                 .query(id, BacklightSaveConfigRequest(()))
                 .map_err(Into::into)
         }
@@ -488,9 +510,8 @@ pub mod lighting {
     #[allow(dead_code)]
     #[allow(unused_imports)]
     pub mod rgblight {
-        use std::sync::Arc;
+        use std::sync::{Arc, Mutex};
 
-        use parking_lot::Mutex;
         use tauri::State;
         use uuid::Uuid;
 
@@ -507,6 +528,7 @@ pub mod lighting {
         ) -> FrontendResult<RgblightCapabilitiesFlags> {
             state
                 .lock()
+                .unwrap()
                 .query(id, RgblightCapabilitiesRequest(()))
                 .map_err(Into::into)
         }
@@ -519,6 +541,7 @@ pub mod lighting {
         ) -> FrontendResult<RgblightGetEnabledEffectsResponse> {
             state
                 .lock()
+                .unwrap()
                 .query(id, RgblightGetEnabledEffectsRequest(()))
                 .map_err(Into::into)
         }
@@ -531,6 +554,7 @@ pub mod lighting {
         ) -> FrontendResult<RgbLightConfig> {
             state
                 .lock()
+                .unwrap()
                 .query(id, RgblightGetConfigRequest(()))
                 .map_err(Into::into)
         }
@@ -544,6 +568,7 @@ pub mod lighting {
         ) -> FrontendResult<()> {
             state
                 .lock()
+                .unwrap()
                 .query(id, RgblightSetConfigRequest(arg))
                 .map_err(Into::into)
         }
@@ -556,6 +581,7 @@ pub mod lighting {
         ) -> FrontendResult<()> {
             state
                 .lock()
+                .unwrap()
                 .query(id, RgblightSaveConfigRequest(()))
                 .map_err(Into::into)
         }
@@ -564,9 +590,8 @@ pub mod lighting {
     #[allow(dead_code)]
     #[allow(unused_imports)]
     pub mod rgbmatrix {
-        use std::sync::Arc;
+        use std::sync::{Arc, Mutex};
 
-        use parking_lot::Mutex;
         use tauri::State;
         use uuid::Uuid;
 
@@ -583,6 +608,7 @@ pub mod lighting {
         ) -> FrontendResult<RgbmatrixCapabilitiesFlags> {
             state
                 .lock()
+                .unwrap()
                 .query(id, RgbmatrixCapabilitiesRequest(()))
                 .map_err(Into::into)
         }
@@ -595,6 +621,7 @@ pub mod lighting {
         ) -> FrontendResult<RgbmatrixGetEnabledEffectsResponse> {
             state
                 .lock()
+                .unwrap()
                 .query(id, RgbmatrixGetEnabledEffectsRequest(()))
                 .map_err(Into::into)
         }
@@ -607,6 +634,7 @@ pub mod lighting {
         ) -> FrontendResult<RgbMatrixConfig> {
             state
                 .lock()
+                .unwrap()
                 .query(id, RgbmatrixGetConfigRequest(()))
                 .map_err(Into::into)
         }
@@ -620,6 +648,7 @@ pub mod lighting {
         ) -> FrontendResult<()> {
             state
                 .lock()
+                .unwrap()
                 .query(id, RgbmatrixSetConfigRequest(arg))
                 .map_err(Into::into)
         }
@@ -632,6 +661,7 @@ pub mod lighting {
         ) -> FrontendResult<()> {
             state
                 .lock()
+                .unwrap()
                 .query(id, RgbmatrixSaveConfigRequest(()))
                 .map_err(Into::into)
         }
@@ -641,9 +671,8 @@ pub mod lighting {
 #[allow(dead_code)]
 #[allow(unused_imports)]
 pub mod audio {
-    use std::sync::Arc;
+    use std::sync::{Arc, Mutex};
 
-    use parking_lot::Mutex;
     use tauri::State;
     use uuid::Uuid;
 
@@ -660,6 +689,7 @@ pub mod audio {
     ) -> FrontendResult<AudioCapabilitiesFlags> {
         state
             .lock()
+            .unwrap()
             .query(id, AudioCapabilitiesRequest(()))
             .map_err(Into::into)
     }
@@ -672,6 +702,7 @@ pub mod audio {
     ) -> FrontendResult<AudioConfig> {
         state
             .lock()
+            .unwrap()
             .query(id, AudioGetConfigRequest(()))
             .map_err(Into::into)
     }
@@ -685,6 +716,7 @@ pub mod audio {
     ) -> FrontendResult<()> {
         state
             .lock()
+            .unwrap()
             .query(id, AudioSetConfigRequest(arg))
             .map_err(Into::into)
     }
@@ -697,6 +729,7 @@ pub mod audio {
     ) -> FrontendResult<()> {
         state
             .lock()
+            .unwrap()
             .query(id, AudioSaveConfigRequest(()))
             .map_err(Into::into)
     }

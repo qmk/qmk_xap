@@ -1,13 +1,12 @@
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 
-use parking_lot::Mutex;
 use serde::Serialize;
 use specta::Type;
 use tauri::State;
 use uuid::Uuid;
 
 use crate::{
-    aggregation::XapConstants,
+    aggregation::{XapConstants, XapDevice},
     xap::{
         client::{XapClient, XapClientError},
         device::Keymap,
@@ -29,7 +28,7 @@ impl From<XapClientError> for FrontendError {
 #[tauri::command]
 #[specta::specta]
 pub fn xap_constants_get(state: State<'_, Arc<Mutex<XapClient>>>) -> XapConstants {
-    state.lock().xap_constants().into()
+    state.lock().unwrap().xap_constants().into()
 }
 
 #[tauri::command]
@@ -41,6 +40,7 @@ pub fn keycode_set(
 ) -> FrontendResult<()> {
     state
         .lock()
+        .unwrap()
         .get_device_mut(&id)?
         .set_keycode(arg)
         .map_err(Into::into)
@@ -49,5 +49,11 @@ pub fn keycode_set(
 #[tauri::command]
 #[specta::specta]
 pub fn keymap_get(id: Uuid, state: State<'_, Arc<Mutex<XapClient>>>) -> FrontendResult<Keymap> {
-    Ok(state.lock().get_device(&id)?.keymap())
+    Ok(state.lock().unwrap().get_device(&id)?.keymap())
+}
+
+#[tauri::command]
+#[specta::specta]
+pub fn device_get(id: Uuid, state: State<'_, Arc<Mutex<XapClient>>>) -> FrontendResult<XapDevice> {
+    Ok(state.lock().unwrap().get_device(&id)?.as_dto())
 }
