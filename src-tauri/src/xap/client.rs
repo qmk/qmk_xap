@@ -1,14 +1,13 @@
 use std::{collections::HashMap, fmt::Debug, sync::Arc};
 
+use anyhow::{anyhow, Result};
 use hidapi::{DeviceInfo, HidApi};
 use log::error;
-use serde::Serialize;
-use thiserror::Error;
 use uuid::Uuid;
+
 use xap_specs::{
     broadcast::{BroadcastType, LogBroadcast},
     constants::XapConstants,
-    error::XapError,
     request::XapRequest,
 };
 
@@ -34,7 +33,7 @@ impl Debug for XapClient {
 }
 
 impl XapClient {
-    pub fn new(xap_constants: XapConstants) -> XapClientResult<Self> {
+    pub fn new(xap_constants: XapConstants) -> Result<Self> {
         Ok(Self {
             devices: HashMap::new(),
             hid: HidApi::new_without_enumerate()?,
@@ -42,7 +41,7 @@ impl XapClient {
         })
     }
 
-    pub fn poll_devices(&mut self) -> XapClientResult<Vec<XapEvent>> {
+    pub fn poll_devices(&mut self) -> Result<Vec<XapEvent>> {
         // TODO: implement as callback functions?
         let mut events = Vec::new();
         for device in self.devices.values_mut() {
@@ -60,7 +59,7 @@ impl XapClient {
                     BroadcastType::SecureStatus => {
                         events.push(XapEvent::SecureStatusChanged {
                             id: device.id(),
-                            secure_status: device.secure_status().clone(),
+                            secure_status: *device.secure_status(),
                         });
                     }
                     BroadcastType::Keyboard => error!("keyboard broadcasts are not implemented!"),
@@ -72,13 +71,13 @@ impl XapClient {
         Ok(events)
     }
 
-    pub fn query<T>(&mut self, id: Uuid, request: T) -> XapClientResult<T::Response>
+    pub fn query<T>(&mut self, id: Uuid, request: T) -> Result<T::Response>
     where
         T: XapRequest,
     {
         match self.devices.get_mut(&id) {
             Some(device) => device.query(request),
-            None => Err(XapClientError::UnknownDevice(id)),
+            None => Err(anyhow!("unknown device id: {id}")),
         }
     }
 
@@ -86,7 +85,7 @@ impl XapClient {
         self.constants.as_ref().clone()
     }
 
-    pub fn enumerate_xap_devices(&mut self) -> XapClientResult<Vec<XapEvent>> {
+    pub fn enumerate_xap_devices(&mut self) -> Result<Vec<XapEvent>> {
         // TODO: implement as callback functions?
         let mut events = Vec::new();
         // 1. Device already enumerated - don't start new capturing thread (announce nothing)
@@ -129,56 +128,25 @@ impl XapClient {
             )?;
             let id = new_device.id();
             self.devices.insert(id, new_device);
-            events.push(XapEvent::NewDevice { id: id });
+            events.push(XapEvent::NewDevice { id });
         }
 
         Ok(events)
     }
 
-    pub fn get_device(&self, id: &Uuid) -> XapClientResult<&XapDevice> {
+    pub fn get_device(&self, id: &Uuid) -> Result<&XapDevice> {
         self.devices
             .get(id)
-            .ok_or(XapClientError::UnknownDevice(*id))
+            .ok_or(anyhow!("unknown device id: {id}"))
     }
 
-    pub fn get_device_mut(&mut self, id: &Uuid) -> XapClientResult<&mut XapDevice> {
+    pub fn get_device_mut(&mut self, id: &Uuid) -> Result<&mut XapDevice> {
         self.devices
             .get_mut(id)
-            .ok_or(XapClientError::UnknownDevice(*id))
+            .ok_or(anyhow!("unknown device id: {id}"))
     }
 
     pub fn get_devices(&self) -> Vec<&XapDevice> {
         self.devices.values().collect()
-    }
-}
-
-pub type XapClientResult<T> = Result<T, XapClientError>;
-
-#[derive(Error, Debug)]
-pub enum XapClientError {
-    #[error("HID communication failed {0}")]
-    Hid(#[from] hidapi::HidError),
-    #[error("unkown device {0}")]
-    UnknownDevice(Uuid),
-    #[error("JSON (de)serialization error {0}")]
-    JSONError(#[from] serde_json::Error),
-    #[error("HJSON (de)serialization error {0}")]
-    HJSONError(#[from] deser_hjson::Error),
-    #[error("unknown error {0}")]
-    Other(#[from] anyhow::Error),
-    #[error("XAP protocol error {0}")]
-    ProtocolError(#[from] XapError),
-    #[error("bit handling error {0}")]
-    BitHandlingError(#[from] binrw::Error),
-    #[error("Timout waitung for response")]
-    Timeout,
-}
-
-impl Serialize for XapClientError {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: serde::Serializer,
-    {
-        serializer.serialize_str(&self.to_string())
     }
 }

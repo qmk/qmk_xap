@@ -4,11 +4,10 @@ use std::{
     path::Path,
 };
 
+use anyhow::Result;
 use convert_case::{Case, Casing};
 use serde::{de::Error, Deserialize, Deserializer, Serialize};
 use specta::Type;
-
-use crate::error::XapResult;
 
 #[derive(Clone, Deserialize, Serialize, Debug, Type)]
 pub struct LightingEffects {
@@ -64,7 +63,7 @@ pub struct LightingGroup {
 pub(crate) fn read_xap_lighting_effects(
     path: impl AsRef<Path>,
     effect_type: &str,
-) -> XapResult<LightingEffects> {
+) -> Result<LightingEffects> {
     for entry in fs::read_dir(path.as_ref())?.filter_map(|e| e.ok()) {
         let path = entry.path();
 

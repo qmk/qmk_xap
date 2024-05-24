@@ -4,12 +4,11 @@ use std::{
     path::Path,
 };
 
+use anyhow::Result;
 use log::error;
 use serde::{de::Error, Deserialize, Deserializer, Serialize};
 use serde_with::{serde_as, skip_serializing_none, NoneAsEmptyString};
 use specta::Type;
-
-use crate::error::XapResult;
 
 #[serde_as]
 #[skip_serializing_none]
@@ -45,7 +44,7 @@ struct KeyCodes {
     keycodes: HashMap<u16, XapKeyCode>,
 }
 
-pub(crate) fn read_xap_keycodes(path: impl AsRef<Path>) -> XapResult<HashMap<u16, XapKeyCode>> {
+pub(crate) fn read_xap_keycodes(path: impl AsRef<Path>) -> Result<HashMap<u16, XapKeyCode>> {
     let mut all = HashMap::new();
 
     for entry in fs::read_dir(path)?.filter_map(|e| e.ok()) {

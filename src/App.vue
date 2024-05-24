@@ -36,7 +36,7 @@
                     }
                     break
                 case 'error':
-                    console.error('error getting device info for device ' + id)
+                    console.error('error getting device info for device ' + id + ': ' + result.error)
                     break
             }
         })

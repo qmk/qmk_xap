@@ -4,9 +4,8 @@ pub mod lighting;
 use std::collections::HashMap;
 use std::path::PathBuf;
 
+use anyhow::Result;
 use serde::Serialize;
-
-use crate::error::XapResult;
 
 use self::keycode::{read_xap_keycodes, XapKeyCode};
 use self::lighting::{read_xap_lighting_effects, LightingEffects};
@@ -20,7 +19,7 @@ pub struct XapConstants {
 }
 
 impl XapConstants {
-    pub fn new(specs_path: PathBuf) -> XapResult<Self> {
+    pub fn new(specs_path: PathBuf) -> Result<Self> {
         Ok(Self {
             keycodes: read_xap_keycodes(&specs_path)?,
             rgblight_modes: read_xap_lighting_effects(&specs_path, "rgblight")?,

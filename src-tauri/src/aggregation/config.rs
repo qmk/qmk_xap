@@ -47,8 +47,6 @@ pub struct Matrix {
 
 #[cfg(test)]
 mod test {
-    use similar_asserts::assert_eq;
-
     use crate::aggregation::config::Config;
 
     #[test]
@@ -590,6 +588,6 @@ mod test {
 }
 }"#;
 
-        let _layout: Config = serde_json::from_str(&input).unwrap();
+        let _layout: Config = serde_json::from_str(input).unwrap();
     }
 }

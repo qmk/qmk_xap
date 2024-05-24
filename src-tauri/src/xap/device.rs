@@ -6,7 +6,7 @@ use std::{
     time::{Duration, Instant},
 };
 
-use anyhow::anyhow;
+use anyhow::{anyhow, Result};
 use binrw::{BinRead, BinWriterExt};
 use flate2::read::GzDecoder;
 use hidapi::{DeviceInfo, HidDevice};
@@ -18,7 +18,6 @@ use uuid::Uuid;
 use xap_specs::{
     broadcast::{BroadcastRaw, BroadcastType, SecureStatusBroadcast},
     constants::{keycode::XapKeyCode, XapConstants},
-    error::XapError,
     request::{RawRequest, XapRequest},
     response::RawResponse,
     token::Token,
@@ -31,41 +30,38 @@ use crate::{
         KeymapInfo, LightingCapabilities, LightingInfo, QmkInfo, RemapInfo,
         XapDevice as XapDeviceDto, XapDeviceInfo, XapInfo,
     },
-    xap::{
-        client::{XapClientError, XapClientResult},
-        spec::{
-            keymap::{
-                KeymapCapabilitiesFlags, KeymapCapabilitiesRequest, KeymapGetKeycodeArg,
-                KeymapGetKeycodeRequest, KeymapGetKeycodeResponse, KeymapGetLayerCountRequest,
+    xap::spec::{
+        keymap::{
+            KeymapCapabilitiesFlags, KeymapCapabilitiesRequest, KeymapGetKeycodeArg,
+            KeymapGetKeycodeRequest, KeymapGetKeycodeResponse, KeymapGetLayerCountRequest,
+        },
+        lighting::{
+            backlight::{
+                BacklightCapabilitiesFlags, BacklightCapabilitiesRequest,
+                BacklightGetEnabledEffectsRequest,
             },
-            lighting::{
-                backlight::{
-                    BacklightCapabilitiesFlags, BacklightCapabilitiesRequest,
-                    BacklightGetEnabledEffectsRequest,
-                },
-                rgblight::{
-                    RgblightCapabilitiesFlags, RgblightCapabilitiesRequest,
-                    RgblightGetEnabledEffectsRequest,
-                },
-                rgbmatrix::{
-                    RgbmatrixCapabilitiesFlags, RgbmatrixCapabilitiesRequest,
-                    RgbmatrixGetEnabledEffectsRequest,
-                },
-                LightingCapabilitiesFlags, LightingCapabilitiesRequest,
+            rgblight::{
+                RgblightCapabilitiesFlags, RgblightCapabilitiesRequest,
+                RgblightGetEnabledEffectsRequest,
             },
-            qmk::{
-                QmkBoardIdentifiersRequest, QmkBoardManufacturerRequest, QmkCapabilitiesFlags,
-                QmkCapabilitiesRequest, QmkConfigBlobChunkRequest, QmkConfigBlobLengthRequest,
-                QmkHardwareIdentifierRequest, QmkProductNameRequest, QmkVersionRequest,
+            rgbmatrix::{
+                RgbmatrixCapabilitiesFlags, RgbmatrixCapabilitiesRequest,
+                RgbmatrixGetEnabledEffectsRequest,
             },
-            remapping::{
-                RemappingCapabilitiesFlags, RemappingCapabilitiesRequest,
-                RemappingGetLayerCountRequest, RemappingSetKeycodeArg, RemappingSetKeycodeRequest,
-            },
-            xap::{
-                XapEnabledSubsystemCapabilitiesFlags, XapEnabledSubsystemCapabilitiesRequest,
-                XapSecureStatusRequest, XapVersionRequest,
-            },
+            LightingCapabilitiesFlags, LightingCapabilitiesRequest,
+        },
+        qmk::{
+            QmkBoardIdentifiersRequest, QmkBoardManufacturerRequest, QmkCapabilitiesFlags,
+            QmkCapabilitiesRequest, QmkConfigBlobChunkRequest, QmkConfigBlobLengthRequest,
+            QmkHardwareIdentifierRequest, QmkProductNameRequest, QmkVersionRequest,
+        },
+        remapping::{
+            RemappingCapabilitiesFlags, RemappingCapabilitiesRequest,
+            RemappingGetLayerCountRequest, RemappingSetKeycodeArg, RemappingSetKeycodeRequest,
+        },
+        xap::{
+            XapEnabledSubsystemCapabilitiesFlags, XapEnabledSubsystemCapabilitiesRequest,
+            XapSecureStatusRequest, XapVersionRequest,
         },
     },
 };
@@ -112,7 +108,7 @@ impl XapDevice {
         info: DeviceInfo,
         constants: Arc<XapConstants>,
         hid_device: HidDevice,
-    ) -> XapClientResult<Self> {
+    ) -> Result<Self> {
         // We are polling for reports, so we need to set the device to non-blocking mode otherwise
         // we will block forever in case that there is no report to read
         hid_device.set_blocking_mode(false)?;
@@ -181,7 +177,7 @@ impl XapDevice {
             && candidate.usage() == self.info.usage()
     }
 
-    pub fn set_keycode(&mut self, config: RemappingSetKeycodeArg) -> XapClientResult<()> {
+    pub fn set_keycode(&mut self, config: RemappingSetKeycodeArg) -> Result<()> {
         self.query(RemappingSetKeycodeRequest(config.clone()))?;
 
         self.state.keymap.set_keycode(KeymapKey {
@@ -199,7 +195,7 @@ impl XapDevice {
     pub fn query_keycode(
         &mut self,
         position: KeymapGetKeycodeArg,
-    ) -> XapClientResult<KeymapGetKeycodeResponse> {
+    ) -> Result<KeymapGetKeycodeResponse> {
         self.query(KeymapGetKeycodeRequest(KeymapGetKeycodeArg {
             layer: position.layer,
             row: position.row,
@@ -207,14 +203,14 @@ impl XapDevice {
         }))
     }
 
-    pub fn query<T: XapRequest>(&mut self, request: T) -> XapClientResult<T::Response> {
+    pub fn query<T: XapRequest>(&mut self, request: T) -> Result<T::Response> {
         if let Some(xap_info) = &self.state.xap_info {
             if !T::xap_version() < xap_info.xap.version {
-                return Err(XapClientError::ProtocolError(XapError::Protocol(format!(
+                return Err(anyhow!(
                     "can't do xap request [{:?}] with client of version {}",
                     T::id(),
                     xap_info.xap.version
-                ))));
+                ));
             }
         }
 
@@ -223,9 +219,7 @@ impl XapDevice {
 
         // Add trailing zero byte for the report Id to HID report
         let mut writer = Cursor::new(&mut report[1..]);
-        writer
-            .write_le(&request)
-            .map_err(|err| XapClientError::from(XapError::BitHandling(err)))?;
+        writer.write_le(&request)?;
 
         trace!("send XAP report with payload {:?}", &report[1..]);
 
@@ -239,7 +233,7 @@ impl XapDevice {
 
             if length == 0 {
                 if start.elapsed() > Duration::from_secs(5) {
-                    return Err(XapClientError::Timeout);
+                    return Err(anyhow!("timeout waiting for response to request"));
                 }
                 std::thread::sleep(Duration::from_millis(1));
                 continue;
@@ -254,19 +248,18 @@ impl XapDevice {
 
                 return response
                     .expect("response was just checked for None")
-                    .into_xap_response::<T>()
-                    .map_err(XapClientError::from);
+                    .into_xap_response::<T>();
             }
         }
     }
 
-    pub fn query_secure_status(&mut self) -> XapClientResult<XapSecureStatus> {
+    pub fn query_secure_status(&mut self) -> Result<XapSecureStatus> {
         let status = self.query(XapSecureStatusRequest(()))?.0.into();
         self.state.secure_status = status;
         Ok(status)
     }
 
-    fn query_device_info(&mut self) -> XapClientResult<()> {
+    fn query_device_info(&mut self) -> Result<()> {
         let subsystems = self.query(XapEnabledSubsystemCapabilitiesRequest(()))?;
 
         let xap_info = XapInfo {
@@ -432,7 +425,7 @@ impl XapDevice {
         Ok(())
     }
 
-    fn query_config(&mut self) -> XapClientResult<()> {
+    fn query_config(&mut self) -> Result<()> {
         //  data size
         let size = self.query(QmkConfigBlobLengthRequest(()))?.0;
 
@@ -452,17 +445,14 @@ impl XapDevice {
         let mut decoder = GzDecoder::new(data);
         let mut decompressed = String::new();
 
-        decoder
-            .read_to_string(&mut decompressed)
-            .map_err(|err| anyhow!("failed to decompress config json blob: {}", err))?;
+        decoder.read_to_string(&mut decompressed)?;
 
-        self.state.config = serde_json::from_str(&decompressed)
-            .map_err(|err| XapClientError::Other(anyhow!("failed to parse config json: {err}")))?;
+        self.state.config = serde_json::from_str(&decompressed)?;
 
         Ok(())
     }
 
-    fn query_keymap(&mut self) -> XapClientResult<()> {
+    fn query_keymap(&mut self) -> Result<()> {
         let layers = if let Some(keymap) = &self.xap_info().keymap {
             keymap.layer_count.unwrap_or_default()
         } else {
@@ -471,7 +461,7 @@ impl XapDevice {
 
         let Matrix { cols, rows } = self.state.config.matrix_size;
 
-        let keymap: Result<Vec<Vec<Vec<KeymapKey>>>, XapClientError> = (0..layers)
+        let keymap: Result<Vec<Vec<Vec<KeymapKey>>>> = (0..layers)
             .map(|layer| {
                 (0..rows)
                     .map(|row| {
@@ -498,7 +488,7 @@ impl XapDevice {
         Ok(())
     }
 
-    pub fn poll(&mut self) -> XapClientResult<usize> {
+    pub fn poll(&mut self) -> Result<usize> {
         let mut report = [0_u8; XAP_REPORT_SIZE];
 
         let length = self.hid_device.read(&mut report)?;

@@ -1,10 +1,10 @@
 use core::fmt::Debug;
 use std::io::Cursor;
 
+use anyhow::Result;
 use binrw::{binread, BinRead, BinReaderExt, Endian};
 use log::trace;
 
-use crate::error::XapResult;
 use crate::token::Token;
 use crate::XapSecureStatus;
 
@@ -34,14 +34,14 @@ impl BroadcastRaw {
         &self.broadcast_type
     }
 
-    pub fn from_raw_report(report: &[u8]) -> XapResult<Self> {
+    pub fn from_raw_report(report: &[u8]) -> Result<Self> {
         let mut reader = Cursor::new(report);
         let broadcast = Self::read_le(&mut reader)?;
         trace!("received raw XAP broadcast: {:#?}", broadcast);
         Ok(broadcast)
     }
 
-    pub fn into_xap_broadcast<T>(self) -> XapResult<T>
+    pub fn into_xap_broadcast<T>(self) -> Result<T>
     where
         T: XapBroadcast,
     {

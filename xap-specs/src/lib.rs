@@ -1,13 +1,12 @@
 use std::fmt::Display;
 
+use anyhow::anyhow;
 use binrw::{BinRead, BinReaderExt, BinResult, Endian};
-use error::XapError;
 use serde::Serialize;
 use specta::Type;
 
 pub mod broadcast;
 pub mod constants;
-pub mod error;
 pub mod request;
 pub mod response;
 pub mod token;
@@ -66,14 +65,14 @@ impl Display for XapSecureStatus {
 pub struct XapVersion(u32);
 
 impl TryFrom<u32> for XapVersion {
-    type Error = XapError;
+    type Error = anyhow::Error;
 
     fn try_from(value: u32) -> Result<Self, Self::Error> {
         match value {
             0x01 | 0x0100 | 0x0200 | 0x0300 => Ok(Self(value)),
-            _ => Err(XapError::Protocol(format!(
+            _ => Err(anyhow!(
                 "{value:06X} is not a valid BCD encoded Xap version"
-            ))),
+            )),
         }
     }
 }

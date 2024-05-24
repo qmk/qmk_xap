@@ -12,6 +12,7 @@ use std::sync::{Arc, Mutex};
 use std::thread::sleep;
 use std::time::{Duration, Instant};
 
+use anyhow::Result;
 use env_logger::Env;
 use log::{error, info};
 use tauri::path::BaseDirectory;
@@ -24,7 +25,7 @@ use tauri::{AppHandle, Manager};
 use rpc::commands::{device_get, keycode_set, keymap_get, xap_constants_get};
 use rpc::events::XapEvent;
 use xap::client::XapClient;
-use xap::client::XapClientResult;
+
 use xap_specs::constants::XapConstants;
 
 enum InternalEvent {
@@ -75,7 +76,7 @@ impl App {
                 Ok(InternalEvent::FrontendNotify) => {
                     for device in self.state.lock().unwrap().get_devices() {
                         let event = XapEvent::NewDevice { id: device.id() };
-                        self.handle.emit(&event.frontend_id(), event).unwrap();
+                        self.handle.emit(event.frontend_id(), event).unwrap();
                     }
                 }
                 Err(TryRecvError::Disconnected) => {
@@ -110,7 +111,7 @@ impl App {
                     error!("failed to poll XAP devices: {err}");
                 }
             }
-            sleep(std::time::Duration::from_millis(10));
+            sleep(std::time::Duration::from_millis(100));
         }
     }
 
@@ -119,7 +120,7 @@ impl App {
     }
 }
 
-fn main() -> XapClientResult<()> {
+fn main() -> Result<()> {
     env_logger::Builder::from_env(Env::default().default_filter_or("info")).init();
 
     let specta_config = specta::ts::ExportConfig::default()
@@ -152,7 +153,6 @@ fn main() -> XapClientResult<()> {
             app.manage(Arc::clone(&state));
 
             let handle = app.handle().clone();
-
             std::thread::spawn(|| App::new(handle, state, rx).start_event_loop());
 
             app.listen("frontend-loaded", move |_| {

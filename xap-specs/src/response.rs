@@ -1,17 +1,15 @@
 use core::fmt::Debug;
 use std::io::{Cursor, Read, Seek};
 
+use anyhow::anyhow;
+use anyhow::Result as Result;
 use binrw::{binread, BinRead, BinResult, Endian};
 use bitflags::bitflags;
 use log::trace;
 use serde::Serialize;
 use specta::Type;
 
-use crate::{
-    error::{XapError, XapResult},
-    request::XapRequest,
-    token::Token,
-};
+use crate::{request::XapRequest, token::Token};
 
 #[derive(Serialize, BinRead, Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct ResponseFlags(u8);
@@ -35,7 +33,7 @@ pub struct RawResponse {
 }
 
 impl RawResponse {
-    pub fn from_raw_report(report: &[u8]) -> XapResult<Self> {
+    pub fn from_raw_report(report: &[u8]) -> Result<Self> {
         let mut reader = Cursor::new(report);
         let response = RawResponse::read_le(&mut reader)?;
 
@@ -43,11 +41,8 @@ impl RawResponse {
 
         match response.flags {
             ResponseFlags::SUCCESS => Ok(response),
-            ResponseFlags::SECURE_FAILURE => Err(XapError::SecureLocked),
-            _ => Err(XapError::Protocol(format!(
-                "unknown response flag {:?}",
-                response.flags
-            ))),
+            ResponseFlags::SECURE_FAILURE => Err(anyhow!("device is locked")),
+            _ => Err(anyhow!("unknown response flag {:?}", response.flags)),
         }
     }
 
@@ -59,7 +54,7 @@ impl RawResponse {
         &self.payload
     }
 
-    pub fn into_xap_response<T>(self) -> XapResult<T::Response>
+    pub fn into_xap_response<T>(self) -> Result<T::Response>
     where
         T: XapRequest,
     {
@@ -87,10 +82,10 @@ impl BinRead for UTF8String {
 #[derive(BinRead, Debug)]
 pub struct SecureActionResponse(u8);
 
-impl From<SecureActionResponse> for XapResult<()> {
+impl From<SecureActionResponse> for Result<()> {
     fn from(val: SecureActionResponse) -> Self {
         if val.0 == 0 {
-            Err(XapError::SecureLocked)
+            Err(anyhow!("secure action failed"))
         } else {
             Ok(())
         }
