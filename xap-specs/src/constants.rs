@@ -7,7 +7,7 @@ use anyhow::Result;
 use serde::Serialize;
 use specta::Type;
 
-use self::keycode::{read_xap_keycodes, XapKeyCode, XapKeyCodeCategory};
+use self::keycode::{read_xap_keycodes, KeyCode, XapKeyCodeCategory};
 use self::lighting::{read_xap_lighting_effects, LightingEffects};
 
 #[derive(Debug, Clone, Serialize, Type)]
@@ -28,12 +28,12 @@ impl XapConstants {
         })
     }
 
-    pub fn get_keycode(&self, code: u16) -> XapKeyCode {
+    pub fn get_keycode(&self, code: u16) -> KeyCode {
         for category in &self.keycodes {
             if let Some(code) = category.codes.iter().find(|keycode| keycode.code == code) {
                 return code.clone();
             }
         }
-        XapKeyCode::new_custom(code)
+        KeyCode::new_custom(code)
     }
 }

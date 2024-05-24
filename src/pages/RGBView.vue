@@ -5,13 +5,13 @@
     import { storeToRefs } from 'pinia'
     import ColorPicker from '@radial-color-picker/vue-color-picker'
 
-    import { LightingEffect, RgbLightConfig } from '@generated/xap'
+    import { LightingEffect, RgbLightConfig, XapDeviceState } from '@generated/xap'
     import { useXapDeviceStore } from '@/stores/devices'
     import { commands } from '@generated/xap'
     import { notifyError } from '@/utils/utils'
 
     const store = useXapDeviceStore()
-    const { device } = storeToRefs(store)
+    const { device } = storeToRefs(store) as { device: Ref<XapDeviceState | null> }
 
     const RgbConfig: Ref<RgbLightConfig> = ref({
         enable: 1,

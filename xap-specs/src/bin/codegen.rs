@@ -342,6 +342,12 @@ impl Route {
 
             {request_type}
 
+            impl From<{request_type_name}> for {name_pascal}Request {{
+                fn from(req: {request_type_name}) -> Self {{
+                    Self(req)
+                }}
+            }}
+
             impl XapRequest for {name_pascal}Request {{
                 type Response = {response_type_name};
 

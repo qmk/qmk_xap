@@ -2,7 +2,7 @@ use core::fmt::Debug;
 use std::io::{Cursor, Read, Seek};
 
 use anyhow::anyhow;
-use anyhow::Result as Result;
+use anyhow::Result;
 use binrw::{binread, BinRead, BinResult, Endian};
 use bitflags::bitflags;
 use log::trace;

@@ -36,7 +36,9 @@
                     }
                     break
                 case 'error':
-                    console.error('error getting device info for device ' + id + ': ' + result.error)
+                    console.error(
+                        'error getting device info for device ' + id + ': ' + result.error,
+                    )
                     break
             }
         })
@@ -51,7 +53,8 @@
 
             Notify.create({
                 message:
-                    'Removed Device ' + (devices.value.get(id)?.info?.qmk.product_name ?? 'Unknown'),
+                    'Removed Device ' +
+                    (devices.value.get(id)?.info?.qmk.product_name ?? 'Unknown'),
                 icon: 'power_off',
             })
 

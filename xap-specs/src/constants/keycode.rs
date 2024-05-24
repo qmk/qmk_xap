@@ -13,7 +13,7 @@ use specta::Type;
 #[serde_as]
 #[skip_serializing_none]
 #[derive(Deserialize, Clone, Serialize, Default, Debug, PartialEq, Eq, Type)]
-pub struct XapKeyCode {
+pub struct KeyCode {
     #[serde(default)]
     pub code: u16,
     pub key: String,
@@ -29,10 +29,10 @@ pub struct XapKeyCode {
 #[derive(Debug, Serialize, Clone, Type)]
 pub struct XapKeyCodeCategory {
     pub name: String,
-    pub codes: Vec<XapKeyCode>,
+    pub codes: Vec<KeyCode>,
 }
 
-impl XapKeyCode {
+impl KeyCode {
     pub fn new_custom(code: u16) -> Self {
         Self {
             code,
@@ -47,7 +47,7 @@ impl XapKeyCode {
 #[derive(Deserialize, Debug)]
 struct KeyCodes {
     #[serde(deserialize_with = "xap_keycode_from_hex_map")]
-    keycodes: HashMap<u16, XapKeyCode>,
+    keycodes: HashMap<u16, KeyCode>,
 }
 
 pub(crate) fn read_xap_keycodes(path: impl AsRef<Path>) -> Result<Vec<XapKeyCodeCategory>> {
@@ -98,11 +98,11 @@ pub(crate) fn read_xap_keycodes(path: impl AsRef<Path>) -> Result<Vec<XapKeyCode
     Ok(keycodes)
 }
 
-fn xap_keycode_from_hex_map<'de, D>(deserializer: D) -> Result<HashMap<u16, XapKeyCode>, D::Error>
+fn xap_keycode_from_hex_map<'de, D>(deserializer: D) -> Result<HashMap<u16, KeyCode>, D::Error>
 where
     D: Deserializer<'de>,
 {
-    let map: HashMap<String, XapKeyCode> = Deserialize::deserialize(deserializer)?;
+    let map: HashMap<String, KeyCode> = Deserialize::deserialize(deserializer)?;
 
     map.into_iter()
         .try_fold(HashMap::new(), |mut result, (raw_code, mut keycode)| {
@@ -160,7 +160,7 @@ mod test {
 
         assert_eq!(
             codes.keycodes[&0],
-            XapKeyCode {
+            KeyCode {
                 code: 0,
                 group: Some("internal".to_owned()),
                 key: "KC_NO".to_owned(),
@@ -171,7 +171,7 @@ mod test {
 
         assert_eq!(
             codes.keycodes[&1],
-            XapKeyCode {
+            KeyCode {
                 code: 1,
                 group: Some("internal".to_owned()),
                 key: "KC_TRANSPARENT".to_owned(),
@@ -182,7 +182,7 @@ mod test {
 
         assert_eq!(
             codes.keycodes[&4],
-            XapKeyCode {
+            KeyCode {
                 code: 4,
                 group: Some("basic".to_owned()),
                 key: "KC_A".to_owned(),
@@ -193,7 +193,7 @@ mod test {
 
         assert_eq!(
             codes.keycodes[&5],
-            XapKeyCode {
+            KeyCode {
                 code: 5,
                 group: Some("basic".to_owned()),
                 key: "KC_B".to_owned(),

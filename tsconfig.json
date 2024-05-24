@@ -1,17 +1,21 @@
 {
     "compilerOptions": {
-        "target": "ESNext",
-        "useDefineForClassFields": true,
-        "module": "ESNext",
-        "moduleResolution": "Node",
-        "strict": true,
-        "jsx": "preserve",
-        "sourceMap": true,
-        "resolveJsonModule": true,
-        "isolatedModules": true,
+        "allowSyntheticDefaultImports": true,
         "esModuleInterop": true,
-        "lib": ["ESNext", "DOM"],
+        "isolatedModules": true,
+        "jsx": "preserve",
+        "lib": ["ES2020", "DOM", "DOM.Iterable"],
+        "module": "ESNext",
+        "moduleResolution": "bundler",
+        "noFallthroughCasesInSwitch": true,
+        "noUnusedLocals": true,
+        "noUnusedParameters": true,
+        "resolveJsonModule": true,
         "skipLibCheck": true,
+        "sourceMap": true,
+        "strict": true,
+        "target": "ES2020",
+        "useDefineForClassFields": true,
         "paths": {
             "@/*": ["./src/*"],
             "@generated/*": ["./src/generated/*"]
@@ -24,6 +28,7 @@
         "src/**/*.vue",
         "src-tauri/**/*.ts"
     ],
+    "exclude": ["node_modules", "dist", "public"],
     "references": [
         {
             "path": "./tsconfig.node.json"

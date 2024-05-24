@@ -22,7 +22,7 @@ use tauri::{
 };
 use tauri::{AppHandle, Manager};
 
-use rpc::commands::{device_get, keycode_set, keymap_get, xap_constants_get};
+use rpc::commands::{device_get, keymap_get, remap_key, xap_constants_get};
 use rpc::events::XapEvent;
 use xap::client::XapClient;
 
@@ -128,14 +128,14 @@ fn main() -> Result<()> {
         .formatter(specta::ts::formatter::prettier);
 
     let mut specta_builder =
-        generate_specta_builder!(commands: [xap_constants_get, keycode_set, keymap_get, device_get], events: [XapEvent])
+        generate_specta_builder!(commands: [xap_constants_get, remap_key, keymap_get, device_get], events: [XapEvent])
             .config(specta_config);
 
     if cfg!(debug_assertions) {
         specta_builder = specta_builder.path("../src/generated/xap.ts");
     }
 
-    let (xap_handler, xap_events) = specta_builder.build().expect("failed to build specta");
+    let (xap_handler, xap_events) = specta_builder.build()?;
     let (tx, rx) = channel();
 
     tauri::Builder::default()
@@ -146,7 +146,7 @@ fn main() -> Result<()> {
 
             let xap_specs = app
                 .path()
-                .resolve("../xap-specs/specs", BaseDirectory::Resource)?;
+                .resolve("../xap-specs/assets", BaseDirectory::Resource)?;
 
             let state = Arc::new(Mutex::new(XapClient::new(XapConstants::new(xap_specs)?)?));
 
@@ -156,7 +156,9 @@ fn main() -> Result<()> {
             std::thread::spawn(|| App::new(handle, state, rx).start_event_loop());
 
             app.listen("frontend-loaded", move |_| {
-                tx.clone().send(InternalEvent::FrontendNotify).unwrap();
+                tx.clone()
+                    .send(InternalEvent::FrontendNotify)
+                    .expect("failed to notify frontend");
             });
 
             Ok(())

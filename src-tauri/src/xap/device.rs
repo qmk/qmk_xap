@@ -4,6 +4,7 @@ use std::{
     io::{Cursor, Read},
     sync::Arc,
     time::{Duration, Instant},
+    vec,
 };
 
 use anyhow::{anyhow, Result};
@@ -17,7 +18,7 @@ use uuid::Uuid;
 
 use xap_specs::{
     broadcast::{BroadcastRaw, BroadcastType, SecureStatusBroadcast},
-    constants::{keycode::XapKeyCode, XapConstants},
+    constants::{keycode::KeyCode, XapConstants},
     request::{RawRequest, XapRequest},
     response::RawResponse,
     token::Token,
@@ -26,13 +27,13 @@ use xap_specs::{
 
 use crate::{
     aggregation::{
-        config::{Config, Matrix},
-        KeymapInfo, LightingCapabilities, LightingInfo, QmkInfo, RemapInfo, XapDeviceInfo, XapInfo,
+        config::Config, keymap::MappedKeymap, KeymapInfo, LightingCapabilities, LightingInfo,
+        Point2D, Point3D, QmkInfo, RemapInfo, XapDeviceInfo, XapInfo,
     },
     xap::spec::{
         keymap::{
-            KeymapCapabilitiesFlags, KeymapCapabilitiesRequest, KeymapGetKeycodeArg,
-            KeymapGetKeycodeRequest, KeymapGetKeycodeResponse, KeymapGetLayerCountRequest,
+            KeymapCapabilitiesFlags, KeymapCapabilitiesRequest, KeymapGetKeycodeRequest,
+            KeymapGetLayerCountRequest,
         },
         lighting::{
             backlight::{
@@ -66,18 +67,48 @@ use crate::{
 };
 
 #[derive(Clone, Debug, Serialize, Type)]
-pub struct Keymap(Vec<Vec<Vec<KeymapKey>>>);
+pub struct Keymap {
+    keys: Vec<Vec<Vec<KeymapKey>>>,
+    dimensions: Point3D,
+}
 
-#[derive(Debug, Clone, Serialize, Type)]
+#[derive(Debug, Default, Clone, Serialize, Type)]
 pub struct KeymapKey {
-    pub code: XapKeyCode,
-    pub position: KeymapGetKeycodeArg,
+    pub code: KeyCode,
+    pub position: Point3D,
 }
 
 impl Keymap {
-    pub fn set_keycode(&mut self, code: KeymapKey) {
-        let KeymapGetKeycodeArg { layer, row, column } = code.position;
-        self.0[layer as usize][row as usize][column as usize] = code;
+    pub fn new(layers: u64, rows: u64, columns: u64) -> Self {
+        Self {
+            keys: vec![
+                vec![vec![KeymapKey::default(); columns as usize]; rows as usize];
+                layers as usize
+            ],
+            dimensions: Point3D {
+                z: layers,
+                y: rows,
+                x: columns,
+            },
+        }
+    }
+
+    pub fn remap_key(&mut self, key: &KeymapKey) -> Result<()> {
+        if key.position.z >= self.dimensions.z
+            || key.position.y >= self.dimensions.y
+            || key.position.x >= self.dimensions.x
+        {
+            anyhow::bail!(
+                "key position {:?} out of bounds for keymap with dimensions {:?}",
+                key.position,
+                self.dimensions
+            )
+        }
+
+        self.keys[key.position.z as usize][key.position.y as usize][key.position.x as usize] =
+            key.clone();
+
+        Ok(())
     }
 }
 
@@ -85,6 +116,7 @@ impl Keymap {
 pub struct XapDeviceState {
     pub id: Uuid,
     pub info: Option<XapDeviceInfo>,
+    #[serde(skip)]
     pub keymap: Keymap,
     pub config: Config,
     pub secure_status: XapSecureStatus,
@@ -117,10 +149,10 @@ impl XapDevice {
         let state = XapDeviceState {
             id,
             info: None,
-            keymap: Keymap(vec![]),
+            keymap: Keymap::new(0, 0, 0),
             config: Config {
                 layouts: HashMap::new(),
-                matrix_size: Matrix { cols: 0, rows: 0 },
+                matrix_size: Point2D { x: 0, y: 0 },
             },
             secure_status: XapSecureStatus::Locked,
         };
@@ -155,8 +187,35 @@ impl XapDevice {
             .expect("XAP device wasn't properly initialized")
     }
 
-    pub fn keymap(&self) -> Keymap {
-        self.state.keymap.clone()
+    pub fn keymap(&self) -> &Keymap {
+        &self.state.keymap
+    }
+
+    pub fn keymap_with_layout(&self, layout: String) -> Result<MappedKeymap> {
+        let layout = self
+            .state
+            .config
+            .layouts
+            .get(&layout)
+            .ok_or_else(|| anyhow!("layout {layout} not found in device {}", self.id))?;
+
+        let mut keymap = MappedKeymap::new(
+            self.state.keymap.dimensions.z,
+            self.state.keymap.dimensions.y,
+            self.state.keymap.dimensions.x,
+        );
+
+        for (_layer, keys) in self.keymap().keys.iter().enumerate() {
+            for (row, keys) in keys.iter().enumerate() {
+                for (column, key) in keys.iter().enumerate() {
+                    if let Some(entry) = layout.find(Point2D { x: column as u64, y: row as u64}) {
+                        keymap.insert(key.clone(), entry.clone());
+                    }
+                }
+            }
+        }
+
+        Ok(keymap)
     }
 
     pub fn is_hid_device(&self, candidate: &DeviceInfo) -> bool {
@@ -167,30 +226,31 @@ impl XapDevice {
             && candidate.usage() == self.info.usage()
     }
 
-    pub fn set_keycode(&mut self, config: RemappingSetKeycodeArg) -> Result<()> {
-        self.query(RemappingSetKeycodeRequest(config.clone()))?;
+    pub fn remap_key(&mut self, key: RemappingSetKeycodeArg) -> Result<()> {
+        self.query(RemappingSetKeycodeRequest(key.clone()))?;
 
-        self.state.keymap.set_keycode(KeymapKey {
-            code: self.constants.get_keycode(config.keycode),
-            position: KeymapGetKeycodeArg {
-                layer: config.layer,
-                row: config.row,
-                column: config.column,
-            },
-        });
+        let keycode = self.query_key(Point3D {
+            z: key.layer as u64,
+            y: key.row as u64,
+            x: key.column as u64,
+        })?;
+
+        self.state.keymap.remap_key(&keycode)?;
 
         Ok(())
     }
 
-    pub fn query_keycode(
-        &mut self,
-        position: KeymapGetKeycodeArg,
-    ) -> Result<KeymapGetKeycodeResponse> {
-        self.query(KeymapGetKeycodeRequest(KeymapGetKeycodeArg {
-            layer: position.layer,
-            row: position.row,
-            column: position.column,
-        }))
+    pub fn query_key(&mut self, position: Point3D) -> Result<KeymapKey> {
+        let code_raw = self.query(KeymapGetKeycodeRequest(position.into()))?;
+
+        let key = KeymapKey {
+            code: self.constants.get_keycode(code_raw.0),
+            position,
+        };
+
+        self.state.keymap.remap_key(&key)?;
+
+        Ok(key)
     }
 
     pub fn query<T: XapRequest>(&mut self, request: T) -> Result<T::Response> {
@@ -443,37 +503,30 @@ impl XapDevice {
     }
 
     fn query_keymap(&mut self) -> Result<()> {
-        let layers = if let Some(keymap) = &self.xap_info().keymap {
-            keymap.layer_count.unwrap_or_default()
+        let layers: u64 = if let Some(keymap) = &self.xap_info().keymap {
+            keymap.layer_count.unwrap_or_default() as u64
         } else {
             0
         };
 
-        let Matrix { cols, rows } = self.state.config.matrix_size;
+        let Point2D {
+            x: columns,
+            y: rows,
+        } = self.state.config.matrix_size;
 
-        let keymap: Result<Vec<Vec<Vec<KeymapKey>>>> = (0..layers)
-            .map(|layer| {
-                (0..rows)
-                    .map(|row| {
-                        (0..cols)
-                            .map(|column| {
-                                let position = KeymapGetKeycodeArg { layer, row, column };
-                                let code = self.query_keycode(position.clone())?;
+        self.state.keymap = Keymap::new(layers, rows, columns);
 
-                                let xap = KeymapKey {
-                                    code: self.constants.get_keycode(code.0),
-                                    position,
-                                };
-
-                                Ok(xap)
-                            })
-                            .collect()
-                    })
-                    .collect()
-            })
-            .collect();
-
-        self.state.keymap = Keymap(keymap?);
+        for layer in 0..layers {
+            for row in 0..rows {
+                for column in 0..columns {
+                    _ = self.query_key(Point3D {
+                        z: layer,
+                        y: row,
+                        x: column,
+                    })?;
+                }
+            }
+        }
 
         Ok(())
     }

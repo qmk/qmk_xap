@@ -2,11 +2,12 @@
     import { storeToRefs } from 'pinia'
 
     import { useXapDeviceStore } from '@/stores/devices'
-    import { XapSecureStatus } from '@generated/xap'
+    import { XapSecureStatus, XapDeviceState } from '@generated/xap'
     import { commands } from '@generated/xap'
+    import type { Ref } from 'vue'
 
     const store = useXapDeviceStore()
-    const { device } = storeToRefs(store)
+    const { device } = storeToRefs(store) as { device: Ref<XapDeviceState | null> }
 
     async function lock() {
         if (device.value) {
@@ -38,7 +39,7 @@
         <div class="q-gutter-md q-pa-md">
             <h5>Device Information</h5>
             <q-field
-                v-if="device?.info.qmk.manufacturer != null"
+                v-if="device?.info?.qmk.manufacturer != null"
                 filled
                 label="Manufacturer"
                 stack-label
@@ -50,7 +51,7 @@
                 </template>
             </q-field>
             <q-field
-                v-if="device?.info.qmk.product_name != null"
+                v-if="device?.info?.qmk.product_name != null"
                 filled
                 label="Product"
                 stack-label
@@ -64,19 +65,19 @@
             <q-field filled label="XAP Version" stack-label>
                 <template #control>
                     <div class="self-center full-width no-outline" tabindex="0">
-                        {{ device?.info.xap.version }}
+                        {{ device?.info?.xap.version }}
                     </div>
                 </template>
             </q-field>
             <q-field filled label="QMK Version" stack-label>
                 <template #control>
                     <div class="self-center full-width no-outline" tabindex="0">
-                        {{ device?.info.qmk.version }}
+                        {{ device?.info?.qmk.version }}
                     </div>
                 </template>
             </q-field>
             <q-field
-                v-if="device?.info.qmk.hardware_id != null"
+                v-if="device?.info?.qmk.hardware_id != null"
                 filled
                 label="Hardware Id"
                 stack-label
@@ -115,7 +116,7 @@
                     @click="lock"
                 />
             </div>
-            <div v-if="device?.info.qmk.jump_to_bootloader_enabled">
+            <div v-if="device?.info?.qmk.jump_to_bootloader_enabled">
                 <q-btn
                     :disable="(device?.secure_status as XapSecureStatus) != 'Unlocked'"
                     class="full-width"
@@ -128,7 +129,7 @@
                     Device is locked
                 </q-tooltip>
             </div>
-            <div v-if="device?.info.qmk.eeprom_reset_enabled">
+            <div v-if="device?.info?.qmk.eeprom_reset_enabled">
                 <q-btn
                     :disable="(device?.secure_status as XapSecureStatus) != 'Unlocked'"
                     class="full-width"

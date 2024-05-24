@@ -23,6 +23,12 @@ pub mod xap {
     #[derive(BinWrite, Default, Debug, Clone, Serialize, Type)]
     pub struct XapVersionRequest(pub ());
 
+    impl From<()> for XapVersionRequest {
+        fn from(req: ()) -> Self {
+            Self(req)
+        }
+    }
+
     impl XapRequest for XapVersionRequest {
         type Response = XapVersionResponse;
 
@@ -45,6 +51,12 @@ pub mod xap {
     /// ======================================================================
     #[derive(BinWrite, Default, Debug, Clone, Serialize, Type)]
     pub struct XapCapabilitiesRequest(pub ());
+
+    impl From<()> for XapCapabilitiesRequest {
+        fn from(req: ()) -> Self {
+            Self(req)
+        }
+    }
 
     impl XapRequest for XapCapabilitiesRequest {
         type Response = XapCapabilitiesFlags;
@@ -82,6 +94,12 @@ pub mod xap {
     /// ======================================================================
     #[derive(BinWrite, Default, Debug, Clone, Serialize, Type)]
     pub struct XapEnabledSubsystemCapabilitiesRequest(pub ());
+
+    impl From<()> for XapEnabledSubsystemCapabilitiesRequest {
+        fn from(req: ()) -> Self {
+            Self(req)
+        }
+    }
 
     impl XapRequest for XapEnabledSubsystemCapabilitiesRequest {
         type Response = XapEnabledSubsystemCapabilitiesFlags;
@@ -127,6 +145,12 @@ pub mod xap {
     #[derive(BinWrite, Default, Debug, Clone, Serialize, Type)]
     pub struct XapSecureStatusRequest(pub ());
 
+    impl From<()> for XapSecureStatusRequest {
+        fn from(req: ()) -> Self {
+            Self(req)
+        }
+    }
+
     impl XapRequest for XapSecureStatusRequest {
         type Response = XapSecureStatusResponse;
 
@@ -150,6 +174,12 @@ pub mod xap {
     #[derive(BinWrite, Default, Debug, Clone, Serialize, Type)]
     pub struct XapSecureUnlockRequest(pub ());
 
+    impl From<()> for XapSecureUnlockRequest {
+        fn from(req: ()) -> Self {
+            Self(req)
+        }
+    }
+
     impl XapRequest for XapSecureUnlockRequest {
         type Response = ();
 
@@ -169,6 +199,12 @@ pub mod xap {
     /// ======================================================================
     #[derive(BinWrite, Default, Debug, Clone, Serialize, Type)]
     pub struct XapSecureLockRequest(pub ());
+
+    impl From<()> for XapSecureLockRequest {
+        fn from(req: ()) -> Self {
+            Self(req)
+        }
+    }
 
     impl XapRequest for XapSecureLockRequest {
         type Response = ();
@@ -206,6 +242,12 @@ pub mod qmk {
     #[derive(BinWrite, Default, Debug, Clone, Serialize, Type)]
     pub struct QmkVersionRequest(pub ());
 
+    impl From<()> for QmkVersionRequest {
+        fn from(req: ()) -> Self {
+            Self(req)
+        }
+    }
+
     impl XapRequest for QmkVersionRequest {
         type Response = QmkVersionResponse;
 
@@ -228,6 +270,12 @@ pub mod qmk {
     /// ======================================================================
     #[derive(BinWrite, Default, Debug, Clone, Serialize, Type)]
     pub struct QmkCapabilitiesRequest(pub ());
+
+    impl From<()> for QmkCapabilitiesRequest {
+        fn from(req: ()) -> Self {
+            Self(req)
+        }
+    }
 
     impl XapRequest for QmkCapabilitiesRequest {
         type Response = QmkCapabilitiesFlags;
@@ -270,6 +318,12 @@ pub mod qmk {
     #[derive(BinWrite, Default, Debug, Clone, Serialize, Type)]
     pub struct QmkBoardIdentifiersRequest(pub ());
 
+    impl From<()> for QmkBoardIdentifiersRequest {
+        fn from(req: ()) -> Self {
+            Self(req)
+        }
+    }
+
     impl XapRequest for QmkBoardIdentifiersRequest {
         type Response = QmkBoardIdentifiersResponse;
 
@@ -298,6 +352,12 @@ pub mod qmk {
     #[derive(BinWrite, Default, Debug, Clone, Serialize, Type)]
     pub struct QmkBoardManufacturerRequest(pub ());
 
+    impl From<()> for QmkBoardManufacturerRequest {
+        fn from(req: ()) -> Self {
+            Self(req)
+        }
+    }
+
     impl XapRequest for QmkBoardManufacturerRequest {
         type Response = QmkBoardManufacturerResponse;
 
@@ -320,6 +380,12 @@ pub mod qmk {
     /// ======================================================================
     #[derive(BinWrite, Default, Debug, Clone, Serialize, Type)]
     pub struct QmkProductNameRequest(pub ());
+
+    impl From<()> for QmkProductNameRequest {
+        fn from(req: ()) -> Self {
+            Self(req)
+        }
+    }
 
     impl XapRequest for QmkProductNameRequest {
         type Response = QmkProductNameResponse;
@@ -344,6 +410,12 @@ pub mod qmk {
     #[derive(BinWrite, Default, Debug, Clone, Serialize, Type)]
     pub struct QmkConfigBlobLengthRequest(pub ());
 
+    impl From<()> for QmkConfigBlobLengthRequest {
+        fn from(req: ()) -> Self {
+            Self(req)
+        }
+    }
+
     impl XapRequest for QmkConfigBlobLengthRequest {
         type Response = QmkConfigBlobLengthResponse;
 
@@ -366,6 +438,12 @@ pub mod qmk {
     /// ======================================================================
     #[derive(BinWrite, Default, Debug, Clone, Serialize, Type)]
     pub struct QmkConfigBlobChunkRequest(pub u16);
+
+    impl From<u16> for QmkConfigBlobChunkRequest {
+        fn from(req: u16) -> Self {
+            Self(req)
+        }
+    }
 
     impl XapRequest for QmkConfigBlobChunkRequest {
         type Response = QmkConfigBlobChunkResponse;
@@ -395,6 +473,12 @@ pub mod qmk {
     #[derive(BinWrite, Default, Debug, Clone, Serialize, Type)]
     pub struct QmkJumpToBootloaderRequest(pub ());
 
+    impl From<()> for QmkJumpToBootloaderRequest {
+        fn from(req: ()) -> Self {
+            Self(req)
+        }
+    }
+
     impl XapRequest for QmkJumpToBootloaderRequest {
         type Response = QmkJumpToBootloaderResponse;
 
@@ -417,6 +501,12 @@ pub mod qmk {
     /// ======================================================================
     #[derive(BinWrite, Default, Debug, Clone, Serialize, Type)]
     pub struct QmkHardwareIdentifierRequest(pub ());
+
+    impl From<()> for QmkHardwareIdentifierRequest {
+        fn from(req: ()) -> Self {
+            Self(req)
+        }
+    }
 
     impl XapRequest for QmkHardwareIdentifierRequest {
         type Response = QmkHardwareIdentifierResponse;
@@ -445,6 +535,12 @@ pub mod qmk {
     /// ======================================================================
     #[derive(BinWrite, Default, Debug, Clone, Serialize, Type)]
     pub struct QmkReinitializeEepromRequest(pub ());
+
+    impl From<()> for QmkReinitializeEepromRequest {
+        fn from(req: ()) -> Self {
+            Self(req)
+        }
+    }
 
     impl XapRequest for QmkReinitializeEepromRequest {
         type Response = QmkReinitializeEepromResponse;
@@ -508,6 +604,12 @@ pub mod keymap {
     #[derive(BinWrite, Default, Debug, Clone, Serialize, Type)]
     pub struct KeymapCapabilitiesRequest(pub ());
 
+    impl From<()> for KeymapCapabilitiesRequest {
+        fn from(req: ()) -> Self {
+            Self(req)
+        }
+    }
+
     impl XapRequest for KeymapCapabilitiesRequest {
         type Response = KeymapCapabilitiesFlags;
 
@@ -543,6 +645,12 @@ pub mod keymap {
     #[derive(BinWrite, Default, Debug, Clone, Serialize, Type)]
     pub struct KeymapGetLayerCountRequest(pub ());
 
+    impl From<()> for KeymapGetLayerCountRequest {
+        fn from(req: ()) -> Self {
+            Self(req)
+        }
+    }
+
     impl XapRequest for KeymapGetLayerCountRequest {
         type Response = KeymapGetLayerCountResponse;
 
@@ -573,6 +681,12 @@ pub mod keymap {
         pub column: u8,
     }
 
+    impl From<KeymapGetKeycodeArg> for KeymapGetKeycodeRequest {
+        fn from(req: KeymapGetKeycodeArg) -> Self {
+            Self(req)
+        }
+    }
+
     impl XapRequest for KeymapGetKeycodeRequest {
         type Response = KeymapGetKeycodeResponse;
 
@@ -601,6 +715,12 @@ pub mod keymap {
         pub layer: u8,
         pub encoder: u8,
         pub clockwise: u8,
+    }
+
+    impl From<KeymapGetEncoderKeycodeArg> for KeymapGetEncoderKeycodeRequest {
+        fn from(req: KeymapGetEncoderKeycodeArg) -> Self {
+            Self(req)
+        }
     }
 
     impl XapRequest for KeymapGetEncoderKeycodeRequest {
@@ -639,6 +759,12 @@ pub mod remapping {
     #[derive(BinWrite, Default, Debug, Clone, Serialize, Type)]
     pub struct RemappingCapabilitiesRequest(pub ());
 
+    impl From<()> for RemappingCapabilitiesRequest {
+        fn from(req: ()) -> Self {
+            Self(req)
+        }
+    }
+
     impl XapRequest for RemappingCapabilitiesRequest {
         type Response = RemappingCapabilitiesFlags;
 
@@ -674,6 +800,12 @@ pub mod remapping {
     #[derive(BinWrite, Default, Debug, Clone, Serialize, Type)]
     pub struct RemappingGetLayerCountRequest(pub ());
 
+    impl From<()> for RemappingGetLayerCountRequest {
+        fn from(req: ()) -> Self {
+            Self(req)
+        }
+    }
+
     impl XapRequest for RemappingGetLayerCountRequest {
         type Response = RemappingGetLayerCountResponse;
 
@@ -705,6 +837,12 @@ pub mod remapping {
         pub keycode: u16,
     }
 
+    impl From<RemappingSetKeycodeArg> for RemappingSetKeycodeRequest {
+        fn from(req: RemappingSetKeycodeArg) -> Self {
+            Self(req)
+        }
+    }
+
     impl XapRequest for RemappingSetKeycodeRequest {
         type Response = ();
 
@@ -731,6 +869,12 @@ pub mod remapping {
         pub encoder: u8,
         pub clockwise: u8,
         pub keycode: u16,
+    }
+
+    impl From<RemappingSetEncoderKeycodeArg> for RemappingSetEncoderKeycodeRequest {
+        fn from(req: RemappingSetEncoderKeycodeArg) -> Self {
+            Self(req)
+        }
     }
 
     impl XapRequest for RemappingSetEncoderKeycodeRequest {
@@ -765,6 +909,12 @@ pub mod lighting {
     /// ======================================================================
     #[derive(BinWrite, Default, Debug, Clone, Serialize, Type)]
     pub struct LightingCapabilitiesRequest(pub ());
+
+    impl From<()> for LightingCapabilitiesRequest {
+        fn from(req: ()) -> Self {
+            Self(req)
+        }
+    }
 
     impl XapRequest for LightingCapabilitiesRequest {
         type Response = LightingCapabilitiesFlags;
@@ -813,6 +963,12 @@ pub mod lighting {
         #[derive(BinWrite, Default, Debug, Clone, Serialize, Type)]
         pub struct BacklightCapabilitiesRequest(pub ());
 
+        impl From<()> for BacklightCapabilitiesRequest {
+            fn from(req: ()) -> Self {
+                Self(req)
+            }
+        }
+
         impl XapRequest for BacklightCapabilitiesRequest {
             type Response = BacklightCapabilitiesFlags;
 
@@ -849,6 +1005,12 @@ pub mod lighting {
         #[derive(BinWrite, Default, Debug, Clone, Serialize, Type)]
         pub struct BacklightGetEnabledEffectsRequest(pub ());
 
+        impl From<()> for BacklightGetEnabledEffectsRequest {
+            fn from(req: ()) -> Self {
+                Self(req)
+            }
+        }
+
         impl XapRequest for BacklightGetEnabledEffectsRequest {
             type Response = BacklightGetEnabledEffectsResponse;
 
@@ -872,6 +1034,12 @@ pub mod lighting {
         #[derive(BinWrite, Default, Debug, Clone, Serialize, Type)]
         pub struct BacklightGetConfigRequest(pub ());
 
+        impl From<()> for BacklightGetConfigRequest {
+            fn from(req: ()) -> Self {
+                Self(req)
+            }
+        }
+
         impl XapRequest for BacklightGetConfigRequest {
             type Response = BacklightConfig;
 
@@ -892,6 +1060,12 @@ pub mod lighting {
         #[derive(BinWrite, Default, Debug, Clone, Serialize, Type)]
         pub struct BacklightSetConfigRequest(pub BacklightConfig);
 
+        impl From<BacklightConfig> for BacklightSetConfigRequest {
+            fn from(req: BacklightConfig) -> Self {
+                Self(req)
+            }
+        }
+
         impl XapRequest for BacklightSetConfigRequest {
             type Response = ();
 
@@ -911,6 +1085,12 @@ pub mod lighting {
         /// ======================================================================
         #[derive(BinWrite, Default, Debug, Clone, Serialize, Type)]
         pub struct BacklightSaveConfigRequest(pub ());
+
+        impl From<()> for BacklightSaveConfigRequest {
+            fn from(req: ()) -> Self {
+                Self(req)
+            }
+        }
 
         impl XapRequest for BacklightSaveConfigRequest {
             type Response = ();
@@ -944,6 +1124,12 @@ pub mod lighting {
         /// ======================================================================
         #[derive(BinWrite, Default, Debug, Clone, Serialize, Type)]
         pub struct RgblightCapabilitiesRequest(pub ());
+
+        impl From<()> for RgblightCapabilitiesRequest {
+            fn from(req: ()) -> Self {
+                Self(req)
+            }
+        }
 
         impl XapRequest for RgblightCapabilitiesRequest {
             type Response = RgblightCapabilitiesFlags;
@@ -981,6 +1167,12 @@ pub mod lighting {
         #[derive(BinWrite, Default, Debug, Clone, Serialize, Type)]
         pub struct RgblightGetEnabledEffectsRequest(pub ());
 
+        impl From<()> for RgblightGetEnabledEffectsRequest {
+            fn from(req: ()) -> Self {
+                Self(req)
+            }
+        }
+
         impl XapRequest for RgblightGetEnabledEffectsRequest {
             type Response = RgblightGetEnabledEffectsResponse;
 
@@ -1004,6 +1196,12 @@ pub mod lighting {
         #[derive(BinWrite, Default, Debug, Clone, Serialize, Type)]
         pub struct RgblightGetConfigRequest(pub ());
 
+        impl From<()> for RgblightGetConfigRequest {
+            fn from(req: ()) -> Self {
+                Self(req)
+            }
+        }
+
         impl XapRequest for RgblightGetConfigRequest {
             type Response = RgbLightConfig;
 
@@ -1024,6 +1222,12 @@ pub mod lighting {
         #[derive(BinWrite, Default, Debug, Clone, Serialize, Type)]
         pub struct RgblightSetConfigRequest(pub RgbLightConfig);
 
+        impl From<RgbLightConfig> for RgblightSetConfigRequest {
+            fn from(req: RgbLightConfig) -> Self {
+                Self(req)
+            }
+        }
+
         impl XapRequest for RgblightSetConfigRequest {
             type Response = ();
 
@@ -1043,6 +1247,12 @@ pub mod lighting {
         /// ======================================================================
         #[derive(BinWrite, Default, Debug, Clone, Serialize, Type)]
         pub struct RgblightSaveConfigRequest(pub ());
+
+        impl From<()> for RgblightSaveConfigRequest {
+            fn from(req: ()) -> Self {
+                Self(req)
+            }
+        }
 
         impl XapRequest for RgblightSaveConfigRequest {
             type Response = ();
@@ -1076,6 +1286,12 @@ pub mod lighting {
         /// ======================================================================
         #[derive(BinWrite, Default, Debug, Clone, Serialize, Type)]
         pub struct RgbmatrixCapabilitiesRequest(pub ());
+
+        impl From<()> for RgbmatrixCapabilitiesRequest {
+            fn from(req: ()) -> Self {
+                Self(req)
+            }
+        }
 
         impl XapRequest for RgbmatrixCapabilitiesRequest {
             type Response = RgbmatrixCapabilitiesFlags;
@@ -1113,6 +1329,12 @@ pub mod lighting {
         #[derive(BinWrite, Default, Debug, Clone, Serialize, Type)]
         pub struct RgbmatrixGetEnabledEffectsRequest(pub ());
 
+        impl From<()> for RgbmatrixGetEnabledEffectsRequest {
+            fn from(req: ()) -> Self {
+                Self(req)
+            }
+        }
+
         impl XapRequest for RgbmatrixGetEnabledEffectsRequest {
             type Response = RgbmatrixGetEnabledEffectsResponse;
 
@@ -1136,6 +1358,12 @@ pub mod lighting {
         #[derive(BinWrite, Default, Debug, Clone, Serialize, Type)]
         pub struct RgbmatrixGetConfigRequest(pub ());
 
+        impl From<()> for RgbmatrixGetConfigRequest {
+            fn from(req: ()) -> Self {
+                Self(req)
+            }
+        }
+
         impl XapRequest for RgbmatrixGetConfigRequest {
             type Response = RgbMatrixConfig;
 
@@ -1156,6 +1384,12 @@ pub mod lighting {
         #[derive(BinWrite, Default, Debug, Clone, Serialize, Type)]
         pub struct RgbmatrixSetConfigRequest(pub RgbMatrixConfig);
 
+        impl From<RgbMatrixConfig> for RgbmatrixSetConfigRequest {
+            fn from(req: RgbMatrixConfig) -> Self {
+                Self(req)
+            }
+        }
+
         impl XapRequest for RgbmatrixSetConfigRequest {
             type Response = ();
 
@@ -1175,6 +1409,12 @@ pub mod lighting {
         /// ======================================================================
         #[derive(BinWrite, Default, Debug, Clone, Serialize, Type)]
         pub struct RgbmatrixSaveConfigRequest(pub ());
+
+        impl From<()> for RgbmatrixSaveConfigRequest {
+            fn from(req: ()) -> Self {
+                Self(req)
+            }
+        }
 
         impl XapRequest for RgbmatrixSaveConfigRequest {
             type Response = ();
@@ -1209,6 +1449,12 @@ pub mod audio {
     /// ======================================================================
     #[derive(BinWrite, Default, Debug, Clone, Serialize, Type)]
     pub struct AudioCapabilitiesRequest(pub ());
+
+    impl From<()> for AudioCapabilitiesRequest {
+        fn from(req: ()) -> Self {
+            Self(req)
+        }
+    }
 
     impl XapRequest for AudioCapabilitiesRequest {
         type Response = AudioCapabilitiesFlags;
@@ -1245,6 +1491,12 @@ pub mod audio {
     #[derive(BinWrite, Default, Debug, Clone, Serialize, Type)]
     pub struct AudioGetConfigRequest(pub ());
 
+    impl From<()> for AudioGetConfigRequest {
+        fn from(req: ()) -> Self {
+            Self(req)
+        }
+    }
+
     impl XapRequest for AudioGetConfigRequest {
         type Response = AudioConfig;
 
@@ -1264,6 +1516,12 @@ pub mod audio {
     /// ======================================================================
     #[derive(BinWrite, Default, Debug, Clone, Serialize, Type)]
     pub struct AudioSetConfigRequest(pub AudioConfig);
+
+    impl From<AudioConfig> for AudioSetConfigRequest {
+        fn from(req: AudioConfig) -> Self {
+            Self(req)
+        }
+    }
 
     impl XapRequest for AudioSetConfigRequest {
         type Response = ();
@@ -1285,6 +1543,12 @@ pub mod audio {
     #[derive(BinWrite, Default, Debug, Clone, Serialize, Type)]
     pub struct AudioSaveConfigRequest(pub ());
 
+    impl From<()> for AudioSaveConfigRequest {
+        fn from(req: ()) -> Self {
+            Self(req)
+        }
+    }
+
     impl XapRequest for AudioSaveConfigRequest {
         type Response = ();
 
@@ -1303,15 +1567,11 @@ pub mod types {
     use serde::{Deserialize, Serialize};
     use specta::Type;
 
-    /// RGB config for RGB lighting subsystem
+    /// Config for audio subsystem
     #[derive(BinRead, BinWrite, Default, Debug, Clone, Serialize, Deserialize, Type)]
-    pub struct RgbLightConfig {
+    pub struct AudioConfig {
         pub enable: u8,
-        pub mode: u8,
-        pub hue: u8,
-        pub sat: u8,
-        pub val: u8,
-        pub speed: u8,
+        pub clicky_enable: u8,
     }
 
     /// Config for lighting subsystem
@@ -1322,19 +1582,6 @@ pub mod types {
         pub val: u8,
     }
 
-    /// Config for audio subsystem
-    #[derive(BinRead, BinWrite, Default, Debug, Clone, Serialize, Deserialize, Type)]
-    pub struct AudioConfig {
-        pub enable: u8,
-        pub clicky_enable: u8,
-    }
-
-    /// Packet format for outbound data.
-    #[derive(BinRead, BinWrite, Default, Debug, Clone, Serialize, Deserialize, Type)]
-    pub struct ResponseHeader {
-        pub length: u8,
-    }
-
     /// Packet format for broadcast messages.
     #[derive(BinRead, BinWrite, Default, Debug, Clone, Serialize, Deserialize, Type)]
     pub struct BroadcastHeader {
@@ -1342,10 +1589,15 @@ pub mod types {
         pub length: u8,
     }
 
-    /// Packet format for inbound data.
+    /// RGB config for RGB lighting subsystem
     #[derive(BinRead, BinWrite, Default, Debug, Clone, Serialize, Deserialize, Type)]
-    pub struct RequestHeader {
-        pub length: u8,
+    pub struct RgbLightConfig {
+        pub enable: u8,
+        pub mode: u8,
+        pub hue: u8,
+        pub sat: u8,
+        pub val: u8,
+        pub speed: u8,
     }
 
     /// RGB config for RGB matrix subsystem
@@ -1358,5 +1610,17 @@ pub mod types {
         pub val: u8,
         pub speed: u8,
         pub flags: u8,
+    }
+
+    /// Packet format for inbound data.
+    #[derive(BinRead, BinWrite, Default, Debug, Clone, Serialize, Deserialize, Type)]
+    pub struct RequestHeader {
+        pub length: u8,
+    }
+
+    /// Packet format for outbound data.
+    #[derive(BinRead, BinWrite, Default, Debug, Clone, Serialize, Deserialize, Type)]
+    pub struct ResponseHeader {
+        pub length: u8,
     }
 }

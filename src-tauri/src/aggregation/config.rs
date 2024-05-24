@@ -3,10 +3,12 @@ use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
 use specta::Type;
 
+use crate::aggregation::Point2D;
+
 #[derive(Clone, Debug, Serialize, Deserialize, Type)]
 pub struct Config {
     pub layouts: HashMap<String, Layout>,
-    pub matrix_size: Matrix,
+    pub matrix_size: Point2D,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Type)]
@@ -16,41 +18,31 @@ pub struct Layout {
     pub layout: Vec<LayoutEntry>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, Type)]
+impl Layout {
+    pub fn find(&self, position: Point2D) -> Option<&LayoutEntry> {
+        self.layout.iter().find(|entry| entry.matrix == position)
+    }
+}
+
+#[derive(Debug, Default, Clone, Serialize, Deserialize, Type)]
 pub struct LayoutEntry {
-    pub matrix: MatrixPosition,
+    pub matrix: Point2D,
     pub x: f64,
     pub y: f64,
     #[serde(default = "default_wh")]
     pub w: f64,
     #[serde(default = "default_wh")]
     pub h: f64,
-    #[serde(default = "default_r")]
+    #[serde(default)]
     pub r: f64,
-    #[serde(default = "default_r")]
+    #[serde(default)]
     pub rx: f64,
-    #[serde(default = "default_r")]
+    #[serde(default)]
     pub ry: f64,
 }
 
 fn default_wh() -> f64 {
     1.0
-}
-
-fn default_r() -> f64 {
-    0.0
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize, Type)]
-pub struct MatrixPosition {
-    pub x: u8,
-    pub y: u8,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize, Type)]
-pub struct Matrix {
-    pub cols: u8,
-    pub rows: u8,
 }
 
 #[cfg(test)]

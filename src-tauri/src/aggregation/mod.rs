@@ -1,10 +1,48 @@
 pub mod config;
+pub mod keymap;
 
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use specta::Type;
-use xap_specs::{constants::keycode::XapKeyCode, constants::lighting::LightingEffect};
+use xap_specs::constants::lighting::LightingEffect;
 
-use crate::xap::spec::qmk::QmkBoardIdentifiersResponse;
+use crate::xap::spec::{keymap::KeymapGetKeycodeArg, qmk::QmkBoardIdentifiersResponse};
+
+#[derive(
+    Default, Debug, Clone, Copy, Serialize, Deserialize, Type, PartialEq, PartialOrd, Hash,
+)]
+pub struct Point2D {
+    #[serde(alias = "row")]
+    #[serde(alias = "rows")]
+    pub y: u64,
+    #[serde(alias = "col")]
+    #[serde(alias = "cols")]
+    pub x: u64,
+}
+
+#[derive(
+    Default, Debug, Clone, Copy, Serialize, Deserialize, Type, PartialEq, PartialOrd, Hash,
+)]
+pub struct Point3D {
+    #[serde(alias = "col")]
+    #[serde(alias = "cols")]
+    pub x: u64,
+    #[serde(alias = "row")]
+    #[serde(alias = "rows")]
+    pub y: u64,
+    #[serde(alias = "layer")]
+    #[serde(alias = "layers")]
+    pub z: u64,
+}
+
+impl Into<KeymapGetKeycodeArg> for Point3D {
+    fn into(self) -> KeymapGetKeycodeArg {
+        KeymapGetKeycodeArg {
+            column: self.x as u8,
+            row: self.y as u8,
+            layer: self.z as u8,
+        }
+    }
+}
 
 #[derive(Debug, Serialize, Clone, Type)]
 pub struct XapDeviceInfo {

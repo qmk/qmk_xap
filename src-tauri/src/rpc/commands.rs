@@ -5,35 +5,41 @@ use tauri::State;
 use uuid::Uuid;
 use xap_specs::constants::XapConstants;
 
+use crate::aggregation::keymap::MappedKeymap;
 use crate::xap::device::XapDeviceState;
-use crate::xap::{client::XapClient, device::Keymap, spec::remapping::RemappingSetKeycodeArg};
+use crate::xap::{client::XapClient, spec::remapping::RemappingSetKeycodeArg};
 
 use crate::rpc::spec::error::Error;
 
 #[tauri::command]
 #[specta::specta]
 pub fn xap_constants_get(state: State<'_, Arc<Mutex<XapClient>>>) -> XapConstants {
-    state.lock().unwrap().xap_constants().into()
+    state.lock().unwrap().xap_constants()
 }
 
 #[tauri::command]
 #[specta::specta]
-pub fn keycode_set(
+pub fn remap_key(
     id: Uuid,
     arg: RemappingSetKeycodeArg,
     state: State<'_, Arc<Mutex<XapClient>>>,
 ) -> Result<(), Error> {
-    Ok(state
-        .lock()
-        .unwrap()
-        .get_device_mut(&id)?
-        .set_keycode(arg)?)
+    Ok(state.lock().unwrap().get_device_mut(&id)?.remap_key(arg)?)
 }
 
 #[tauri::command]
 #[specta::specta]
-pub fn keymap_get(id: Uuid, state: State<'_, Arc<Mutex<XapClient>>>) -> Result<Keymap, Error> {
-    Ok(state.lock().unwrap().get_device(&id)?.keymap())
+pub fn keymap_get(
+    id: Uuid,
+    layout: String,
+    state: State<'_, Arc<Mutex<XapClient>>>,
+) -> Result<MappedKeymap, Error> {
+    state
+        .lock()
+        .unwrap()
+        .get_device(&id)?
+        .keymap_with_layout(layout)
+        .map_err(Into::into)
 }
 
 #[tauri::command]

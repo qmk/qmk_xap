@@ -21,7 +21,7 @@
                 <q-tabs align="left">
                     <q-route-tab
                         label="Keymap"
-                        :disable="device?.info.keymap == null"
+                        :disable="device?.info?.keymap == null"
                         to="/keymap"
                         exact
                     />
@@ -39,6 +39,7 @@
                     v-model="device"
                     label="XAP device"
                     :disable="device == null"
+                    :readonly="devices.size == 1"
                     filled
                     :options="() => Array.from(devices.values())"
                     :option-value="(device: XapDeviceState) => device.id"
