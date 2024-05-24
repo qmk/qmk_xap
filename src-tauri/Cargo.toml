@@ -28,7 +28,6 @@ tauri = { version = "2.0.0-beta", features = [] }
 tauri-plugin-fs = "2.0.0-beta"
 tauri-plugin-shell = "2.0.0-beta"
 tauri-specta = { version = "2.0.0-rc.10", features = ["typescript"] }
-thiserror = "1.0"
 uuid = { version = "1.8", features = ["serde", "v4"] }
 xap-specs = { path = "../xap-specs" }
 

@@ -2547,7 +2547,6 @@ dependencies = [
  "tauri-plugin-fs",
  "tauri-plugin-shell",
  "tauri-specta",
- "thiserror",
  "uuid",
  "xap-specs",
 ]
