@@ -4,12 +4,12 @@ const routes: RouteRecordRaw[] = [
     {
         name: 'home',
         path: '/',
-        redirect: 'device',
+        redirect: 'keymap',
         component: () => import('@/layouts/baseContainer.vue'),
         children: [
             {
-                name: 'device',
-                path: 'device',
+                name: 'info',
+                path: 'info',
                 component: () => import('@/pages/DeviceInfoView.vue'),
             },
             {

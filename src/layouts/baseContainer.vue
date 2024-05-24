@@ -2,7 +2,7 @@
     import { storeToRefs } from 'pinia'
     import { commands } from '@generated/xap'
     import { useXapDeviceStore } from '@/stores/devices'
-    import { XapDevice } from '@generated/xap'
+    import { XapDeviceState } from '@generated/xap'
 
     const store = useXapDeviceStore()
     const { device, devices } = storeToRefs(store)
@@ -19,7 +19,6 @@
                     QMK XAP GUI
                 </q-toolbar-title>
                 <q-tabs align="left">
-                    <q-route-tab label="Device" :disable="device == null" to="/device" exact />
                     <q-route-tab
                         label="Keymap"
                         :disable="device?.info.keymap == null"
@@ -32,6 +31,7 @@
                         to="/rgb"
                         exact
                     />
+                    <q-route-tab label="Info" :disable="device == null" to="/info" exact />
                 </q-tabs>
             </q-toolbar>
             <div class="bg-white">
@@ -41,10 +41,10 @@
                     :disable="device == null"
                     filled
                     :options="() => Array.from(devices.values())"
-                    :option-value="(device: XapDevice) => device.id"
+                    :option-value="(device: XapDeviceState) => device.id"
                     :option-label="
-                        (device: XapDevice) =>
-                            device?.info.qmk.manufacturer + ' - ' + device?.info.qmk.product_name
+                        (device: XapDeviceState) =>
+                            device?.info?.qmk.manufacturer + ' - ' + device?.info?.qmk.product_name
                     "
                     emit-value
                 />
