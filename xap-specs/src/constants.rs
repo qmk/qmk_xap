@@ -1,18 +1,18 @@
 pub mod keycode;
 pub mod lighting;
 
-use std::collections::HashMap;
 use std::path::PathBuf;
 
 use anyhow::Result;
 use serde::Serialize;
+use specta::Type;
 
-use self::keycode::{read_xap_keycodes, XapKeyCode};
+use self::keycode::{read_xap_keycodes, XapKeyCode, XapKeyCodeCategory};
 use self::lighting::{read_xap_lighting_effects, LightingEffects};
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, Type)]
 pub struct XapConstants {
-    pub keycodes: HashMap<u16, XapKeyCode>,
+    pub keycodes: Vec<XapKeyCodeCategory>,
     pub rgblight_modes: LightingEffects,
     pub rgb_matrix_modes: LightingEffects,
     pub led_matrix_modes: LightingEffects,
@@ -29,9 +29,11 @@ impl XapConstants {
     }
 
     pub fn get_keycode(&self, code: u16) -> XapKeyCode {
-        self.keycodes
-            .get(&code)
-            .cloned()
-            .unwrap_or_else(|| XapKeyCode::new_custom(code))
+        for category in &self.keycodes {
+            if let Some(code) = category.codes.iter().find(|keycode| keycode.code == code) {
+                return code.clone();
+            }
+        }
+        XapKeyCode::new_custom(code)
     }
 }

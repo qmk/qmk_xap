@@ -27,8 +27,7 @@ use xap_specs::{
 use crate::{
     aggregation::{
         config::{Config, Matrix},
-        KeymapInfo, LightingCapabilities, LightingInfo, QmkInfo, RemapInfo,
-        XapDevice as XapDeviceDto, XapDeviceInfo, XapInfo,
+        KeymapInfo, LightingCapabilities, LightingInfo, QmkInfo, RemapInfo, XapDeviceInfo, XapInfo,
     },
     xap::spec::{
         keymap::{
@@ -82,12 +81,13 @@ impl Keymap {
     }
 }
 
-#[derive(Debug)]
-struct XapDeviceState {
-    xap_info: Option<XapDeviceInfo>,
-    keymap: Keymap,
-    config: Config,
-    secure_status: XapSecureStatus,
+#[derive(Debug, Clone, Serialize, Type)]
+pub struct XapDeviceState {
+    pub id: Uuid,
+    pub info: Option<XapDeviceInfo>,
+    pub keymap: Keymap,
+    pub config: Config,
+    pub secure_status: XapSecureStatus,
 }
 
 const XAP_REPORT_SIZE: usize = 64;
@@ -115,7 +115,8 @@ impl XapDevice {
 
         let id = Uuid::new_v4();
         let state = XapDeviceState {
-            xap_info: None,
+            id,
+            info: None,
             keymap: Keymap(vec![]),
             config: Config {
                 layouts: HashMap::new(),
@@ -143,30 +144,19 @@ impl XapDevice {
         self.id
     }
 
+    pub fn state(&self) -> &XapDeviceState {
+        &self.state
+    }
+
     pub fn xap_info(&self) -> XapDeviceInfo {
         self.state
-            .xap_info
+            .info
             .clone()
             .expect("XAP device wasn't properly initialized")
     }
 
     pub fn keymap(&self) -> Keymap {
         self.state.keymap.clone()
-    }
-
-    pub fn as_dto(&self) -> XapDeviceDto {
-        let state = &self.state;
-        XapDeviceDto {
-            id: self.id,
-            info: state
-                .xap_info
-                .as_ref()
-                .expect("XAP device wasn't properly initialized")
-                .clone(),
-            keymap: state.keymap.clone(),
-            config: state.config.clone(),
-            secure_status: state.secure_status,
-        }
     }
 
     pub fn is_hid_device(&self, candidate: &DeviceInfo) -> bool {
@@ -204,7 +194,7 @@ impl XapDevice {
     }
 
     pub fn query<T: XapRequest>(&mut self, request: T) -> Result<T::Response> {
-        if let Some(xap_info) = &self.state.xap_info {
+        if let Some(xap_info) = &self.state.info {
             if !T::xap_version() < xap_info.xap.version {
                 return Err(anyhow!(
                     "can't do xap request [{:?}] with client of version {}",
@@ -414,7 +404,7 @@ impl XapDevice {
             None
         };
 
-        self.state.xap_info = Some(XapDeviceInfo {
+        self.state.info = Some(XapDeviceInfo {
             xap: xap_info,
             qmk: qmk_info,
             keymap: keymap_info,

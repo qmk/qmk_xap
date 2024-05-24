@@ -26,6 +26,12 @@ pub struct XapKeyCode {
     pub aliases: Vec<String>,
 }
 
+#[derive(Debug, Serialize, Clone, Type)]
+pub struct XapKeyCodeCategory {
+    pub name: String,
+    pub codes: Vec<XapKeyCode>,
+}
+
 impl XapKeyCode {
     pub fn new_custom(code: u16) -> Self {
         Self {
@@ -44,7 +50,7 @@ struct KeyCodes {
     keycodes: HashMap<u16, XapKeyCode>,
 }
 
-pub(crate) fn read_xap_keycodes(path: impl AsRef<Path>) -> Result<HashMap<u16, XapKeyCode>> {
+pub(crate) fn read_xap_keycodes(path: impl AsRef<Path>) -> Result<Vec<XapKeyCodeCategory>> {
     let mut all = HashMap::new();
 
     for entry in fs::read_dir(path)?.filter_map(|e| e.ok()) {
@@ -70,7 +76,26 @@ pub(crate) fn read_xap_keycodes(path: impl AsRef<Path>) -> Result<HashMap<u16, X
         }
     }
 
-    Ok(all)
+    let keycodes = all
+        .into_iter()
+        .fold(HashMap::new(), |mut category, (_, keycode)| {
+            category
+                .entry(keycode.group.clone().unwrap_or("other".to_owned()))
+                .or_insert(Vec::new())
+                .push(keycode);
+
+            category
+        });
+
+    let keycodes = keycodes
+        .into_iter()
+        .map(|(name, mut codes)| {
+            codes.sort_by_key(|code| code.code);
+            XapKeyCodeCategory { name, codes }
+        })
+        .collect();
+
+    Ok(keycodes)
 }
 
 fn xap_keycode_from_hex_map<'de, D>(deserializer: D) -> Result<HashMap<u16, XapKeyCode>, D::Error>

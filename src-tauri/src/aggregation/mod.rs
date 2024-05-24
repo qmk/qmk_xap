@@ -1,28 +1,10 @@
 pub mod config;
 
-use std::collections::HashMap;
-
 use serde::Serialize;
 use specta::Type;
-use uuid::Uuid;
-use xap_specs::{
-    constants::keycode::XapKeyCode,
-    constants::lighting::{LightingEffect, LightingEffects},
-    XapSecureStatus,
-};
+use xap_specs::{constants::keycode::XapKeyCode, constants::lighting::LightingEffect};
 
-use crate::xap::{device::Keymap, spec::qmk::QmkBoardIdentifiersResponse};
-
-use self::config::Config;
-
-#[derive(Clone, Serialize, Type)]
-pub struct XapDevice {
-    pub id: Uuid,
-    pub info: XapDeviceInfo,
-    pub keymap: Keymap,
-    pub config: Config,
-    pub secure_status: XapSecureStatus,
-}
+use crate::xap::spec::qmk::QmkBoardIdentifiersResponse;
 
 #[derive(Debug, Serialize, Clone, Type)]
 pub struct XapDeviceInfo {
@@ -92,52 +74,6 @@ impl LightingCapabilities {
             get_config_enabled,
             set_config_enabled,
             save_config_enabled,
-        }
-    }
-}
-
-#[derive(Debug, Serialize, Clone, Type)]
-pub struct XapKeyCodeCategory {
-    name: String,
-    codes: Vec<XapKeyCode>,
-}
-
-#[derive(Debug, Serialize, Clone, Type)]
-pub struct XapConstants {
-    keycodes: Vec<XapKeyCodeCategory>,
-    rgblight_modes: LightingEffects,
-    rgb_matrix_modes: LightingEffects,
-    led_matrix_modes: LightingEffects,
-}
-
-impl From<xap_specs::constants::XapConstants> for XapConstants {
-    fn from(constants: xap_specs::constants::XapConstants) -> Self {
-        let keycodes =
-            constants
-                .keycodes
-                .into_iter()
-                .fold(HashMap::new(), |mut category, (_, keycode)| {
-                    category
-                        .entry(keycode.group.clone().unwrap_or("other".to_owned()))
-                        .or_insert(Vec::new())
-                        .push(keycode);
-
-                    category
-                });
-
-        let keycodes = keycodes
-            .into_iter()
-            .map(|(name, mut codes)| {
-                codes.sort_by_key(|code| code.code);
-                XapKeyCodeCategory { name, codes }
-            })
-            .collect();
-
-        Self {
-            keycodes,
-            rgblight_modes: constants.rgblight_modes,
-            rgb_matrix_modes: constants.rgb_matrix_modes,
-            led_matrix_modes: constants.led_matrix_modes,
         }
     }
 }

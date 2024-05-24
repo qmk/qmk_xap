@@ -3,11 +3,10 @@ use std::sync::{Arc, Mutex};
 
 use tauri::State;
 use uuid::Uuid;
+use xap_specs::constants::XapConstants;
 
-use crate::{
-    aggregation::{XapConstants, XapDevice},
-    xap::{client::XapClient, device::Keymap, spec::remapping::RemappingSetKeycodeArg},
-};
+use crate::xap::device::XapDeviceState;
+use crate::xap::{client::XapClient, device::Keymap, spec::remapping::RemappingSetKeycodeArg};
 
 use crate::rpc::spec::error::Error;
 
@@ -39,6 +38,9 @@ pub fn keymap_get(id: Uuid, state: State<'_, Arc<Mutex<XapClient>>>) -> Result<K
 
 #[tauri::command]
 #[specta::specta]
-pub fn device_get(id: Uuid, state: State<'_, Arc<Mutex<XapClient>>>) -> Result<XapDevice, Error> {
-    Ok(state.lock().unwrap().get_device(&id)?.as_dto())
+pub fn device_get(
+    id: Uuid,
+    state: State<'_, Arc<Mutex<XapClient>>>,
+) -> Result<XapDeviceState, Error> {
+    Ok(state.lock().unwrap().get_device(&id)?.state().clone())
 }

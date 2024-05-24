@@ -30,7 +30,7 @@
                     console.log('new device with id ' + id + Date.now())
                     if (store.addDevice(result.data)) {
                         Notify.create({
-                            message: 'New Device ' + result.data.info.qmk.product_name,
+                            message: 'New Device ' + result.data.info?.qmk.product_name,
                             icon: 'power',
                         })
                     }
@@ -51,7 +51,7 @@
 
             Notify.create({
                 message:
-                    'Removed Device ' + (devices.value.get(id)?.info.qmk.product_name ?? 'Unknown'),
+                    'Removed Device ' + (devices.value.get(id)?.info?.qmk.product_name ?? 'Unknown'),
                 icon: 'power_off',
             })
 

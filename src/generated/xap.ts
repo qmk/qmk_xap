@@ -415,7 +415,7 @@ export const commands = {
             else return { status: 'error', error: e as any }
         }
     },
-    async deviceGet(id: string): Promise<Result<XapDevice, Error>> {
+    async deviceGet(id: string): Promise<Result<XapDeviceState, Error>> {
         try {
             return { status: 'ok', data: await TAURI_INVOKE('device_get', { id }) }
         } catch (e) {
@@ -587,19 +587,19 @@ export type XapConstants = {
     rgb_matrix_modes: LightingEffects
     led_matrix_modes: LightingEffects
 }
-export type XapDevice = {
-    id: string
-    info: XapDeviceInfo
-    keymap: Keymap
-    config: Config
-    secure_status: XapSecureStatus
-}
 export type XapDeviceInfo = {
     xap: XapInfo
     qmk: QmkInfo
     keymap: KeymapInfo | null
     remap: RemapInfo | null
     lighting: LightingInfo | null
+}
+export type XapDeviceState = {
+    id: string
+    info: XapDeviceInfo | null
+    keymap: Keymap
+    config: Config
+    secure_status: XapSecureStatus
 }
 export type XapEnabledSubsystemCapabilitiesFlags = number
 export type XapEvent =
