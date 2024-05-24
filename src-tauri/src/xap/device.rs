@@ -122,7 +122,7 @@ impl XapDevice {
                 layouts: HashMap::new(),
                 matrix_size: Matrix { cols: 0, rows: 0 },
             },
-            secure_status: XapSecureStatus::Unlocked,
+            secure_status: XapSecureStatus::Locked,
         };
 
         let mut device = Self {
