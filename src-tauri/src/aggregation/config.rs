@@ -13,8 +13,6 @@ pub struct Config {
 pub struct Layout {
     #[serde(skip)]
     pub name: String,
-    #[serde(default)]
-    pub json_layout: bool,
     pub layout: Vec<LayoutEntry>,
 }
 
@@ -27,10 +25,20 @@ pub struct LayoutEntry {
     pub w: f64,
     #[serde(default = "default_wh")]
     pub h: f64,
+    #[serde(default = "default_r")]
+    pub r: f64,
+    #[serde(default = "default_r")]
+    pub rx: f64,
+    #[serde(default = "default_r")]
+    pub ry: f64,
 }
 
 fn default_wh() -> f64 {
     1.0
+}
+
+fn default_r() -> f64 {
+    0.0
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Type)]
