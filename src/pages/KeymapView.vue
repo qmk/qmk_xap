@@ -11,7 +11,7 @@
         XapConstants,
         XapDeviceState,
     } from '@generated/xap'
-    import { commands } from '@generated/xap'
+    import { commands } from '@/utils/commands'
     import { notifyError } from '@/utils/utils'
 
     const store = useXapDeviceStore()

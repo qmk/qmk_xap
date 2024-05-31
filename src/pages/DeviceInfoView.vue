@@ -3,7 +3,7 @@
 
     import { useXapDeviceStore } from '@/utils/deviceStore'
     import { XapSecureStatus, XapDeviceState } from '@generated/xap'
-    import { commands } from '@generated/xap'
+    import { commands } from '@/utils/commands'
     import type { Ref } from 'vue'
 
     const store = useXapDeviceStore()

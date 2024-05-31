@@ -1,8 +1,8 @@
 <script setup lang="ts">
     import { storeToRefs } from 'pinia'
-    import { commands } from '@generated/xap'
     import { useXapDeviceStore } from '@/utils/deviceStore'
     import { XapDeviceState } from '@generated/xap'
+    import { commands } from '@/utils/commands'
 
     const store = useXapDeviceStore()
     const { device, devices } = storeToRefs(store)

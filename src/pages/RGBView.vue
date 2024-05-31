@@ -7,7 +7,7 @@
 
     import { LightingEffect, RgbLightConfig, XapDeviceState } from '@generated/xap'
     import { useXapDeviceStore } from '@/utils/deviceStore'
-    import { commands } from '@generated/xap'
+    import { commands } from '@/utils/commands'
     import { notifyError } from '@/utils/utils'
 
     const store = useXapDeviceStore()
