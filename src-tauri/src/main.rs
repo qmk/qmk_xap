@@ -7,7 +7,7 @@ mod aggregation;
 mod rpc;
 mod xap;
 
-use std::sync::mpsc::{channel, Receiver, Sender, TryRecvError};
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex};
 use std::thread::sleep;
 use std::time::{Duration, Instant};
@@ -28,16 +28,13 @@ use xap::client::XapClient;
 
 use xap_specs::constants::XapConstants;
 
-enum InternalEvent {
-    Shutdown,
-    FrontendNotify,
-}
+static RUNNING: AtomicBool = AtomicBool::new(true);
 
-fn shutdown_event_loop<R: Runtime>(tx: Sender<InternalEvent>) -> TauriPlugin<R> {
+fn shutdown_event_loop<R: Runtime>() -> TauriPlugin<R> {
     Builder::new("event loop shutdown")
         .on_event(move |_, event| {
             if let RunEvent::ExitRequested { .. } = event {
-                tx.send(InternalEvent::Shutdown).unwrap();
+                RUNNING.store(false, Ordering::SeqCst);
             }
         })
         .build()
@@ -46,20 +43,11 @@ fn shutdown_event_loop<R: Runtime>(tx: Sender<InternalEvent>) -> TauriPlugin<R> 
 struct App {
     handle: AppHandle,
     state: Arc<Mutex<XapClient>>,
-    event_channel: Receiver<InternalEvent>,
 }
 
 impl App {
-    fn new(
-        handle: AppHandle,
-        state: Arc<Mutex<XapClient>>,
-        event_channel: Receiver<InternalEvent>,
-    ) -> Self {
-        Self {
-            handle,
-            state,
-            event_channel,
-        }
+    fn new(handle: AppHandle, state: Arc<Mutex<XapClient>>) -> Self {
+        Self { handle, state }
     }
 
     fn start_event_loop(&mut self) {
@@ -68,22 +56,9 @@ impl App {
         let mut last_enumeration = Instant::now();
 
         loop {
-            match self.event_channel.try_recv() {
-                Ok(InternalEvent::Shutdown) => {
-                    info!("shutting down event loop");
-                    return;
-                }
-                Ok(InternalEvent::FrontendNotify) => {
-                    for device in self.state.lock().unwrap().get_devices() {
-                        let event = XapEvent::NewDevice { id: device.id() };
-                        self.handle.emit(event.frontend_id(), event).unwrap();
-                    }
-                }
-                Err(TryRecvError::Disconnected) => {
-                    error!("event loop channel disconnected");
-                    return;
-                }
-                _ => {}
+            if !RUNNING.load(Ordering::SeqCst) {
+                info!("shutting down event loop");
+                return;
             }
 
             if last_enumeration.elapsed() > Duration::from_secs(1) {
@@ -92,7 +67,7 @@ impl App {
                 match self.state.lock().unwrap().enumerate_xap_devices() {
                     Ok(events) => {
                         for event in events {
-                            self.handle_event(event);
+                            self.emit_event(event);
                         }
                     }
                     Err(err) => {
@@ -104,7 +79,7 @@ impl App {
             match self.state.lock().unwrap().poll_devices() {
                 Ok(events) => {
                     for event in events {
-                        self.handle_event(event);
+                        self.emit_event(event);
                     }
                 }
                 Err(err) => {
@@ -115,8 +90,10 @@ impl App {
         }
     }
 
-    fn handle_event(&self, event: XapEvent) {
-        self.handle.emit(event.frontend_id(), event).unwrap();
+    fn emit_event(&self, event: XapEvent) {
+        if let Err(err) = self.handle.emit("xap", event) {
+            error!("failed to emit event: {err}");
+        }
     }
 }
 
@@ -136,11 +113,10 @@ fn main() -> Result<()> {
     }
 
     let (xap_handler, xap_events) = specta_builder.build()?;
-    let (tx, rx) = channel();
 
     tauri::Builder::default()
         .invoke_handler(xap_handler)
-        .plugin(shutdown_event_loop(tx.clone()))
+        .plugin(shutdown_event_loop())
         .setup(move |app| {
             xap_events(app);
 
@@ -153,13 +129,7 @@ fn main() -> Result<()> {
             app.manage(Arc::clone(&state));
 
             let handle = app.handle().clone();
-            std::thread::spawn(|| App::new(handle, state, rx).start_event_loop());
-
-            app.listen("frontend-loaded", move |_| {
-                tx.clone()
-                    .send(InternalEvent::FrontendNotify)
-                    .expect("failed to notify frontend");
-            });
+            std::thread::spawn(|| App::new(handle, state).start_event_loop());
 
             Ok(())
         })

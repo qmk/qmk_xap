@@ -3,7 +3,7 @@
     import { ref, watch, onMounted } from 'vue'
     import type { Ref, StyleValue } from 'vue'
 
-    import { useXapDeviceStore as useXapDeviceStore } from '@/stores/devices'
+    import { useXapDeviceStore } from '@/utils/deviceStore'
     import {
         LayoutEntry,
         MappedKeymap,

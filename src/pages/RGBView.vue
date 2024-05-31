@@ -6,7 +6,7 @@
     import ColorPicker from '@radial-color-picker/vue-color-picker'
 
     import { LightingEffect, RgbLightConfig, XapDeviceState } from '@generated/xap'
-    import { useXapDeviceStore } from '@/stores/devices'
+    import { useXapDeviceStore } from '@/utils/deviceStore'
     import { commands } from '@generated/xap'
     import { notifyError } from '@/utils/utils'
 

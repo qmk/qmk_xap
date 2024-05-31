@@ -22,14 +22,3 @@ pub enum XapEvent {
         id: Uuid,
     },
 }
-
-impl XapEvent {
-    pub fn frontend_id(&self) -> &'static str {
-        match self {
-            XapEvent::LogReceived { .. } => "log",
-            XapEvent::SecureStatusChanged { .. } => "secure-status-changed",
-            XapEvent::NewDevice { .. } => "new-device",
-            XapEvent::RemovedDevice { .. } => "removed-device",
-        }
-    }
-}

@@ -9,7 +9,7 @@ import 'quasar/src/css/index.sass'
 import './assets/main.postcss'
 
 import App from '@/App.vue'
-import router from '@/router/routes'
+import router from '@/utils/routes'
 
 createApp(App)
     .use(Quasar, {

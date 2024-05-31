@@ -1,7 +1,7 @@
 <script setup lang="ts">
     import { storeToRefs } from 'pinia'
 
-    import { useXapDeviceStore } from '@/stores/devices'
+    import { useXapDeviceStore } from '@/utils/deviceStore'
     import { XapSecureStatus, XapDeviceState } from '@generated/xap'
     import { commands } from '@generated/xap'
     import type { Ref } from 'vue'
