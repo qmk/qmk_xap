@@ -7,11 +7,23 @@
     import { useXapDeviceStore } from '@/utils/deviceStore'
     import router from '@/utils/routes'
     import { eventBus } from '@/utils/eventbus'
-    import { XapEvent } from '@generated/xap'
+    import { XapDeviceState, XapEvent } from '@generated/xap'
     import { commands } from '@generated/xap'
 
     const store = useXapDeviceStore()
     const { device, devices } = storeToRefs(store)
+
+    function addDevice(device: XapDeviceState) {
+        const { id } = device
+        console.log('new device with id ' + id + Date.now())
+        if (store.addDevice(device)) {
+            Notify.create({
+                message: 'New Device ' + device.info?.qmk.product_name,
+                icon: 'power',
+            })
+        }
+        return true
+    }
 
     onMounted(async () => {
         addListener()
@@ -23,13 +35,7 @@
                         const result = await commands.deviceGet(id)
                         switch (result.status) {
                             case 'ok':
-                                console.log('new device with id ' + id + Date.now())
-                                if (store.addDevice(result.data)) {
-                                    Notify.create({
-                                        message: 'New Device ' + result.data.info?.qmk.product_name,
-                                        icon: 'power',
-                                    })
-                                }
+                                addDevice(result.data)
                                 break
                             case 'error':
                                 console.error(
@@ -62,6 +68,10 @@
                 }
             }
         })
+
+        for (const dev of await commands.devicesGet()) {
+            addDevice(dev)
+        }
     })
 
     onUnmounted(async () => {

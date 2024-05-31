@@ -50,3 +50,16 @@ pub fn device_get(
 ) -> Result<XapDeviceState, Error> {
     Ok(state.lock().unwrap().get_device(&id)?.state().clone())
 }
+
+#[tauri::command]
+#[specta::specta]
+pub fn devices_get(state: State<'_, Arc<Mutex<XapClient>>>) -> Vec<XapDeviceState> {
+    state
+        .lock()
+        .unwrap()
+        .get_devices()
+        .iter()
+        .map(|device| device.state())
+        .cloned()
+        .collect()
+}

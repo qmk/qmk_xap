@@ -423,6 +423,9 @@ export const commands = {
             else return { status: 'error', error: e as any }
         }
     },
+    async devicesGet(): Promise<XapDeviceState[]> {
+        return await TAURI_INVOKE('devices_get')
+    },
 }
 
 export const events = __makeEvents__<{
