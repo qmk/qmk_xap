@@ -8,8 +8,11 @@ use anyhow::Result;
 use convert_case::{Case, Casing};
 use serde::{de::Error, Deserialize, Deserializer, Serialize};
 use specta::Type;
+use tsify::Tsify;
+use wasm_bindgen::prelude::wasm_bindgen;
 
-#[derive(Clone, Deserialize, Serialize, Debug, Type)]
+#[derive(Clone, Deserialize, Serialize, Debug, Type, Tsify)]
+#[tsify(into_wasm_abi)]
 pub struct LightingEffects {
     pub groups: Option<HashMap<String, LightingGroup>>,
     #[serde(deserialize_with = "effect_from_hex_map")]
@@ -45,7 +48,8 @@ where
         .ok_or(D::Error::custom("failed to parse lighting effect table"))
 }
 
-#[derive(Clone, Deserialize, Serialize, Type, PartialEq, Debug)]
+#[derive(Clone, Deserialize, Serialize, Type, PartialEq, Debug, Tsify)]
+#[tsify(into_wasm_abi)]
 pub struct LightingEffect {
     #[serde(default)]
     pub code: u16,
@@ -55,7 +59,8 @@ pub struct LightingEffect {
     pub label: String,
 }
 
-#[derive(Clone, Deserialize, Serialize, Type, Debug)]
+#[derive(Clone, Deserialize, Serialize, Type, Debug, Tsify)]
+#[tsify(into_wasm_abi)]
 pub struct LightingGroup {
     pub define: String,
 }

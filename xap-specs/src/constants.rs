@@ -6,11 +6,13 @@ use std::path::PathBuf;
 use anyhow::Result;
 use serde::Serialize;
 use specta::Type;
+use tsify::Tsify;
 
 use self::keycode::{read_xap_keycodes, KeyCode, XapKeyCodeCategory};
 use self::lighting::{read_xap_lighting_effects, LightingEffects};
 
-#[derive(Debug, Clone, Serialize, Type)]
+#[derive(Debug, Clone, Serialize, Type, Tsify)]
+#[tsify(into_wasm_abi)]
 pub struct XapConstants {
     pub keycodes: Vec<XapKeyCodeCategory>,
     pub rgblight_modes: LightingEffects,

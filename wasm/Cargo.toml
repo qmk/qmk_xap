@@ -1,22 +1,21 @@
 [package]
-name = "xap-specs"
-version = "0.1.0"
+name = "xap-wasm"
+version = "0.0.0"
+description = "QMK XAP client"
+authors = ["Stefan Kerkmann"]
+license = ""
+repository = ""
 edition = "2021"
 
 [lib]
-name = "xap_specs"
-path = "src/lib.rs"
+crate-type = ["cdylib", "rlib"]
 
-[[bin]]
-name = "xap-specs-codegen"
-path = "src/bin/codegen.rs"
+[build-dependencies]
 
 [dependencies]
 anyhow = "1.0"
 binrw = "0.13"
 bitflags = { version = "2.5", features = ["serde"] }
-clap = { version = "4.5", features = ["derive"] }
-convert_case = "0.6"
 deser-hjson = "2.2"
 env_logger = "0.11"
 flate2 = "1.0"
@@ -25,15 +24,13 @@ rand = "0.8"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 serde_with = "3.8"
-specta = "=2.0.0-rc.12"
-thiserror = "1.0"
 uuid = { version = "1.8", features = ["serde", "v4", "js"] }
-wasm-bindgen = "0.2"
+xap-specs = { path = "../xap-specs" }
+serde-wasm-bindgen = "0.6"
 tsify = "0.4"
+wasm-bindgen = "0.2"
 
 [dev-dependencies]
-similar-asserts = "1.5"
+similar-asserts = "1.5.0"
 
-[build-dependencies]
-anyhow = "1.0"
-serde = { version = "1", features = ["derive"] }
+[features]
