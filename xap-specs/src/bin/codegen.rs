@@ -650,7 +650,7 @@ impl Spec {
             #[macro_export]
             macro_rules! generate_specta_builder {{
                 (commands: [$($command:ident),*], events: [$($event:ident),*]) => {{{{
-                    let specta_builder = tauri_specta::ts::builder()
+                    let specta_builder = tauri_specta::Builder::new()
                         .commands(tauri_specta::collect_commands![
 {}
                             $($command),*

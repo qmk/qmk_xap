@@ -8,7 +8,7 @@ repository = ""
 edition = "2021"
 
 [build-dependencies]
-tauri-build = { version = "2.0.0-beta", features = [] }
+tauri-build = { version = "2.2.0", features = [] }
 
 [dependencies]
 anyhow = "1.0"
@@ -23,11 +23,12 @@ rand = "0.8"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 serde_with = "3.8"
-specta = { version = "=2.0.0-rc.12", features = ["uuid"] }
-tauri = { version = "2.0.0-beta", features = [] }
-tauri-plugin-fs = "2.0.0-beta"
-tauri-plugin-shell = "2.0.0-beta"
-tauri-specta = { version = "2.0.0-rc.10", features = ["typescript"] }
+specta = { version = "=2.0.0-rc.22", features = ["uuid"] }
+specta-typescript = "0.0.9"
+tauri = { version = "2.5.1", features = [] }
+tauri-plugin-fs = "2.2.1"
+tauri-plugin-shell = "2.2.1"
+tauri-specta = { version = "2.0.0-rc.21", features = ["derive", "typescript"] }
 uuid = { version = "1.8", features = ["serde", "v4"] }
 xap-specs = { path = "../xap-specs" }
 

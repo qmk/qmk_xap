@@ -24,3 +24,12 @@ target
 *.njsproj
 *.sln
 *.sw?
+
+# generated files
+# TODO:
+#  * Cargo.lock
+#  * yarn.lock
+#  * src-tauri/src/rpc/spec.rs
+#  * src-tauri/src/xap/spec.rs
+src/generated
+src-tauri/gen/schemas

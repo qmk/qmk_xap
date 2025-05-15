@@ -20,7 +20,7 @@ use tauri::{
     plugin::{Builder, TauriPlugin},
     RunEvent, Runtime,
 };
-use tauri::{AppHandle, Manager};
+use tauri::{AppHandle, Emitter, Manager};
 
 use rpc::commands::{device_get, devices_get, keymap_get, remap_key, xap_constants_get};
 use rpc::events::XapEvent;
@@ -100,25 +100,23 @@ impl App {
 fn main() -> Result<()> {
     env_logger::Builder::from_env(Env::default().default_filter_or("info")).init();
 
-    let specta_config = specta::ts::ExportConfig::default()
-        .bigint(specta::ts::BigIntExportBehavior::BigInt)
-        .formatter(specta::ts::formatter::prettier);
+    let specta_config = specta_typescript::Typescript::default()
+        .bigint(specta_typescript::BigIntExportBehavior::BigInt)
+        .formatter(specta_typescript::formatter::prettier);
 
-    let mut specta_builder =
-        generate_specta_builder!(commands: [xap_constants_get, remap_key, keymap_get, device_get, devices_get], events: [XapEvent])
-            .config(specta_config);
+    let specta_builder =
+        generate_specta_builder!(commands: [xap_constants_get, remap_key, keymap_get, device_get, devices_get], events: [XapEvent]);
 
-    if cfg!(debug_assertions) {
-        specta_builder = specta_builder.path("../src/generated/xap.ts");
-    }
-
-    let (xap_handler, xap_events) = specta_builder.build()?;
+    // TODO: do not always export?
+    specta_builder
+        .export(specta_config, "../src/generated/xap.ts")
+        .expect("Failed to export typescript bindings");
 
     tauri::Builder::default()
-        .invoke_handler(xap_handler)
+        .invoke_handler(specta_builder.invoke_handler())
         .plugin(shutdown_event_loop())
         .setup(move |app| {
-            xap_events(app);
+            specta_builder.mount_events(app);
 
             let xap_specs = app
                 .path()
