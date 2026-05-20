@@ -8,6 +8,16 @@ This repository contains the (experimental) [QMK XAP](https://github.com/qmk/qmk
 -   [Rust](https://www.rust-lang.org/) for the backend
 -   [Typescript](https://www.typescriptlang.org/) for the frontend
 
+## Syncing QMK Keycodes
+
+The keycode picker uses `xap-specs/assets/keycodes_<version>.generated.hjson`, flattened standalone files generated from QMK's versioned keycode HJSON files. Each generated file contains one fully resolved keycode version and does not depend on older generated files. The app uses the latest bundled version unless backend code requests a specific older version. Regenerate them with:
+
+```sh
+yarn sync:keycodes --qmk-firmware /path/to/qmk_firmware
+```
+
+If `--qmk-firmware` is omitted, the script reads `QMK_FIRMWARE`. The Python environment running the script must have QMK's Python requirements installed, because the sync delegates version merging and `!delete!`/`!reset!` handling to QMK's own loader.
+
 ## Architecture/Design
 
 ```mermaid

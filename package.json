@@ -9,6 +9,7 @@
         "dev": "RUST_BACKTRACE=1 tauri dev",
         "format": "prettier --write .",
         "preview": "vite preview",
+        "sync:keycodes": "python3 xap-specs/scripts/sync_keycodes.py",
         "test": "vitest",
         "ts-check": "vue-tsc --noEmit",
         "vite:build": "vite build",

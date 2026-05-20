@@ -1,0 +1,5413 @@
+{
+  "keycodes": {
+    "0x0000": {
+      "aliases": [
+        "XXXXXXX"
+      ],
+      "group": "internal",
+      "key": "KC_NO",
+      "label": "N/A"
+    },
+    "0x0001": {
+      "aliases": [
+        "_______",
+        "KC_TRNS"
+      ],
+      "group": "internal",
+      "key": "KC_TRANSPARENT",
+      "label": "Transparent"
+    },
+    "0x0004": {
+      "group": "basic",
+      "key": "KC_A",
+      "label": "A"
+    },
+    "0x0005": {
+      "group": "basic",
+      "key": "KC_B",
+      "label": "B"
+    },
+    "0x0006": {
+      "group": "basic",
+      "key": "KC_C",
+      "label": "C"
+    },
+    "0x0007": {
+      "group": "basic",
+      "key": "KC_D",
+      "label": "D"
+    },
+    "0x0008": {
+      "group": "basic",
+      "key": "KC_E",
+      "label": "E"
+    },
+    "0x0009": {
+      "group": "basic",
+      "key": "KC_F",
+      "label": "F"
+    },
+    "0x000A": {
+      "group": "basic",
+      "key": "KC_G",
+      "label": "G"
+    },
+    "0x000B": {
+      "group": "basic",
+      "key": "KC_H",
+      "label": "H"
+    },
+    "0x000C": {
+      "group": "basic",
+      "key": "KC_I",
+      "label": "I"
+    },
+    "0x000D": {
+      "group": "basic",
+      "key": "KC_J",
+      "label": "J"
+    },
+    "0x000E": {
+      "group": "basic",
+      "key": "KC_K",
+      "label": "K"
+    },
+    "0x000F": {
+      "group": "basic",
+      "key": "KC_L",
+      "label": "L"
+    },
+    "0x0010": {
+      "group": "basic",
+      "key": "KC_M",
+      "label": "M"
+    },
+    "0x0011": {
+      "group": "basic",
+      "key": "KC_N",
+      "label": "N"
+    },
+    "0x0012": {
+      "group": "basic",
+      "key": "KC_O",
+      "label": "O"
+    },
+    "0x0013": {
+      "group": "basic",
+      "key": "KC_P",
+      "label": "P"
+    },
+    "0x0014": {
+      "group": "basic",
+      "key": "KC_Q",
+      "label": "Q"
+    },
+    "0x0015": {
+      "group": "basic",
+      "key": "KC_R",
+      "label": "R"
+    },
+    "0x0016": {
+      "group": "basic",
+      "key": "KC_S",
+      "label": "S"
+    },
+    "0x0017": {
+      "group": "basic",
+      "key": "KC_T",
+      "label": "T"
+    },
+    "0x0018": {
+      "group": "basic",
+      "key": "KC_U",
+      "label": "U"
+    },
+    "0x0019": {
+      "group": "basic",
+      "key": "KC_V",
+      "label": "V"
+    },
+    "0x001A": {
+      "group": "basic",
+      "key": "KC_W",
+      "label": "W"
+    },
+    "0x001B": {
+      "group": "basic",
+      "key": "KC_X",
+      "label": "X"
+    },
+    "0x001C": {
+      "group": "basic",
+      "key": "KC_Y",
+      "label": "Y"
+    },
+    "0x001D": {
+      "group": "basic",
+      "key": "KC_Z",
+      "label": "Z"
+    },
+    "0x001E": {
+      "group": "basic",
+      "key": "KC_1",
+      "label": "1"
+    },
+    "0x001F": {
+      "group": "basic",
+      "key": "KC_2",
+      "label": "2"
+    },
+    "0x0020": {
+      "group": "basic",
+      "key": "KC_3",
+      "label": "3"
+    },
+    "0x0021": {
+      "group": "basic",
+      "key": "KC_4",
+      "label": "4"
+    },
+    "0x0022": {
+      "group": "basic",
+      "key": "KC_5",
+      "label": "5"
+    },
+    "0x0023": {
+      "group": "basic",
+      "key": "KC_6",
+      "label": "6"
+    },
+    "0x0024": {
+      "group": "basic",
+      "key": "KC_7",
+      "label": "7"
+    },
+    "0x0025": {
+      "group": "basic",
+      "key": "KC_8",
+      "label": "8"
+    },
+    "0x0026": {
+      "group": "basic",
+      "key": "KC_9",
+      "label": "9"
+    },
+    "0x0027": {
+      "group": "basic",
+      "key": "KC_0",
+      "label": "0"
+    },
+    "0x0028": {
+      "aliases": [
+        "KC_ENT"
+      ],
+      "group": "basic",
+      "key": "KC_ENTER",
+      "label": "Enter"
+    },
+    "0x0029": {
+      "aliases": [
+        "KC_ESC"
+      ],
+      "group": "basic",
+      "key": "KC_ESCAPE",
+      "label": "Esc"
+    },
+    "0x002A": {
+      "aliases": [
+        "KC_BSPC"
+      ],
+      "group": "basic",
+      "key": "KC_BACKSPACE",
+      "label": "Backspace"
+    },
+    "0x002B": {
+      "group": "basic",
+      "key": "KC_TAB",
+      "label": "Tab"
+    },
+    "0x002C": {
+      "aliases": [
+        "KC_SPC"
+      ],
+      "group": "basic",
+      "key": "KC_SPACE",
+      "label": "Spacebar"
+    },
+    "0x002D": {
+      "aliases": [
+        "KC_MINS"
+      ],
+      "group": "basic",
+      "key": "KC_MINUS",
+      "label": "-"
+    },
+    "0x002E": {
+      "aliases": [
+        "KC_EQL"
+      ],
+      "group": "basic",
+      "key": "KC_EQUAL",
+      "label": "="
+    },
+    "0x002F": {
+      "aliases": [
+        "KC_LBRC"
+      ],
+      "group": "basic",
+      "key": "KC_LEFT_BRACKET",
+      "label": "["
+    },
+    "0x0030": {
+      "aliases": [
+        "KC_RBRC"
+      ],
+      "group": "basic",
+      "key": "KC_RIGHT_BRACKET",
+      "label": "]"
+    },
+    "0x0031": {
+      "aliases": [
+        "KC_BSLS"
+      ],
+      "group": "basic",
+      "key": "KC_BACKSLASH",
+      "label": "\\"
+    },
+    "0x0032": {
+      "aliases": [
+        "KC_NUHS"
+      ],
+      "group": "basic",
+      "key": "KC_NONUS_HASH",
+      "label": "#"
+    },
+    "0x0033": {
+      "aliases": [
+        "KC_SCLN"
+      ],
+      "group": "basic",
+      "key": "KC_SEMICOLON",
+      "label": ";"
+    },
+    "0x0034": {
+      "aliases": [
+        "KC_QUOT"
+      ],
+      "group": "basic",
+      "key": "KC_QUOTE",
+      "label": "'"
+    },
+    "0x0035": {
+      "aliases": [
+        "KC_GRV"
+      ],
+      "group": "basic",
+      "key": "KC_GRAVE",
+      "label": "`"
+    },
+    "0x0036": {
+      "aliases": [
+        "KC_COMM"
+      ],
+      "group": "basic",
+      "key": "KC_COMMA",
+      "label": ","
+    },
+    "0x0037": {
+      "group": "basic",
+      "key": "KC_DOT",
+      "label": "."
+    },
+    "0x0038": {
+      "aliases": [
+        "KC_SLSH"
+      ],
+      "group": "basic",
+      "key": "KC_SLASH",
+      "label": "/"
+    },
+    "0x0039": {
+      "aliases": [
+        "KC_CAPS"
+      ],
+      "group": "basic",
+      "key": "KC_CAPS_LOCK",
+      "label": "Caps Lock"
+    },
+    "0x003A": {
+      "group": "basic",
+      "key": "KC_F1",
+      "label": "F1"
+    },
+    "0x003B": {
+      "group": "basic",
+      "key": "KC_F2",
+      "label": "F2"
+    },
+    "0x003C": {
+      "group": "basic",
+      "key": "KC_F3",
+      "label": "F3"
+    },
+    "0x003D": {
+      "group": "basic",
+      "key": "KC_F4",
+      "label": "F4"
+    },
+    "0x003E": {
+      "group": "basic",
+      "key": "KC_F5",
+      "label": "F5"
+    },
+    "0x003F": {
+      "group": "basic",
+      "key": "KC_F6",
+      "label": "F6"
+    },
+    "0x0040": {
+      "group": "basic",
+      "key": "KC_F7",
+      "label": "F7"
+    },
+    "0x0041": {
+      "group": "basic",
+      "key": "KC_F8",
+      "label": "F8"
+    },
+    "0x0042": {
+      "group": "basic",
+      "key": "KC_F9",
+      "label": "F9"
+    },
+    "0x0043": {
+      "group": "basic",
+      "key": "KC_F10",
+      "label": "F10"
+    },
+    "0x0044": {
+      "group": "basic",
+      "key": "KC_F11",
+      "label": "F11"
+    },
+    "0x0045": {
+      "group": "basic",
+      "key": "KC_F12",
+      "label": "F12"
+    },
+    "0x0046": {
+      "aliases": [
+        "KC_PSCR"
+      ],
+      "group": "basic",
+      "key": "KC_PRINT_SCREEN",
+      "label": "Print Screen"
+    },
+    "0x0047": {
+      "aliases": [
+        "KC_SCRL",
+        "KC_BRMD"
+      ],
+      "group": "basic",
+      "key": "KC_SCROLL_LOCK",
+      "label": "Scroll Lock"
+    },
+    "0x0048": {
+      "aliases": [
+        "KC_PAUS",
+        "KC_BRK",
+        "KC_BRMU"
+      ],
+      "group": "basic",
+      "key": "KC_PAUSE",
+      "label": "Pause"
+    },
+    "0x0049": {
+      "aliases": [
+        "KC_INS"
+      ],
+      "group": "basic",
+      "key": "KC_INSERT",
+      "label": "Insert"
+    },
+    "0x004A": {
+      "group": "basic",
+      "key": "KC_HOME",
+      "label": "Home"
+    },
+    "0x004B": {
+      "aliases": [
+        "KC_PGUP"
+      ],
+      "group": "basic",
+      "key": "KC_PAGE_UP",
+      "label": "Page Up"
+    },
+    "0x004C": {
+      "aliases": [
+        "KC_DEL"
+      ],
+      "group": "basic",
+      "key": "KC_DELETE",
+      "label": "Delete"
+    },
+    "0x004D": {
+      "group": "basic",
+      "key": "KC_END",
+      "label": "End"
+    },
+    "0x004E": {
+      "aliases": [
+        "KC_PGDN"
+      ],
+      "group": "basic",
+      "key": "KC_PAGE_DOWN",
+      "label": "Page Down"
+    },
+    "0x004F": {
+      "aliases": [
+        "KC_RGHT"
+      ],
+      "group": "basic",
+      "key": "KC_RIGHT",
+      "label": "Right"
+    },
+    "0x0050": {
+      "group": "basic",
+      "key": "KC_LEFT",
+      "label": "Left"
+    },
+    "0x0051": {
+      "group": "basic",
+      "key": "KC_DOWN",
+      "label": "Down"
+    },
+    "0x0052": {
+      "group": "basic",
+      "key": "KC_UP",
+      "label": "Up"
+    },
+    "0x0053": {
+      "aliases": [
+        "KC_NUM"
+      ],
+      "group": "basic",
+      "key": "KC_NUM_LOCK",
+      "label": "Num Lock"
+    },
+    "0x0054": {
+      "aliases": [
+        "KC_PSLS"
+      ],
+      "group": "basic",
+      "key": "KC_KP_SLASH",
+      "label": "/"
+    },
+    "0x0055": {
+      "aliases": [
+        "KC_PAST"
+      ],
+      "group": "basic",
+      "key": "KC_KP_ASTERISK",
+      "label": "*"
+    },
+    "0x0056": {
+      "aliases": [
+        "KC_PMNS"
+      ],
+      "group": "basic",
+      "key": "KC_KP_MINUS",
+      "label": "-"
+    },
+    "0x0057": {
+      "aliases": [
+        "KC_PPLS"
+      ],
+      "group": "basic",
+      "key": "KC_KP_PLUS",
+      "label": "+"
+    },
+    "0x0058": {
+      "aliases": [
+        "KC_PENT"
+      ],
+      "group": "basic",
+      "key": "KC_KP_ENTER",
+      "label": "Enter"
+    },
+    "0x0059": {
+      "aliases": [
+        "KC_P1"
+      ],
+      "group": "basic",
+      "key": "KC_KP_1",
+      "label": "1"
+    },
+    "0x005A": {
+      "aliases": [
+        "KC_P2"
+      ],
+      "group": "basic",
+      "key": "KC_KP_2",
+      "label": "2"
+    },
+    "0x005B": {
+      "aliases": [
+        "KC_P3"
+      ],
+      "group": "basic",
+      "key": "KC_KP_3",
+      "label": "3"
+    },
+    "0x005C": {
+      "aliases": [
+        "KC_P4"
+      ],
+      "group": "basic",
+      "key": "KC_KP_4",
+      "label": "4"
+    },
+    "0x005D": {
+      "aliases": [
+        "KC_P5"
+      ],
+      "group": "basic",
+      "key": "KC_KP_5",
+      "label": "5"
+    },
+    "0x005E": {
+      "aliases": [
+        "KC_P6"
+      ],
+      "group": "basic",
+      "key": "KC_KP_6",
+      "label": "6"
+    },
+    "0x005F": {
+      "aliases": [
+        "KC_P7"
+      ],
+      "group": "basic",
+      "key": "KC_KP_7",
+      "label": "7"
+    },
+    "0x0060": {
+      "aliases": [
+        "KC_P8"
+      ],
+      "group": "basic",
+      "key": "KC_KP_8",
+      "label": "8"
+    },
+    "0x0061": {
+      "aliases": [
+        "KC_P9"
+      ],
+      "group": "basic",
+      "key": "KC_KP_9",
+      "label": "9"
+    },
+    "0x0062": {
+      "aliases": [
+        "KC_P0"
+      ],
+      "group": "basic",
+      "key": "KC_KP_0",
+      "label": "0"
+    },
+    "0x0063": {
+      "aliases": [
+        "KC_PDOT"
+      ],
+      "group": "basic",
+      "key": "KC_KP_DOT",
+      "label": "."
+    },
+    "0x0064": {
+      "aliases": [
+        "KC_NUBS"
+      ],
+      "group": "basic",
+      "key": "KC_NONUS_BACKSLASH",
+      "label": "\\"
+    },
+    "0x0065": {
+      "aliases": [
+        "KC_APP"
+      ],
+      "group": "basic",
+      "key": "KC_APPLICATION",
+      "label": "App"
+    },
+    "0x0066": {
+      "group": "basic",
+      "key": "KC_KB_POWER",
+      "label": "Power"
+    },
+    "0x0067": {
+      "aliases": [
+        "KC_PEQL"
+      ],
+      "group": "basic",
+      "key": "KC_KP_EQUAL",
+      "label": "="
+    },
+    "0x0068": {
+      "group": "basic",
+      "key": "KC_F13",
+      "label": "F13"
+    },
+    "0x0069": {
+      "group": "basic",
+      "key": "KC_F14",
+      "label": "F14"
+    },
+    "0x006A": {
+      "group": "basic",
+      "key": "KC_F15",
+      "label": "F15"
+    },
+    "0x006B": {
+      "group": "basic",
+      "key": "KC_F16",
+      "label": "F16"
+    },
+    "0x006C": {
+      "group": "basic",
+      "key": "KC_F17",
+      "label": "F17"
+    },
+    "0x006D": {
+      "group": "basic",
+      "key": "KC_F18",
+      "label": "F18"
+    },
+    "0x006E": {
+      "group": "basic",
+      "key": "KC_F19",
+      "label": "F19"
+    },
+    "0x006F": {
+      "group": "basic",
+      "key": "KC_F20",
+      "label": "F20"
+    },
+    "0x0070": {
+      "group": "basic",
+      "key": "KC_F21",
+      "label": "F21"
+    },
+    "0x0071": {
+      "group": "basic",
+      "key": "KC_F22",
+      "label": "F22"
+    },
+    "0x0072": {
+      "group": "basic",
+      "key": "KC_F23",
+      "label": "F23"
+    },
+    "0x0073": {
+      "group": "basic",
+      "key": "KC_F24",
+      "label": "F24"
+    },
+    "0x0074": {
+      "aliases": [
+        "KC_EXEC"
+      ],
+      "group": "basic",
+      "key": "KC_EXECUTE",
+      "label": "Execute"
+    },
+    "0x0075": {
+      "group": "basic",
+      "key": "KC_HELP",
+      "label": "Help"
+    },
+    "0x0076": {
+      "group": "basic",
+      "key": "KC_MENU",
+      "label": "Menu"
+    },
+    "0x0077": {
+      "aliases": [
+        "KC_SLCT"
+      ],
+      "group": "basic",
+      "key": "KC_SELECT",
+      "label": "Select"
+    },
+    "0x0078": {
+      "group": "basic",
+      "key": "KC_STOP",
+      "label": "Stop"
+    },
+    "0x0079": {
+      "aliases": [
+        "KC_AGIN"
+      ],
+      "group": "basic",
+      "key": "KC_AGAIN",
+      "label": "Again"
+    },
+    "0x007A": {
+      "group": "basic",
+      "key": "KC_UNDO",
+      "label": "Undo"
+    },
+    "0x007B": {
+      "group": "basic",
+      "key": "KC_CUT",
+      "label": "Cut"
+    },
+    "0x007C": {
+      "group": "basic",
+      "key": "KC_COPY",
+      "label": "Copy"
+    },
+    "0x007D": {
+      "aliases": [
+        "KC_PSTE"
+      ],
+      "group": "basic",
+      "key": "KC_PASTE",
+      "label": "Paste"
+    },
+    "0x007E": {
+      "group": "basic",
+      "key": "KC_FIND",
+      "label": "Find"
+    },
+    "0x007F": {
+      "group": "basic",
+      "key": "KC_KB_MUTE",
+      "label": "Mute"
+    },
+    "0x0080": {
+      "group": "basic",
+      "key": "KC_KB_VOLUME_UP",
+      "label": "Volume Up"
+    },
+    "0x0081": {
+      "group": "basic",
+      "key": "KC_KB_VOLUME_DOWN",
+      "label": "Volume Down"
+    },
+    "0x0082": {
+      "aliases": [
+        "KC_LCAP"
+      ],
+      "group": "basic",
+      "key": "KC_LOCKING_CAPS_LOCK",
+      "label": "Caps Lock"
+    },
+    "0x0083": {
+      "aliases": [
+        "KC_LNUM"
+      ],
+      "group": "basic",
+      "key": "KC_LOCKING_NUM_LOCK",
+      "label": "Num Lock"
+    },
+    "0x0084": {
+      "aliases": [
+        "KC_LSCR"
+      ],
+      "group": "basic",
+      "key": "KC_LOCKING_SCROLL_LOCK",
+      "label": "Scroll Lock"
+    },
+    "0x0085": {
+      "aliases": [
+        "KC_PCMM"
+      ],
+      "group": "basic",
+      "key": "KC_KP_COMMA",
+      "label": ","
+    },
+    "0x0086": {
+      "group": "basic",
+      "key": "KC_KP_EQUAL_AS400",
+      "label": "="
+    },
+    "0x0087": {
+      "aliases": [
+        "KC_INT1"
+      ],
+      "group": "basic",
+      "key": "KC_INTERNATIONAL_1",
+      "label": "INT 1"
+    },
+    "0x0088": {
+      "aliases": [
+        "KC_INT2"
+      ],
+      "group": "basic",
+      "key": "KC_INTERNATIONAL_2",
+      "label": "INT 2"
+    },
+    "0x0089": {
+      "aliases": [
+        "KC_INT3"
+      ],
+      "group": "basic",
+      "key": "KC_INTERNATIONAL_3",
+      "label": "INT 3"
+    },
+    "0x008A": {
+      "aliases": [
+        "KC_INT4"
+      ],
+      "group": "basic",
+      "key": "KC_INTERNATIONAL_4",
+      "label": "INT 4"
+    },
+    "0x008B": {
+      "aliases": [
+        "KC_INT5"
+      ],
+      "group": "basic",
+      "key": "KC_INTERNATIONAL_5",
+      "label": "INT 5"
+    },
+    "0x008C": {
+      "aliases": [
+        "KC_INT6"
+      ],
+      "group": "basic",
+      "key": "KC_INTERNATIONAL_6",
+      "label": "INT 6"
+    },
+    "0x008D": {
+      "aliases": [
+        "KC_INT7"
+      ],
+      "group": "basic",
+      "key": "KC_INTERNATIONAL_7",
+      "label": "INT 7"
+    },
+    "0x008E": {
+      "aliases": [
+        "KC_INT8"
+      ],
+      "group": "basic",
+      "key": "KC_INTERNATIONAL_8",
+      "label": "INT 8"
+    },
+    "0x008F": {
+      "aliases": [
+        "KC_INT9"
+      ],
+      "group": "basic",
+      "key": "KC_INTERNATIONAL_9",
+      "label": "INT 9"
+    },
+    "0x0090": {
+      "aliases": [
+        "KC_LNG1"
+      ],
+      "group": "basic",
+      "key": "KC_LANGUAGE_1",
+      "label": "LANG 1"
+    },
+    "0x0091": {
+      "aliases": [
+        "KC_LNG2"
+      ],
+      "group": "basic",
+      "key": "KC_LANGUAGE_2",
+      "label": "LANG 2"
+    },
+    "0x0092": {
+      "aliases": [
+        "KC_LNG3"
+      ],
+      "group": "basic",
+      "key": "KC_LANGUAGE_3",
+      "label": "LANG 3"
+    },
+    "0x0093": {
+      "aliases": [
+        "KC_LNG4"
+      ],
+      "group": "basic",
+      "key": "KC_LANGUAGE_4",
+      "label": "LANG 4"
+    },
+    "0x0094": {
+      "aliases": [
+        "KC_LNG5"
+      ],
+      "group": "basic",
+      "key": "KC_LANGUAGE_5",
+      "label": "LANG 5"
+    },
+    "0x0095": {
+      "aliases": [
+        "KC_LNG6"
+      ],
+      "group": "basic",
+      "key": "KC_LANGUAGE_6",
+      "label": "LANG 6"
+    },
+    "0x0096": {
+      "aliases": [
+        "KC_LNG7"
+      ],
+      "group": "basic",
+      "key": "KC_LANGUAGE_7",
+      "label": "LANG 7"
+    },
+    "0x0097": {
+      "aliases": [
+        "KC_LNG8"
+      ],
+      "group": "basic",
+      "key": "KC_LANGUAGE_8",
+      "label": "LANG 8"
+    },
+    "0x0098": {
+      "aliases": [
+        "KC_LNG9"
+      ],
+      "group": "basic",
+      "key": "KC_LANGUAGE_9",
+      "label": "LANG 9"
+    },
+    "0x0099": {
+      "aliases": [
+        "KC_ERAS"
+      ],
+      "group": "basic",
+      "key": "KC_ALTERNATE_ERASE",
+      "label": "Alternate Erase"
+    },
+    "0x009A": {
+      "aliases": [
+        "KC_SYRQ"
+      ],
+      "group": "basic",
+      "key": "KC_SYSTEM_REQUEST",
+      "label": "SysReq/Attention"
+    },
+    "0x009B": {
+      "aliases": [
+        "KC_CNCL"
+      ],
+      "group": "basic",
+      "key": "KC_CANCEL",
+      "label": "Cancel"
+    },
+    "0x009C": {
+      "aliases": [
+        "KC_CLR"
+      ],
+      "group": "basic",
+      "key": "KC_CLEAR",
+      "label": "Clear"
+    },
+    "0x009D": {
+      "aliases": [
+        "KC_PRIR"
+      ],
+      "group": "basic",
+      "key": "KC_PRIOR",
+      "label": "Prior"
+    },
+    "0x009E": {
+      "aliases": [
+        "KC_RETN"
+      ],
+      "group": "basic",
+      "key": "KC_RETURN",
+      "label": "Return"
+    },
+    "0x009F": {
+      "aliases": [
+        "KC_SEPR"
+      ],
+      "group": "basic",
+      "key": "KC_SEPARATOR",
+      "label": "Separator"
+    },
+    "0x00A0": {
+      "group": "basic",
+      "key": "KC_OUT",
+      "label": "Out"
+    },
+    "0x00A1": {
+      "group": "basic",
+      "key": "KC_OPER",
+      "label": "Oper"
+    },
+    "0x00A2": {
+      "aliases": [
+        "KC_CLAG"
+      ],
+      "group": "basic",
+      "key": "KC_CLEAR_AGAIN",
+      "label": "Clear/Again"
+    },
+    "0x00A3": {
+      "aliases": [
+        "KC_CRSL"
+      ],
+      "group": "basic",
+      "key": "KC_CRSEL",
+      "label": "CrSel/Props"
+    },
+    "0x00A4": {
+      "aliases": [
+        "KC_EXSL"
+      ],
+      "group": "basic",
+      "key": "KC_EXSEL",
+      "label": "ExSel"
+    },
+    "0x00A5": {
+      "aliases": [
+        "KC_PWR"
+      ],
+      "group": "system",
+      "key": "KC_SYSTEM_POWER",
+      "label": "Power"
+    },
+    "0x00A6": {
+      "aliases": [
+        "KC_SLEP"
+      ],
+      "group": "system",
+      "key": "KC_SYSTEM_SLEEP",
+      "label": "Sleep"
+    },
+    "0x00A7": {
+      "aliases": [
+        "KC_WAKE"
+      ],
+      "group": "system",
+      "key": "KC_SYSTEM_WAKE",
+      "label": "Wake"
+    },
+    "0x00A8": {
+      "aliases": [
+        "KC_MUTE"
+      ],
+      "group": "media",
+      "key": "KC_AUDIO_MUTE",
+      "label": "Mute"
+    },
+    "0x00A9": {
+      "aliases": [
+        "KC_VOLU"
+      ],
+      "group": "media",
+      "key": "KC_AUDIO_VOL_UP",
+      "label": "Volume Up"
+    },
+    "0x00AA": {
+      "aliases": [
+        "KC_VOLD"
+      ],
+      "group": "media",
+      "key": "KC_AUDIO_VOL_DOWN",
+      "label": "Volume Down"
+    },
+    "0x00AB": {
+      "aliases": [
+        "KC_MNXT"
+      ],
+      "group": "media",
+      "key": "KC_MEDIA_NEXT_TRACK",
+      "label": "Next"
+    },
+    "0x00AC": {
+      "aliases": [
+        "KC_MPRV"
+      ],
+      "group": "media",
+      "key": "KC_MEDIA_PREV_TRACK",
+      "label": "Previous"
+    },
+    "0x00AD": {
+      "aliases": [
+        "KC_MSTP"
+      ],
+      "group": "media",
+      "key": "KC_MEDIA_STOP",
+      "label": "Stop"
+    },
+    "0x00AE": {
+      "aliases": [
+        "KC_MPLY"
+      ],
+      "group": "media",
+      "key": "KC_MEDIA_PLAY_PAUSE",
+      "label": "Play/Pause"
+    },
+    "0x00AF": {
+      "aliases": [
+        "KC_MSEL"
+      ],
+      "group": "media",
+      "key": "KC_MEDIA_SELECT",
+      "label": "Media"
+    },
+    "0x00B0": {
+      "aliases": [
+        "KC_EJCT"
+      ],
+      "group": "media",
+      "key": "KC_MEDIA_EJECT",
+      "label": "Eject"
+    },
+    "0x00B1": {
+      "group": "media",
+      "key": "KC_MAIL",
+      "label": "Mail"
+    },
+    "0x00B2": {
+      "aliases": [
+        "KC_CALC"
+      ],
+      "group": "media",
+      "key": "KC_CALCULATOR",
+      "label": "Calculator"
+    },
+    "0x00B3": {
+      "aliases": [
+        "KC_MYCM"
+      ],
+      "group": "media",
+      "key": "KC_MY_COMPUTER",
+      "label": "My Computer"
+    },
+    "0x00B4": {
+      "aliases": [
+        "KC_WSCH"
+      ],
+      "group": "media",
+      "key": "KC_WWW_SEARCH",
+      "label": "Search"
+    },
+    "0x00B5": {
+      "aliases": [
+        "KC_WHOM"
+      ],
+      "group": "media",
+      "key": "KC_WWW_HOME",
+      "label": "Home"
+    },
+    "0x00B6": {
+      "aliases": [
+        "KC_WBAK"
+      ],
+      "group": "media",
+      "key": "KC_WWW_BACK",
+      "label": "Back"
+    },
+    "0x00B7": {
+      "aliases": [
+        "KC_WFWD"
+      ],
+      "group": "media",
+      "key": "KC_WWW_FORWARD",
+      "label": "Forward"
+    },
+    "0x00B8": {
+      "aliases": [
+        "KC_WSTP"
+      ],
+      "group": "media",
+      "key": "KC_WWW_STOP",
+      "label": "Stop"
+    },
+    "0x00B9": {
+      "aliases": [
+        "KC_WREF"
+      ],
+      "group": "media",
+      "key": "KC_WWW_REFRESH",
+      "label": "Refresh"
+    },
+    "0x00BA": {
+      "aliases": [
+        "KC_WFAV"
+      ],
+      "group": "media",
+      "key": "KC_WWW_FAVORITES",
+      "label": "Favorites"
+    },
+    "0x00BB": {
+      "aliases": [
+        "KC_MFFD"
+      ],
+      "group": "media",
+      "key": "KC_MEDIA_FAST_FORWARD",
+      "label": "Fast Forward"
+    },
+    "0x00BC": {
+      "aliases": [
+        "KC_MRWD"
+      ],
+      "group": "media",
+      "key": "KC_MEDIA_REWIND",
+      "label": "Rewind"
+    },
+    "0x00BD": {
+      "aliases": [
+        "KC_BRIU"
+      ],
+      "group": "media",
+      "key": "KC_BRIGHTNESS_UP",
+      "label": "Brightness Up"
+    },
+    "0x00BE": {
+      "aliases": [
+        "KC_BRID"
+      ],
+      "group": "media",
+      "key": "KC_BRIGHTNESS_DOWN",
+      "label": "Brightness Down"
+    },
+    "0x00BF": {
+      "aliases": [
+        "KC_CPNL"
+      ],
+      "group": "media",
+      "key": "KC_CONTROL_PANEL",
+      "label": "Control Panel"
+    },
+    "0x00C0": {
+      "aliases": [
+        "KC_ASST"
+      ],
+      "group": "media",
+      "key": "KC_ASSISTANT",
+      "label": "Assistant"
+    },
+    "0x00C1": {
+      "aliases": [
+        "KC_MCTL"
+      ],
+      "group": "media",
+      "key": "KC_MISSION_CONTROL",
+      "label": "Mission Control"
+    },
+    "0x00C2": {
+      "aliases": [
+        "KC_LPAD"
+      ],
+      "group": "media",
+      "key": "KC_LAUNCHPAD",
+      "label": "Launchpad"
+    },
+    "0x00CD": {
+      "aliases": [
+        "KC_MS_U"
+      ],
+      "group": "mouse",
+      "key": "KC_MS_UP",
+      "label": "Move cursor up"
+    },
+    "0x00CE": {
+      "aliases": [
+        "KC_MS_D"
+      ],
+      "group": "mouse",
+      "key": "KC_MS_DOWN",
+      "label": "Move cursor down"
+    },
+    "0x00CF": {
+      "aliases": [
+        "KC_MS_L"
+      ],
+      "group": "mouse",
+      "key": "KC_MS_LEFT",
+      "label": "Move cursor left"
+    },
+    "0x00D0": {
+      "aliases": [
+        "KC_MS_R"
+      ],
+      "group": "mouse",
+      "key": "KC_MS_RIGHT",
+      "label": "Move cursor right"
+    },
+    "0x00D1": {
+      "aliases": [
+        "KC_BTN1"
+      ],
+      "group": "mouse",
+      "key": "KC_MS_BTN1",
+      "label": "Press button 1"
+    },
+    "0x00D2": {
+      "aliases": [
+        "KC_BTN2"
+      ],
+      "group": "mouse",
+      "key": "KC_MS_BTN2",
+      "label": "Press button 2"
+    },
+    "0x00D3": {
+      "aliases": [
+        "KC_BTN3"
+      ],
+      "group": "mouse",
+      "key": "KC_MS_BTN3",
+      "label": "Press button 3"
+    },
+    "0x00D4": {
+      "aliases": [
+        "KC_BTN4"
+      ],
+      "group": "mouse",
+      "key": "KC_MS_BTN4",
+      "label": "Press button 4"
+    },
+    "0x00D5": {
+      "aliases": [
+        "KC_BTN5"
+      ],
+      "group": "mouse",
+      "key": "KC_MS_BTN5",
+      "label": "Press button 5"
+    },
+    "0x00D6": {
+      "aliases": [
+        "KC_BTN6"
+      ],
+      "group": "mouse",
+      "key": "KC_MS_BTN6",
+      "label": "Press button 6"
+    },
+    "0x00D7": {
+      "aliases": [
+        "KC_BTN7"
+      ],
+      "group": "mouse",
+      "key": "KC_MS_BTN7",
+      "label": "Press button 7"
+    },
+    "0x00D8": {
+      "aliases": [
+        "KC_BTN8"
+      ],
+      "group": "mouse",
+      "key": "KC_MS_BTN8",
+      "label": "Press button 8"
+    },
+    "0x00D9": {
+      "aliases": [
+        "KC_WH_U"
+      ],
+      "group": "mouse",
+      "key": "KC_MS_WH_UP",
+      "label": "Move wheel up"
+    },
+    "0x00DA": {
+      "aliases": [
+        "KC_WH_D"
+      ],
+      "group": "mouse",
+      "key": "KC_MS_WH_DOWN",
+      "label": "Move wheel down"
+    },
+    "0x00DB": {
+      "aliases": [
+        "KC_WH_L"
+      ],
+      "group": "mouse",
+      "key": "KC_MS_WH_LEFT",
+      "label": "Move wheel left"
+    },
+    "0x00DC": {
+      "aliases": [
+        "KC_WH_R"
+      ],
+      "group": "mouse",
+      "key": "KC_MS_WH_RIGHT",
+      "label": "Move wheel right"
+    },
+    "0x00DD": {
+      "aliases": [
+        "KC_ACL0"
+      ],
+      "group": "mouse",
+      "key": "KC_MS_ACCEL0",
+      "label": "Set speed to 0"
+    },
+    "0x00DE": {
+      "aliases": [
+        "KC_ACL1"
+      ],
+      "group": "mouse",
+      "key": "KC_MS_ACCEL1",
+      "label": "Set speed to 1"
+    },
+    "0x00DF": {
+      "aliases": [
+        "KC_ACL2"
+      ],
+      "group": "mouse",
+      "key": "KC_MS_ACCEL2",
+      "label": "Set speed to 2"
+    },
+    "0x00E0": {
+      "aliases": [
+        "KC_LCTL"
+      ],
+      "group": "modifiers",
+      "key": "KC_LEFT_CTRL",
+      "label": "Left Control"
+    },
+    "0x00E1": {
+      "aliases": [
+        "KC_LSFT"
+      ],
+      "group": "modifiers",
+      "key": "KC_LEFT_SHIFT",
+      "label": "Left Shift"
+    },
+    "0x00E2": {
+      "aliases": [
+        "KC_LALT",
+        "KC_LOPT"
+      ],
+      "group": "modifiers",
+      "key": "KC_LEFT_ALT",
+      "label": "Left Alt"
+    },
+    "0x00E3": {
+      "aliases": [
+        "KC_LGUI",
+        "KC_LCMD",
+        "KC_LWIN"
+      ],
+      "group": "modifiers",
+      "key": "KC_LEFT_GUI",
+      "label": "Left GUI"
+    },
+    "0x00E4": {
+      "aliases": [
+        "KC_RCTL"
+      ],
+      "group": "modifiers",
+      "key": "KC_RIGHT_CTRL",
+      "label": "Right Control"
+    },
+    "0x00E5": {
+      "aliases": [
+        "KC_RSFT"
+      ],
+      "group": "modifiers",
+      "key": "KC_RIGHT_SHIFT",
+      "label": "Right Shift"
+    },
+    "0x00E6": {
+      "aliases": [
+        "KC_RALT",
+        "KC_ROPT",
+        "KC_ALGR"
+      ],
+      "group": "modifiers",
+      "key": "KC_RIGHT_ALT",
+      "label": "Right Alt"
+    },
+    "0x00E7": {
+      "aliases": [
+        "KC_RGUI",
+        "KC_RCMD",
+        "KC_RWIN"
+      ],
+      "group": "modifiers",
+      "key": "KC_RIGHT_GUI",
+      "label": "Right GUI"
+    },
+    "0x56F0": {
+      "aliases": [
+        "SH_TOGG"
+      ],
+      "group": "swap_hands",
+      "key": "QK_SWAP_HANDS_TOGGLE",
+      "label": "Toggle Swap Hands"
+    },
+    "0x56F1": {
+      "aliases": [
+        "SH_TT"
+      ],
+      "group": "swap_hands",
+      "key": "QK_SWAP_HANDS_TAP_TOGGLE",
+      "label": "Swap Hands Tap Toggle"
+    },
+    "0x56F2": {
+      "aliases": [
+        "SH_MON"
+      ],
+      "group": "swap_hands",
+      "key": "QK_SWAP_HANDS_MOMENTARY_ON",
+      "label": "Swap Hands Momentary On"
+    },
+    "0x56F3": {
+      "aliases": [
+        "SH_MOFF"
+      ],
+      "group": "swap_hands",
+      "key": "QK_SWAP_HANDS_MOMENTARY_OFF",
+      "label": "Swap Hands Momentary Off"
+    },
+    "0x56F4": {
+      "aliases": [
+        "SH_OFF"
+      ],
+      "group": "swap_hands",
+      "key": "QK_SWAP_HANDS_OFF",
+      "label": "Unswap Hands"
+    },
+    "0x56F5": {
+      "aliases": [
+        "SH_ON"
+      ],
+      "group": "swap_hands",
+      "key": "QK_SWAP_HANDS_ON",
+      "label": "Swap Hands"
+    },
+    "0x56F6": {
+      "aliases": [
+        "SH_OS"
+      ],
+      "group": "swap_hands",
+      "key": "QK_SWAP_HANDS_ONE_SHOT",
+      "label": "Swap Hands One Shot"
+    },
+    "0x7000": {
+      "aliases": [
+        "CL_SWAP"
+      ],
+      "group": "magic",
+      "key": "QK_MAGIC_SWAP_CONTROL_CAPS_LOCK",
+      "label": "Swap LCtl\u21c4Caps"
+    },
+    "0x7001": {
+      "aliases": [
+        "CL_NORM"
+      ],
+      "group": "magic",
+      "key": "QK_MAGIC_UNSWAP_CONTROL_CAPS_LOCK",
+      "label": "Unswap LCtl\u21c4Caps"
+    },
+    "0x7002": {
+      "aliases": [
+        "CL_TOGG"
+      ],
+      "group": "magic",
+      "key": "QK_MAGIC_TOGGLE_CONTROL_CAPS_LOCK",
+      "label": "Toggle LCtl\u21c4Caps"
+    },
+    "0x7003": {
+      "aliases": [
+        "CL_CAPS"
+      ],
+      "group": "magic",
+      "key": "QK_MAGIC_CAPS_LOCK_AS_CONTROL_OFF",
+      "label": "Caps\u2260LCtl"
+    },
+    "0x7004": {
+      "aliases": [
+        "CL_CTRL"
+      ],
+      "group": "magic",
+      "key": "QK_MAGIC_CAPS_LOCK_AS_CONTROL_ON",
+      "label": "Caps=LCtl"
+    },
+    "0x7005": {
+      "aliases": [
+        "AG_LSWP"
+      ],
+      "group": "magic",
+      "key": "QK_MAGIC_SWAP_LALT_LGUI",
+      "label": "Swap LAlt\u21c4LGUI"
+    },
+    "0x7006": {
+      "aliases": [
+        "AG_LNRM"
+      ],
+      "group": "magic",
+      "key": "QK_MAGIC_UNSWAP_LALT_LGUI",
+      "label": "Unswap LAlt\u21c4LGUI"
+    },
+    "0x7007": {
+      "aliases": [
+        "AG_RSWP"
+      ],
+      "group": "magic",
+      "key": "QK_MAGIC_SWAP_RALT_RGUI",
+      "label": "Swap RAlt\u21c4RGUI"
+    },
+    "0x7008": {
+      "aliases": [
+        "AG_RNRM"
+      ],
+      "group": "magic",
+      "key": "QK_MAGIC_UNSWAP_RALT_RGUI",
+      "label": "Unswap RAlt\u21c4RGUI"
+    },
+    "0x7009": {
+      "aliases": [
+        "GU_ON"
+      ],
+      "group": "magic",
+      "key": "QK_MAGIC_GUI_ON",
+      "label": "GUI On"
+    },
+    "0x700A": {
+      "aliases": [
+        "GU_OFF"
+      ],
+      "group": "magic",
+      "key": "QK_MAGIC_GUI_OFF",
+      "label": "GUI Off"
+    },
+    "0x700B": {
+      "aliases": [
+        "GU_TOGG"
+      ],
+      "group": "magic",
+      "key": "QK_MAGIC_TOGGLE_GUI",
+      "label": "Toggle GUI"
+    },
+    "0x700C": {
+      "aliases": [
+        "GE_SWAP"
+      ],
+      "group": "magic",
+      "key": "QK_MAGIC_SWAP_GRAVE_ESC",
+      "label": "Swap `\u21c4Esc"
+    },
+    "0x700D": {
+      "aliases": [
+        "GE_NORM"
+      ],
+      "group": "magic",
+      "key": "QK_MAGIC_UNSWAP_GRAVE_ESC",
+      "label": "Unswap `\u21c4Esc"
+    },
+    "0x700E": {
+      "aliases": [
+        "BS_SWAP"
+      ],
+      "group": "magic",
+      "key": "QK_MAGIC_SWAP_BACKSLASH_BACKSPACE",
+      "label": "Swap \\\u21c4Bspc"
+    },
+    "0x700F": {
+      "aliases": [
+        "BS_NORM"
+      ],
+      "group": "magic",
+      "key": "QK_MAGIC_UNSWAP_BACKSLASH_BACKSPACE",
+      "label": "Unswap \\\u21c4Bspc"
+    },
+    "0x7010": {
+      "aliases": [
+        "BS_TOGG"
+      ],
+      "group": "magic",
+      "key": "QK_MAGIC_TOGGLE_BACKSLASH_BACKSPACE",
+      "label": "Toggle \\\u21c4Bspc"
+    },
+    "0x7011": {
+      "aliases": [
+        "NK_ON"
+      ],
+      "group": "magic",
+      "key": "QK_MAGIC_NKRO_ON",
+      "label": "NKRO On"
+    },
+    "0x7012": {
+      "aliases": [
+        "NK_OFF"
+      ],
+      "group": "magic",
+      "key": "QK_MAGIC_NKRO_OFF",
+      "label": "NKRO Off"
+    },
+    "0x7013": {
+      "aliases": [
+        "NK_TOGG"
+      ],
+      "group": "magic",
+      "key": "QK_MAGIC_TOGGLE_NKRO",
+      "label": "Toggle NKRO"
+    },
+    "0x7014": {
+      "aliases": [
+        "AG_SWAP"
+      ],
+      "group": "magic",
+      "key": "QK_MAGIC_SWAP_ALT_GUI",
+      "label": "Swap Alt\u21c4GUI"
+    },
+    "0x7015": {
+      "aliases": [
+        "AG_NORM"
+      ],
+      "group": "magic",
+      "key": "QK_MAGIC_UNSWAP_ALT_GUI",
+      "label": "Unswap Alt\u21c4GUI"
+    },
+    "0x7016": {
+      "aliases": [
+        "AG_TOGG"
+      ],
+      "group": "magic",
+      "key": "QK_MAGIC_TOGGLE_ALT_GUI",
+      "label": "Toggle Alt\u21c4GUI"
+    },
+    "0x7017": {
+      "aliases": [
+        "CG_LSWP"
+      ],
+      "group": "magic",
+      "key": "QK_MAGIC_SWAP_LCTL_LGUI",
+      "label": "Swap LCtl\u21c4LGUI"
+    },
+    "0x7018": {
+      "aliases": [
+        "CG_LNRM"
+      ],
+      "group": "magic",
+      "key": "QK_MAGIC_UNSWAP_LCTL_LGUI",
+      "label": "Unswap LCtl\u21c4LGUI"
+    },
+    "0x7019": {
+      "aliases": [
+        "CG_RSWP"
+      ],
+      "group": "magic",
+      "key": "QK_MAGIC_SWAP_RCTL_RGUI",
+      "label": "Swap RCtl\u21c4RGUI"
+    },
+    "0x701A": {
+      "aliases": [
+        "CG_RNRM"
+      ],
+      "group": "magic",
+      "key": "QK_MAGIC_UNSWAP_RCTL_RGUI",
+      "label": "Unswap RCtl\u21c4RGUI"
+    },
+    "0x701B": {
+      "aliases": [
+        "CG_SWAP"
+      ],
+      "group": "magic",
+      "key": "QK_MAGIC_SWAP_CTL_GUI",
+      "label": "Swap Ctl\u21c4GUI"
+    },
+    "0x701C": {
+      "aliases": [
+        "CG_NORM"
+      ],
+      "group": "magic",
+      "key": "QK_MAGIC_UNSWAP_CTL_GUI",
+      "label": "Unswap Ctl\u21c4GUI"
+    },
+    "0x701D": {
+      "aliases": [
+        "CG_TOGG"
+      ],
+      "group": "magic",
+      "key": "QK_MAGIC_TOGGLE_CTL_GUI",
+      "label": "Toggle Ctl\u21c4GUI"
+    },
+    "0x701E": {
+      "aliases": [
+        "EH_LEFT"
+      ],
+      "group": "magic",
+      "key": "QK_MAGIC_EE_HANDS_LEFT",
+      "label": "EE Hands Left"
+    },
+    "0x701F": {
+      "aliases": [
+        "EH_RGHT"
+      ],
+      "group": "magic",
+      "key": "QK_MAGIC_EE_HANDS_RIGHT",
+      "label": "EE Hands Right"
+    },
+    "0x7020": {
+      "aliases": [
+        "EC_SWAP"
+      ],
+      "group": "magic",
+      "key": "QK_MAGIC_SWAP_ESCAPE_CAPS_LOCK",
+      "label": "Swap Esc\u21c4Caps"
+    },
+    "0x7021": {
+      "aliases": [
+        "EC_NORM"
+      ],
+      "group": "magic",
+      "key": "QK_MAGIC_UNSWAP_ESCAPE_CAPS_LOCK",
+      "label": "Unswap Esc\u21c4Caps"
+    },
+    "0x7022": {
+      "aliases": [
+        "EC_TOGG"
+      ],
+      "group": "magic",
+      "key": "QK_MAGIC_TOGGLE_ESCAPE_CAPS_LOCK",
+      "label": "Toggle Esc\u21c4Caps"
+    },
+    "0x7100": {
+      "aliases": [
+        "MI_ON"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_ON",
+      "label": "MIDI On"
+    },
+    "0x7101": {
+      "aliases": [
+        "MI_OFF"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_OFF",
+      "label": "MIDI Off"
+    },
+    "0x7102": {
+      "aliases": [
+        "MI_TOGG"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_TOGGLE",
+      "label": "Toggle MIDI"
+    },
+    "0x7103": {
+      "aliases": [
+        "MI_C"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_NOTE_C_0",
+      "label": "C\u2080"
+    },
+    "0x7104": {
+      "aliases": [
+        "MI_Cs",
+        "MI_Db"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_NOTE_C_SHARP_0",
+      "label": "C\u266f\u2080"
+    },
+    "0x7105": {
+      "aliases": [
+        "MI_D"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_NOTE_D_0",
+      "label": "D\u2080"
+    },
+    "0x7106": {
+      "aliases": [
+        "MI_Ds",
+        "MI_Eb"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_NOTE_D_SHARP_0",
+      "label": "D\u266f\u2080"
+    },
+    "0x7107": {
+      "aliases": [
+        "MI_E"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_NOTE_E_0",
+      "label": "E\u2080"
+    },
+    "0x7108": {
+      "aliases": [
+        "MI_F"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_NOTE_F_0",
+      "label": "F\u2080"
+    },
+    "0x7109": {
+      "aliases": [
+        "MI_Fs",
+        "MI_Gb"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_NOTE_F_SHARP_0",
+      "label": "F\u266f\u2080"
+    },
+    "0x710A": {
+      "aliases": [
+        "MI_G"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_NOTE_G_0",
+      "label": "G\u2080"
+    },
+    "0x710B": {
+      "aliases": [
+        "MI_Gs",
+        "MI_Ab"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_NOTE_G_SHARP_0",
+      "label": "G\u266f\u2080"
+    },
+    "0x710C": {
+      "aliases": [
+        "MI_A"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_NOTE_A_0",
+      "label": "A\u2080"
+    },
+    "0x710D": {
+      "aliases": [
+        "MI_As",
+        "MI_Bb"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_NOTE_A_SHARP_0",
+      "label": "A\u266f\u2080"
+    },
+    "0x710E": {
+      "aliases": [
+        "MI_B"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_NOTE_B_0",
+      "label": "B\u2080"
+    },
+    "0x710F": {
+      "aliases": [
+        "MI_C1"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_NOTE_C_1",
+      "label": "C\u2081"
+    },
+    "0x7110": {
+      "aliases": [
+        "MI_Cs1",
+        "MI_Db1"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_NOTE_C_SHARP_1",
+      "label": "C\u266f\u2081"
+    },
+    "0x7111": {
+      "aliases": [
+        "MI_D1"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_NOTE_D_1",
+      "label": "D\u2081"
+    },
+    "0x7112": {
+      "aliases": [
+        "MI_Ds1",
+        "MI_Eb1"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_NOTE_D_SHARP_1",
+      "label": "D\u266f\u2081"
+    },
+    "0x7113": {
+      "aliases": [
+        "MI_E1"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_NOTE_E_1",
+      "label": "E\u2081"
+    },
+    "0x7114": {
+      "aliases": [
+        "MI_F1"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_NOTE_F_1",
+      "label": "F\u2081"
+    },
+    "0x7115": {
+      "aliases": [
+        "MI_Fs1",
+        "MI_Gb1"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_NOTE_F_SHARP_1",
+      "label": "F\u266f\u2081"
+    },
+    "0x7116": {
+      "aliases": [
+        "MI_G1"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_NOTE_G_1",
+      "label": "G\u2081"
+    },
+    "0x7117": {
+      "aliases": [
+        "MI_Gs1",
+        "MI_Ab1"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_NOTE_G_SHARP_1",
+      "label": "G\u266f\u2081"
+    },
+    "0x7118": {
+      "aliases": [
+        "MI_A1"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_NOTE_A_1",
+      "label": "A\u2081"
+    },
+    "0x7119": {
+      "aliases": [
+        "MI_As1",
+        "MI_Bb1"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_NOTE_A_SHARP_1",
+      "label": "A\u266f\u2081"
+    },
+    "0x711A": {
+      "aliases": [
+        "MI_B1"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_NOTE_B_1",
+      "label": "B\u2081"
+    },
+    "0x711B": {
+      "aliases": [
+        "MI_C2"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_NOTE_C_2",
+      "label": "C\u2082"
+    },
+    "0x711C": {
+      "aliases": [
+        "MI_Cs2",
+        "MI_Db2"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_NOTE_C_SHARP_2",
+      "label": "C\u266f\u2082"
+    },
+    "0x711D": {
+      "aliases": [
+        "MI_D2"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_NOTE_D_2",
+      "label": "D\u2082"
+    },
+    "0x711E": {
+      "aliases": [
+        "MI_Ds2",
+        "MI_Eb2"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_NOTE_D_SHARP_2",
+      "label": "D\u266f\u2082"
+    },
+    "0x711F": {
+      "aliases": [
+        "MI_E2"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_NOTE_E_2",
+      "label": "E\u2082"
+    },
+    "0x7120": {
+      "aliases": [
+        "MI_F2"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_NOTE_F_2",
+      "label": "F\u2082"
+    },
+    "0x7121": {
+      "aliases": [
+        "MI_Fs2",
+        "MI_Gb2"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_NOTE_F_SHARP_2",
+      "label": "F\u266f\u2082"
+    },
+    "0x7122": {
+      "aliases": [
+        "MI_G2"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_NOTE_G_2",
+      "label": "G\u2082"
+    },
+    "0x7123": {
+      "aliases": [
+        "MI_Gs2",
+        "MI_Ab2"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_NOTE_G_SHARP_2",
+      "label": "G\u266f\u2082"
+    },
+    "0x7124": {
+      "aliases": [
+        "MI_A2"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_NOTE_A_2",
+      "label": "A\u2082"
+    },
+    "0x7125": {
+      "aliases": [
+        "MI_As2",
+        "MI_Bb2"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_NOTE_A_SHARP_2",
+      "label": "A\u266f\u2082"
+    },
+    "0x7126": {
+      "aliases": [
+        "MI_B2"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_NOTE_B_2",
+      "label": "B\u2082"
+    },
+    "0x7127": {
+      "aliases": [
+        "MI_C3"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_NOTE_C_3",
+      "label": "C\u2083"
+    },
+    "0x7128": {
+      "aliases": [
+        "MI_Cs3",
+        "MI_Db3"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_NOTE_C_SHARP_3",
+      "label": "C\u266f\u2083"
+    },
+    "0x7129": {
+      "aliases": [
+        "MI_D3"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_NOTE_D_3",
+      "label": "D\u2083"
+    },
+    "0x712A": {
+      "aliases": [
+        "MI_Ds3",
+        "MI_Eb3"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_NOTE_D_SHARP_3",
+      "label": "D\u266f\u2083"
+    },
+    "0x712B": {
+      "aliases": [
+        "MI_E3"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_NOTE_E_3",
+      "label": "E\u2083"
+    },
+    "0x712C": {
+      "aliases": [
+        "MI_F3"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_NOTE_F_3",
+      "label": "F\u2083"
+    },
+    "0x712D": {
+      "aliases": [
+        "MI_Fs3",
+        "MI_Gb3"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_NOTE_F_SHARP_3",
+      "label": "F\u266f\u2083"
+    },
+    "0x712E": {
+      "aliases": [
+        "MI_G3"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_NOTE_G_3",
+      "label": "G\u2083"
+    },
+    "0x712F": {
+      "aliases": [
+        "MI_Gs3",
+        "MI_Ab3"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_NOTE_G_SHARP_3",
+      "label": "G\u266f\u2083"
+    },
+    "0x7130": {
+      "aliases": [
+        "MI_A3"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_NOTE_A_3",
+      "label": "A\u2083"
+    },
+    "0x7131": {
+      "aliases": [
+        "MI_As3",
+        "MI_Bb3"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_NOTE_A_SHARP_3",
+      "label": "A\u266f\u2083"
+    },
+    "0x7132": {
+      "aliases": [
+        "MI_B3"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_NOTE_B_3",
+      "label": "B\u2083"
+    },
+    "0x7133": {
+      "aliases": [
+        "MI_C4"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_NOTE_C_4",
+      "label": "C\u2084"
+    },
+    "0x7134": {
+      "aliases": [
+        "MI_Cs4",
+        "MI_Db4"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_NOTE_C_SHARP_4",
+      "label": "C\u266f\u2084"
+    },
+    "0x7135": {
+      "aliases": [
+        "MI_D4"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_NOTE_D_4",
+      "label": "D\u2084"
+    },
+    "0x7136": {
+      "aliases": [
+        "MI_Ds4",
+        "MI_Eb4"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_NOTE_D_SHARP_4",
+      "label": "D\u266f\u2084"
+    },
+    "0x7137": {
+      "aliases": [
+        "MI_E4"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_NOTE_E_4",
+      "label": "E\u2084"
+    },
+    "0x7138": {
+      "aliases": [
+        "MI_F4"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_NOTE_F_4",
+      "label": "F\u2084"
+    },
+    "0x7139": {
+      "aliases": [
+        "MI_Fs4",
+        "MI_Gb4"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_NOTE_F_SHARP_4",
+      "label": "F\u266f\u2084"
+    },
+    "0x713A": {
+      "aliases": [
+        "MI_G4"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_NOTE_G_4",
+      "label": "G\u2084"
+    },
+    "0x713B": {
+      "aliases": [
+        "MI_Gs4",
+        "MI_Ab4"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_NOTE_G_SHARP_4",
+      "label": "G\u266f\u2084"
+    },
+    "0x713C": {
+      "aliases": [
+        "MI_A4"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_NOTE_A_4",
+      "label": "A\u2084"
+    },
+    "0x713D": {
+      "aliases": [
+        "MI_As4",
+        "MI_Bb4"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_NOTE_A_SHARP_4",
+      "label": "A\u266f\u2084"
+    },
+    "0x713E": {
+      "aliases": [
+        "MI_B4"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_NOTE_B_4",
+      "label": "B\u2084"
+    },
+    "0x713F": {
+      "aliases": [
+        "MI_C5"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_NOTE_C_5",
+      "label": "C\u2085"
+    },
+    "0x7140": {
+      "aliases": [
+        "MI_Cs5",
+        "MI_Db5"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_NOTE_C_SHARP_5",
+      "label": "C\u266f\u2085"
+    },
+    "0x7141": {
+      "aliases": [
+        "MI_D5"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_NOTE_D_5",
+      "label": "D\u2085"
+    },
+    "0x7142": {
+      "aliases": [
+        "MI_Ds5",
+        "MI_Eb5"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_NOTE_D_SHARP_5",
+      "label": "D\u266f\u2085"
+    },
+    "0x7143": {
+      "aliases": [
+        "MI_E5"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_NOTE_E_5",
+      "label": "E\u2085"
+    },
+    "0x7144": {
+      "aliases": [
+        "MI_F5"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_NOTE_F_5",
+      "label": "F\u2085"
+    },
+    "0x7145": {
+      "aliases": [
+        "MI_Fs5",
+        "MI_Gb5"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_NOTE_F_SHARP_5",
+      "label": "F\u266f\u2085"
+    },
+    "0x7146": {
+      "aliases": [
+        "MI_G5"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_NOTE_G_5",
+      "label": "G\u2085"
+    },
+    "0x7147": {
+      "aliases": [
+        "MI_Gs5",
+        "MI_Ab5"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_NOTE_G_SHARP_5",
+      "label": "G\u266f\u2085"
+    },
+    "0x7148": {
+      "aliases": [
+        "MI_A5"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_NOTE_A_5",
+      "label": "A\u2085"
+    },
+    "0x7149": {
+      "aliases": [
+        "MI_As5",
+        "MI_Bb5"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_NOTE_A_SHARP_5",
+      "label": "A\u266f\u2085"
+    },
+    "0x714A": {
+      "aliases": [
+        "MI_B5"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_NOTE_B_5",
+      "label": "B\u2085"
+    },
+    "0x714B": {
+      "aliases": [
+        "MI_OCN2"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_OCTAVE_N2",
+      "label": "Octave -2"
+    },
+    "0x714C": {
+      "aliases": [
+        "MI_OCN1"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_OCTAVE_N1",
+      "label": "Octave -1"
+    },
+    "0x714D": {
+      "aliases": [
+        "MI_OC0"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_OCTAVE_0",
+      "label": "Octave 0"
+    },
+    "0x714E": {
+      "aliases": [
+        "MI_OC1"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_OCTAVE_1",
+      "label": "Octave 1"
+    },
+    "0x714F": {
+      "aliases": [
+        "MI_OC2"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_OCTAVE_2",
+      "label": "Octave 2"
+    },
+    "0x7150": {
+      "aliases": [
+        "MI_OC3"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_OCTAVE_3",
+      "label": "Octave 3"
+    },
+    "0x7151": {
+      "aliases": [
+        "MI_OC4"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_OCTAVE_4",
+      "label": "Octave 4"
+    },
+    "0x7152": {
+      "aliases": [
+        "MI_OC5"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_OCTAVE_5",
+      "label": "Octave 5"
+    },
+    "0x7153": {
+      "aliases": [
+        "MI_OC6"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_OCTAVE_6",
+      "label": "Octave 6"
+    },
+    "0x7154": {
+      "aliases": [
+        "MI_OC7"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_OCTAVE_7",
+      "label": "Octave 7"
+    },
+    "0x7155": {
+      "aliases": [
+        "MI_OCTD"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_OCTAVE_DOWN",
+      "label": "Octave Down"
+    },
+    "0x7156": {
+      "aliases": [
+        "MI_OCTU"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_OCTAVE_UP",
+      "label": "Octave Up"
+    },
+    "0x7157": {
+      "aliases": [
+        "MI_TRN6"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_TRANSPOSE_N6",
+      "label": "Transpose -6"
+    },
+    "0x7158": {
+      "aliases": [
+        "MI_TRN5"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_TRANSPOSE_N5",
+      "label": "Transpose -5"
+    },
+    "0x7159": {
+      "aliases": [
+        "MI_TRN4"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_TRANSPOSE_N4",
+      "label": "Transpose -4"
+    },
+    "0x715A": {
+      "aliases": [
+        "MI_TRN3"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_TRANSPOSE_N3",
+      "label": "Transpose -3"
+    },
+    "0x715B": {
+      "aliases": [
+        "MI_TRN2"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_TRANSPOSE_N2",
+      "label": "Transpose -2"
+    },
+    "0x715C": {
+      "aliases": [
+        "MI_TRN1"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_TRANSPOSE_N1",
+      "label": "Transpose -1"
+    },
+    "0x715D": {
+      "aliases": [
+        "MI_TR0"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_TRANSPOSE_0",
+      "label": "Transpose 0"
+    },
+    "0x715E": {
+      "aliases": [
+        "MI_TR1"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_TRANSPOSE_1",
+      "label": "Transpose +1"
+    },
+    "0x715F": {
+      "aliases": [
+        "MI_TR2"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_TRANSPOSE_2",
+      "label": "Transpose +2"
+    },
+    "0x7160": {
+      "aliases": [
+        "MI_TR3"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_TRANSPOSE_3",
+      "label": "Transpose +3"
+    },
+    "0x7161": {
+      "aliases": [
+        "MI_TR4"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_TRANSPOSE_4",
+      "label": "Transpose +4"
+    },
+    "0x7162": {
+      "aliases": [
+        "MI_TR5"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_TRANSPOSE_5",
+      "label": "Transpose +5"
+    },
+    "0x7163": {
+      "aliases": [
+        "MI_TR6"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_TRANSPOSE_6",
+      "label": "Transpose +6"
+    },
+    "0x7164": {
+      "aliases": [
+        "MI_TRSD"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_TRANSPOSE_DOWN",
+      "label": "Transpose Down"
+    },
+    "0x7165": {
+      "aliases": [
+        "MI_TRSU"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_TRANSPOSE_UP",
+      "label": "Transpose Up"
+    },
+    "0x7166": {
+      "aliases": [
+        "MI_VL0"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_VELOCITY_0",
+      "label": "Velocity 0"
+    },
+    "0x7167": {
+      "aliases": [
+        "MI_VL1"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_VELOCITY_1",
+      "label": "Velocity 1"
+    },
+    "0x7168": {
+      "aliases": [
+        "MI_VL2"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_VELOCITY_2",
+      "label": "Velocity 2"
+    },
+    "0x7169": {
+      "aliases": [
+        "MI_VL3"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_VELOCITY_3",
+      "label": "Velocity 3"
+    },
+    "0x716A": {
+      "aliases": [
+        "MI_VL4"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_VELOCITY_4",
+      "label": "Velocity 4"
+    },
+    "0x716B": {
+      "aliases": [
+        "MI_VL5"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_VELOCITY_5",
+      "label": "Velocity 5"
+    },
+    "0x716C": {
+      "aliases": [
+        "MI_VL6"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_VELOCITY_6",
+      "label": "Velocity 6"
+    },
+    "0x716D": {
+      "aliases": [
+        "MI_VL7"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_VELOCITY_7",
+      "label": "Velocity 7"
+    },
+    "0x716E": {
+      "aliases": [
+        "MI_VL8"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_VELOCITY_8",
+      "label": "Velocity 8"
+    },
+    "0x716F": {
+      "aliases": [
+        "MI_VL9"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_VELOCITY_9",
+      "label": "Velocity 9"
+    },
+    "0x7170": {
+      "aliases": [
+        "MI_VL10"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_VELOCITY_10",
+      "label": "Velocity 10"
+    },
+    "0x7171": {
+      "aliases": [
+        "MI_VELD"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_VELOCITY_DOWN",
+      "label": "Velocity Down"
+    },
+    "0x7172": {
+      "aliases": [
+        "MI_VELU"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_VELOCITY_UP",
+      "label": "Velocity Up"
+    },
+    "0x7173": {
+      "aliases": [
+        "MI_CH1"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_CHANNEL_1",
+      "label": "Channel 1"
+    },
+    "0x7174": {
+      "aliases": [
+        "MI_CH2"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_CHANNEL_2",
+      "label": "Channel 2"
+    },
+    "0x7175": {
+      "aliases": [
+        "MI_CH3"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_CHANNEL_3",
+      "label": "Channel 3"
+    },
+    "0x7176": {
+      "aliases": [
+        "MI_CH4"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_CHANNEL_4",
+      "label": "Channel 4"
+    },
+    "0x7177": {
+      "aliases": [
+        "MI_CH5"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_CHANNEL_5",
+      "label": "Channel 5"
+    },
+    "0x7178": {
+      "aliases": [
+        "MI_CH6"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_CHANNEL_6",
+      "label": "Channel 6"
+    },
+    "0x7179": {
+      "aliases": [
+        "MI_CH7"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_CHANNEL_7",
+      "label": "Channel 7"
+    },
+    "0x717A": {
+      "aliases": [
+        "MI_CH8"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_CHANNEL_8",
+      "label": "Channel 8"
+    },
+    "0x717B": {
+      "aliases": [
+        "MI_CH9"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_CHANNEL_9",
+      "label": "Channel 9"
+    },
+    "0x717C": {
+      "aliases": [
+        "MI_CH10"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_CHANNEL_10",
+      "label": "Channel 10"
+    },
+    "0x717D": {
+      "aliases": [
+        "MI_CH11"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_CHANNEL_11",
+      "label": "Channel 11"
+    },
+    "0x717E": {
+      "aliases": [
+        "MI_CH12"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_CHANNEL_12",
+      "label": "Channel 12"
+    },
+    "0x717F": {
+      "aliases": [
+        "MI_CH13"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_CHANNEL_13",
+      "label": "Channel 13"
+    },
+    "0x7180": {
+      "aliases": [
+        "MI_CH14"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_CHANNEL_14",
+      "label": "Channel 14"
+    },
+    "0x7181": {
+      "aliases": [
+        "MI_CH15"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_CHANNEL_15",
+      "label": "Channel 15"
+    },
+    "0x7182": {
+      "aliases": [
+        "MI_CH16"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_CHANNEL_16",
+      "label": "Channel 16"
+    },
+    "0x7183": {
+      "aliases": [
+        "MI_CHND"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_CHANNEL_DOWN",
+      "label": "Channel Down"
+    },
+    "0x7184": {
+      "aliases": [
+        "MI_CHNU"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_CHANNEL_UP",
+      "label": "Channel Up"
+    },
+    "0x7185": {
+      "aliases": [
+        "MI_AOFF"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_ALL_NOTES_OFF",
+      "label": "All Notes Off"
+    },
+    "0x7186": {
+      "aliases": [
+        "MI_SUST"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_SUSTAIN",
+      "label": "Sustain"
+    },
+    "0x7187": {
+      "aliases": [
+        "MI_PORT"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_PORTAMENTO",
+      "label": "Portamento"
+    },
+    "0x7188": {
+      "aliases": [
+        "MI_SOST"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_SOSTENUTO",
+      "label": "Sostenuto"
+    },
+    "0x7189": {
+      "aliases": [
+        "MI_SOFT"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_SOFT",
+      "label": "Soft Pedal"
+    },
+    "0x718A": {
+      "aliases": [
+        "MI_LEG"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_LEGATO",
+      "label": "Legato"
+    },
+    "0x718B": {
+      "aliases": [
+        "MI_MOD"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_MODULATION",
+      "label": "Modulation"
+    },
+    "0x718C": {
+      "aliases": [
+        "MI_MODD"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_MODULATION_SPEED_DOWN",
+      "label": "Modulation Speed Down"
+    },
+    "0x718D": {
+      "aliases": [
+        "MI_MODU"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_MODULATION_SPEED_UP",
+      "label": "Modulation Speed Up"
+    },
+    "0x718E": {
+      "aliases": [
+        "MI_BNDD"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_PITCH_BEND_DOWN",
+      "label": "Pitch Bend Down"
+    },
+    "0x718F": {
+      "aliases": [
+        "MI_BNDU"
+      ],
+      "group": "midi",
+      "key": "QK_MIDI_PITCH_BEND_UP",
+      "label": "Pitch Bend Up"
+    },
+    "0x7200": {
+      "aliases": [
+        "SQ_ON"
+      ],
+      "group": "sequencer",
+      "key": "QK_SEQUENCER_ON",
+      "label": "Sequencer On"
+    },
+    "0x7201": {
+      "aliases": [
+        "SQ_OFF"
+      ],
+      "group": "sequencer",
+      "key": "QK_SEQUENCER_OFF",
+      "label": "Sequencer Off"
+    },
+    "0x7202": {
+      "aliases": [
+        "SQ_TOGG"
+      ],
+      "group": "sequencer",
+      "key": "QK_SEQUENCER_TOGGLE",
+      "label": "Toggle Sequencer"
+    },
+    "0x7203": {
+      "aliases": [
+        "SQ_TMPD"
+      ],
+      "group": "sequencer",
+      "key": "QK_SEQUENCER_TEMPO_DOWN",
+      "label": "Tempo Down"
+    },
+    "0x7204": {
+      "aliases": [
+        "SQ_TMPU"
+      ],
+      "group": "sequencer",
+      "key": "QK_SEQUENCER_TEMPO_UP",
+      "label": "Tempo Up"
+    },
+    "0x7205": {
+      "aliases": [
+        "SQ_RESD"
+      ],
+      "group": "sequencer",
+      "key": "QK_SEQUENCER_RESOLUTION_DOWN",
+      "label": "Resolution Down"
+    },
+    "0x7206": {
+      "aliases": [
+        "SQ_RESU"
+      ],
+      "group": "sequencer",
+      "key": "QK_SEQUENCER_RESOLUTION_UP",
+      "label": "Resolution Up"
+    },
+    "0x7207": {
+      "aliases": [
+        "SQ_SALL"
+      ],
+      "group": "sequencer",
+      "key": "QK_SEQUENCER_STEPS_ALL",
+      "label": "All Steps"
+    },
+    "0x7208": {
+      "aliases": [
+        "SQ_SCLR"
+      ],
+      "group": "sequencer",
+      "key": "QK_SEQUENCER_STEPS_CLEAR",
+      "label": "Clear Steps"
+    },
+    "0x7400": {
+      "aliases": [
+        "JS_0"
+      ],
+      "group": "joystick",
+      "key": "QK_JOYSTICK_BUTTON_0",
+      "label": "Button 0"
+    },
+    "0x7401": {
+      "aliases": [
+        "JS_1"
+      ],
+      "group": "joystick",
+      "key": "QK_JOYSTICK_BUTTON_1",
+      "label": "Button 1"
+    },
+    "0x7402": {
+      "aliases": [
+        "JS_2"
+      ],
+      "group": "joystick",
+      "key": "QK_JOYSTICK_BUTTON_2",
+      "label": "Button 2"
+    },
+    "0x7403": {
+      "aliases": [
+        "JS_3"
+      ],
+      "group": "joystick",
+      "key": "QK_JOYSTICK_BUTTON_3",
+      "label": "Button 3"
+    },
+    "0x7404": {
+      "aliases": [
+        "JS_4"
+      ],
+      "group": "joystick",
+      "key": "QK_JOYSTICK_BUTTON_4",
+      "label": "Button 4"
+    },
+    "0x7405": {
+      "aliases": [
+        "JS_5"
+      ],
+      "group": "joystick",
+      "key": "QK_JOYSTICK_BUTTON_5",
+      "label": "Button 5"
+    },
+    "0x7406": {
+      "aliases": [
+        "JS_6"
+      ],
+      "group": "joystick",
+      "key": "QK_JOYSTICK_BUTTON_6",
+      "label": "Button 6"
+    },
+    "0x7407": {
+      "aliases": [
+        "JS_7"
+      ],
+      "group": "joystick",
+      "key": "QK_JOYSTICK_BUTTON_7",
+      "label": "Button 7"
+    },
+    "0x7408": {
+      "aliases": [
+        "JS_8"
+      ],
+      "group": "joystick",
+      "key": "QK_JOYSTICK_BUTTON_8",
+      "label": "Button 8"
+    },
+    "0x7409": {
+      "aliases": [
+        "JS_9"
+      ],
+      "group": "joystick",
+      "key": "QK_JOYSTICK_BUTTON_9",
+      "label": "Button 9"
+    },
+    "0x740A": {
+      "aliases": [
+        "JS_10"
+      ],
+      "group": "joystick",
+      "key": "QK_JOYSTICK_BUTTON_10",
+      "label": "Button 10"
+    },
+    "0x740B": {
+      "aliases": [
+        "JS_11"
+      ],
+      "group": "joystick",
+      "key": "QK_JOYSTICK_BUTTON_11",
+      "label": "Button 11"
+    },
+    "0x740C": {
+      "aliases": [
+        "JS_12"
+      ],
+      "group": "joystick",
+      "key": "QK_JOYSTICK_BUTTON_12",
+      "label": "Button 12"
+    },
+    "0x740D": {
+      "aliases": [
+        "JS_13"
+      ],
+      "group": "joystick",
+      "key": "QK_JOYSTICK_BUTTON_13",
+      "label": "Button 13"
+    },
+    "0x740E": {
+      "aliases": [
+        "JS_14"
+      ],
+      "group": "joystick",
+      "key": "QK_JOYSTICK_BUTTON_14",
+      "label": "Button 14"
+    },
+    "0x740F": {
+      "aliases": [
+        "JS_15"
+      ],
+      "group": "joystick",
+      "key": "QK_JOYSTICK_BUTTON_15",
+      "label": "Button 15"
+    },
+    "0x7410": {
+      "aliases": [
+        "JS_16"
+      ],
+      "group": "joystick",
+      "key": "QK_JOYSTICK_BUTTON_16",
+      "label": "Button 16"
+    },
+    "0x7411": {
+      "aliases": [
+        "JS_17"
+      ],
+      "group": "joystick",
+      "key": "QK_JOYSTICK_BUTTON_17",
+      "label": "Button 17"
+    },
+    "0x7412": {
+      "aliases": [
+        "JS_18"
+      ],
+      "group": "joystick",
+      "key": "QK_JOYSTICK_BUTTON_18",
+      "label": "Button 18"
+    },
+    "0x7413": {
+      "aliases": [
+        "JS_19"
+      ],
+      "group": "joystick",
+      "key": "QK_JOYSTICK_BUTTON_19",
+      "label": "Button 19"
+    },
+    "0x7414": {
+      "aliases": [
+        "JS_20"
+      ],
+      "group": "joystick",
+      "key": "QK_JOYSTICK_BUTTON_20",
+      "label": "Button 20"
+    },
+    "0x7415": {
+      "aliases": [
+        "JS_21"
+      ],
+      "group": "joystick",
+      "key": "QK_JOYSTICK_BUTTON_21",
+      "label": "Button 21"
+    },
+    "0x7416": {
+      "aliases": [
+        "JS_22"
+      ],
+      "group": "joystick",
+      "key": "QK_JOYSTICK_BUTTON_22",
+      "label": "Button 22"
+    },
+    "0x7417": {
+      "aliases": [
+        "JS_23"
+      ],
+      "group": "joystick",
+      "key": "QK_JOYSTICK_BUTTON_23",
+      "label": "Button 23"
+    },
+    "0x7418": {
+      "aliases": [
+        "JS_24"
+      ],
+      "group": "joystick",
+      "key": "QK_JOYSTICK_BUTTON_24",
+      "label": "Button 24"
+    },
+    "0x7419": {
+      "aliases": [
+        "JS_25"
+      ],
+      "group": "joystick",
+      "key": "QK_JOYSTICK_BUTTON_25",
+      "label": "Button 25"
+    },
+    "0x741A": {
+      "aliases": [
+        "JS_26"
+      ],
+      "group": "joystick",
+      "key": "QK_JOYSTICK_BUTTON_26",
+      "label": "Button 26"
+    },
+    "0x741B": {
+      "aliases": [
+        "JS_27"
+      ],
+      "group": "joystick",
+      "key": "QK_JOYSTICK_BUTTON_27",
+      "label": "Button 27"
+    },
+    "0x741C": {
+      "aliases": [
+        "JS_28"
+      ],
+      "group": "joystick",
+      "key": "QK_JOYSTICK_BUTTON_28",
+      "label": "Button 28"
+    },
+    "0x741D": {
+      "aliases": [
+        "JS_29"
+      ],
+      "group": "joystick",
+      "key": "QK_JOYSTICK_BUTTON_29",
+      "label": "Button 29"
+    },
+    "0x741E": {
+      "aliases": [
+        "JS_30"
+      ],
+      "group": "joystick",
+      "key": "QK_JOYSTICK_BUTTON_30",
+      "label": "Button 30"
+    },
+    "0x741F": {
+      "aliases": [
+        "JS_31"
+      ],
+      "group": "joystick",
+      "key": "QK_JOYSTICK_BUTTON_31",
+      "label": "Button 31"
+    },
+    "0x7440": {
+      "aliases": [
+        "PB_1"
+      ],
+      "group": "programmable_button",
+      "key": "QK_PROGRAMMABLE_BUTTON_1",
+      "label": "Button 1"
+    },
+    "0x7441": {
+      "aliases": [
+        "PB_2"
+      ],
+      "group": "programmable_button",
+      "key": "QK_PROGRAMMABLE_BUTTON_2",
+      "label": "Button 2"
+    },
+    "0x7442": {
+      "aliases": [
+        "PB_3"
+      ],
+      "group": "programmable_button",
+      "key": "QK_PROGRAMMABLE_BUTTON_3",
+      "label": "Button 3"
+    },
+    "0x7443": {
+      "aliases": [
+        "PB_4"
+      ],
+      "group": "programmable_button",
+      "key": "QK_PROGRAMMABLE_BUTTON_4",
+      "label": "Button 4"
+    },
+    "0x7444": {
+      "aliases": [
+        "PB_5"
+      ],
+      "group": "programmable_button",
+      "key": "QK_PROGRAMMABLE_BUTTON_5",
+      "label": "Button 5"
+    },
+    "0x7445": {
+      "aliases": [
+        "PB_6"
+      ],
+      "group": "programmable_button",
+      "key": "QK_PROGRAMMABLE_BUTTON_6",
+      "label": "Button 6"
+    },
+    "0x7446": {
+      "aliases": [
+        "PB_7"
+      ],
+      "group": "programmable_button",
+      "key": "QK_PROGRAMMABLE_BUTTON_7",
+      "label": "Button 7"
+    },
+    "0x7447": {
+      "aliases": [
+        "PB_8"
+      ],
+      "group": "programmable_button",
+      "key": "QK_PROGRAMMABLE_BUTTON_8",
+      "label": "Button 8"
+    },
+    "0x7448": {
+      "aliases": [
+        "PB_9"
+      ],
+      "group": "programmable_button",
+      "key": "QK_PROGRAMMABLE_BUTTON_9",
+      "label": "Button 9"
+    },
+    "0x7449": {
+      "aliases": [
+        "PB_10"
+      ],
+      "group": "programmable_button",
+      "key": "QK_PROGRAMMABLE_BUTTON_10",
+      "label": "Button 10"
+    },
+    "0x744A": {
+      "aliases": [
+        "PB_11"
+      ],
+      "group": "programmable_button",
+      "key": "QK_PROGRAMMABLE_BUTTON_11",
+      "label": "Button 11"
+    },
+    "0x744B": {
+      "aliases": [
+        "PB_12"
+      ],
+      "group": "programmable_button",
+      "key": "QK_PROGRAMMABLE_BUTTON_12",
+      "label": "Button 12"
+    },
+    "0x744C": {
+      "aliases": [
+        "PB_13"
+      ],
+      "group": "programmable_button",
+      "key": "QK_PROGRAMMABLE_BUTTON_13",
+      "label": "Button 13"
+    },
+    "0x744D": {
+      "aliases": [
+        "PB_14"
+      ],
+      "group": "programmable_button",
+      "key": "QK_PROGRAMMABLE_BUTTON_14",
+      "label": "Button 14"
+    },
+    "0x744E": {
+      "aliases": [
+        "PB_15"
+      ],
+      "group": "programmable_button",
+      "key": "QK_PROGRAMMABLE_BUTTON_15",
+      "label": "Button 15"
+    },
+    "0x744F": {
+      "aliases": [
+        "PB_16"
+      ],
+      "group": "programmable_button",
+      "key": "QK_PROGRAMMABLE_BUTTON_16",
+      "label": "Button 16"
+    },
+    "0x7450": {
+      "aliases": [
+        "PB_17"
+      ],
+      "group": "programmable_button",
+      "key": "QK_PROGRAMMABLE_BUTTON_17",
+      "label": "Button 17"
+    },
+    "0x7451": {
+      "aliases": [
+        "PB_18"
+      ],
+      "group": "programmable_button",
+      "key": "QK_PROGRAMMABLE_BUTTON_18",
+      "label": "Button 18"
+    },
+    "0x7452": {
+      "aliases": [
+        "PB_19"
+      ],
+      "group": "programmable_button",
+      "key": "QK_PROGRAMMABLE_BUTTON_19",
+      "label": "Button 19"
+    },
+    "0x7453": {
+      "aliases": [
+        "PB_20"
+      ],
+      "group": "programmable_button",
+      "key": "QK_PROGRAMMABLE_BUTTON_20",
+      "label": "Button 20"
+    },
+    "0x7454": {
+      "aliases": [
+        "PB_21"
+      ],
+      "group": "programmable_button",
+      "key": "QK_PROGRAMMABLE_BUTTON_21",
+      "label": "Button 21"
+    },
+    "0x7455": {
+      "aliases": [
+        "PB_22"
+      ],
+      "group": "programmable_button",
+      "key": "QK_PROGRAMMABLE_BUTTON_22",
+      "label": "Button 22"
+    },
+    "0x7456": {
+      "aliases": [
+        "PB_23"
+      ],
+      "group": "programmable_button",
+      "key": "QK_PROGRAMMABLE_BUTTON_23",
+      "label": "Button 23"
+    },
+    "0x7457": {
+      "aliases": [
+        "PB_24"
+      ],
+      "group": "programmable_button",
+      "key": "QK_PROGRAMMABLE_BUTTON_24",
+      "label": "Button 24"
+    },
+    "0x7458": {
+      "aliases": [
+        "PB_25"
+      ],
+      "group": "programmable_button",
+      "key": "QK_PROGRAMMABLE_BUTTON_25",
+      "label": "Button 25"
+    },
+    "0x7459": {
+      "aliases": [
+        "PB_26"
+      ],
+      "group": "programmable_button",
+      "key": "QK_PROGRAMMABLE_BUTTON_26",
+      "label": "Button 26"
+    },
+    "0x745A": {
+      "aliases": [
+        "PB_27"
+      ],
+      "group": "programmable_button",
+      "key": "QK_PROGRAMMABLE_BUTTON_27",
+      "label": "Button 27"
+    },
+    "0x745B": {
+      "aliases": [
+        "PB_28"
+      ],
+      "group": "programmable_button",
+      "key": "QK_PROGRAMMABLE_BUTTON_28",
+      "label": "Button 28"
+    },
+    "0x745C": {
+      "aliases": [
+        "PB_29"
+      ],
+      "group": "programmable_button",
+      "key": "QK_PROGRAMMABLE_BUTTON_29",
+      "label": "Button 29"
+    },
+    "0x745D": {
+      "aliases": [
+        "PB_30"
+      ],
+      "group": "programmable_button",
+      "key": "QK_PROGRAMMABLE_BUTTON_30",
+      "label": "Button 30"
+    },
+    "0x745E": {
+      "aliases": [
+        "PB_31"
+      ],
+      "group": "programmable_button",
+      "key": "QK_PROGRAMMABLE_BUTTON_31",
+      "label": "Button 31"
+    },
+    "0x745F": {
+      "aliases": [
+        "PB_32"
+      ],
+      "group": "programmable_button",
+      "key": "QK_PROGRAMMABLE_BUTTON_32",
+      "label": "Button 32"
+    },
+    "0x7480": {
+      "aliases": [
+        "AU_ON"
+      ],
+      "group": "audio",
+      "key": "QK_AUDIO_ON",
+      "label": "Audio On"
+    },
+    "0x7481": {
+      "aliases": [
+        "AU_OFF"
+      ],
+      "group": "audio",
+      "key": "QK_AUDIO_OFF",
+      "label": "Audio Off"
+    },
+    "0x7482": {
+      "aliases": [
+        "AU_TOGG"
+      ],
+      "group": "audio",
+      "key": "QK_AUDIO_TOGGLE",
+      "label": "Toggle Audio"
+    },
+    "0x748A": {
+      "aliases": [
+        "CK_TOGG"
+      ],
+      "group": "audio",
+      "key": "QK_AUDIO_CLICKY_TOGGLE",
+      "label": "Toggle Audio Clicky"
+    },
+    "0x748B": {
+      "aliases": [
+        "CK_ON"
+      ],
+      "group": "audio",
+      "key": "QK_AUDIO_CLICKY_ON",
+      "label": "Audio Clicky On"
+    },
+    "0x748C": {
+      "aliases": [
+        "CK_OFF"
+      ],
+      "group": "audio",
+      "key": "QK_AUDIO_CLICKY_OFF",
+      "label": "Audio Clicky Off"
+    },
+    "0x748D": {
+      "aliases": [
+        "CK_UP"
+      ],
+      "group": "audio",
+      "key": "QK_AUDIO_CLICKY_UP",
+      "label": "Audio Clicky Up"
+    },
+    "0x748E": {
+      "aliases": [
+        "CK_DOWN"
+      ],
+      "group": "audio",
+      "key": "QK_AUDIO_CLICKY_DOWN",
+      "label": "Audio Clicky Down"
+    },
+    "0x748F": {
+      "aliases": [
+        "CK_RST"
+      ],
+      "group": "audio",
+      "key": "QK_AUDIO_CLICKY_RESET",
+      "label": "Audio Clicky Reset"
+    },
+    "0x7490": {
+      "aliases": [
+        "MU_ON"
+      ],
+      "group": "audio",
+      "key": "QK_MUSIC_ON",
+      "label": "Music On"
+    },
+    "0x7491": {
+      "aliases": [
+        "MU_OFF"
+      ],
+      "group": "audio",
+      "key": "QK_MUSIC_OFF",
+      "label": "Music Off"
+    },
+    "0x7492": {
+      "aliases": [
+        "MU_TOGG"
+      ],
+      "group": "audio",
+      "key": "QK_MUSIC_TOGGLE",
+      "label": "Toggle Music"
+    },
+    "0x7493": {
+      "aliases": [
+        "MU_NEXT"
+      ],
+      "group": "audio",
+      "key": "QK_MUSIC_MODE_NEXT",
+      "label": "Music Next"
+    },
+    "0x7494": {
+      "aliases": [
+        "AU_NEXT"
+      ],
+      "group": "audio",
+      "key": "QK_AUDIO_VOICE_NEXT",
+      "label": "Audio Voice Next"
+    },
+    "0x7495": {
+      "aliases": [
+        "AU_PREV"
+      ],
+      "group": "audio",
+      "key": "QK_AUDIO_VOICE_PREVIOUS",
+      "label": "Audio Voice Previous"
+    },
+    "0x74F0": {
+      "group": "steno",
+      "key": "QK_STENO_BOLT"
+    },
+    "0x74F1": {
+      "group": "steno",
+      "key": "QK_STENO_GEMINI"
+    },
+    "0x74F2": {
+      "group": "steno",
+      "key": "QK_STENO_COMB"
+    },
+    "0x74FC": {
+      "group": "steno",
+      "key": "QK_STENO_COMB_MAX"
+    },
+    "0x7700": {
+      "aliases": [
+        "MC_0"
+      ],
+      "group": "macro",
+      "key": "QK_MACRO_0",
+      "label": "Macro 0"
+    },
+    "0x7701": {
+      "aliases": [
+        "MC_1"
+      ],
+      "group": "macro",
+      "key": "QK_MACRO_1",
+      "label": "Macro 1"
+    },
+    "0x7702": {
+      "aliases": [
+        "MC_2"
+      ],
+      "group": "macro",
+      "key": "QK_MACRO_2",
+      "label": "Macro 2"
+    },
+    "0x7703": {
+      "aliases": [
+        "MC_3"
+      ],
+      "group": "macro",
+      "key": "QK_MACRO_3",
+      "label": "Macro 3"
+    },
+    "0x7704": {
+      "aliases": [
+        "MC_4"
+      ],
+      "group": "macro",
+      "key": "QK_MACRO_4",
+      "label": "Macro 4"
+    },
+    "0x7705": {
+      "aliases": [
+        "MC_5"
+      ],
+      "group": "macro",
+      "key": "QK_MACRO_5",
+      "label": "Macro 5"
+    },
+    "0x7706": {
+      "aliases": [
+        "MC_6"
+      ],
+      "group": "macro",
+      "key": "QK_MACRO_6",
+      "label": "Macro 6"
+    },
+    "0x7707": {
+      "aliases": [
+        "MC_7"
+      ],
+      "group": "macro",
+      "key": "QK_MACRO_7",
+      "label": "Macro 7"
+    },
+    "0x7708": {
+      "aliases": [
+        "MC_8"
+      ],
+      "group": "macro",
+      "key": "QK_MACRO_8",
+      "label": "Macro 8"
+    },
+    "0x7709": {
+      "aliases": [
+        "MC_9"
+      ],
+      "group": "macro",
+      "key": "QK_MACRO_9",
+      "label": "Macro 9"
+    },
+    "0x770A": {
+      "aliases": [
+        "MC_10"
+      ],
+      "group": "macro",
+      "key": "QK_MACRO_10",
+      "label": "Macro 10"
+    },
+    "0x770B": {
+      "aliases": [
+        "MC_11"
+      ],
+      "group": "macro",
+      "key": "QK_MACRO_11",
+      "label": "Macro 11"
+    },
+    "0x770C": {
+      "aliases": [
+        "MC_12"
+      ],
+      "group": "macro",
+      "key": "QK_MACRO_12",
+      "label": "Macro 12"
+    },
+    "0x770D": {
+      "aliases": [
+        "MC_13"
+      ],
+      "group": "macro",
+      "key": "QK_MACRO_13",
+      "label": "Macro 13"
+    },
+    "0x770E": {
+      "aliases": [
+        "MC_14"
+      ],
+      "group": "macro",
+      "key": "QK_MACRO_14",
+      "label": "Macro 14"
+    },
+    "0x770F": {
+      "aliases": [
+        "MC_15"
+      ],
+      "group": "macro",
+      "key": "QK_MACRO_15",
+      "label": "Macro 15"
+    },
+    "0x7710": {
+      "aliases": [
+        "MC_16"
+      ],
+      "group": "macro",
+      "key": "QK_MACRO_16",
+      "label": "Macro 16"
+    },
+    "0x7711": {
+      "aliases": [
+        "MC_17"
+      ],
+      "group": "macro",
+      "key": "QK_MACRO_17",
+      "label": "Macro 17"
+    },
+    "0x7712": {
+      "aliases": [
+        "MC_18"
+      ],
+      "group": "macro",
+      "key": "QK_MACRO_18",
+      "label": "Macro 18"
+    },
+    "0x7713": {
+      "aliases": [
+        "MC_19"
+      ],
+      "group": "macro",
+      "key": "QK_MACRO_19",
+      "label": "Macro 19"
+    },
+    "0x7714": {
+      "aliases": [
+        "MC_20"
+      ],
+      "group": "macro",
+      "key": "QK_MACRO_20",
+      "label": "Macro 20"
+    },
+    "0x7715": {
+      "aliases": [
+        "MC_21"
+      ],
+      "group": "macro",
+      "key": "QK_MACRO_21",
+      "label": "Macro 21"
+    },
+    "0x7716": {
+      "aliases": [
+        "MC_22"
+      ],
+      "group": "macro",
+      "key": "QK_MACRO_22",
+      "label": "Macro 22"
+    },
+    "0x7717": {
+      "aliases": [
+        "MC_23"
+      ],
+      "group": "macro",
+      "key": "QK_MACRO_23",
+      "label": "Macro 23"
+    },
+    "0x7718": {
+      "aliases": [
+        "MC_24"
+      ],
+      "group": "macro",
+      "key": "QK_MACRO_24",
+      "label": "Macro 24"
+    },
+    "0x7719": {
+      "aliases": [
+        "MC_25"
+      ],
+      "group": "macro",
+      "key": "QK_MACRO_25",
+      "label": "Macro 25"
+    },
+    "0x771A": {
+      "aliases": [
+        "MC_26"
+      ],
+      "group": "macro",
+      "key": "QK_MACRO_26",
+      "label": "Macro 26"
+    },
+    "0x771B": {
+      "aliases": [
+        "MC_27"
+      ],
+      "group": "macro",
+      "key": "QK_MACRO_27",
+      "label": "Macro 27"
+    },
+    "0x771C": {
+      "aliases": [
+        "MC_28"
+      ],
+      "group": "macro",
+      "key": "QK_MACRO_28",
+      "label": "Macro 28"
+    },
+    "0x771D": {
+      "aliases": [
+        "MC_29"
+      ],
+      "group": "macro",
+      "key": "QK_MACRO_29",
+      "label": "Macro 29"
+    },
+    "0x771E": {
+      "aliases": [
+        "MC_30"
+      ],
+      "group": "macro",
+      "key": "QK_MACRO_30",
+      "label": "Macro 30"
+    },
+    "0x771F": {
+      "aliases": [
+        "MC_31"
+      ],
+      "group": "macro",
+      "key": "QK_MACRO_31",
+      "label": "Macro 31"
+    },
+    "0x7800": {
+      "aliases": [
+        "BL_ON"
+      ],
+      "group": "backlight",
+      "key": "QK_BACKLIGHT_ON",
+      "label": "Backlight On"
+    },
+    "0x7801": {
+      "aliases": [
+        "BL_OFF"
+      ],
+      "group": "backlight",
+      "key": "QK_BACKLIGHT_OFF",
+      "label": "Backlight Off"
+    },
+    "0x7802": {
+      "aliases": [
+        "BL_TOGG"
+      ],
+      "group": "backlight",
+      "key": "QK_BACKLIGHT_TOGGLE",
+      "label": "Toggle Backlight"
+    },
+    "0x7803": {
+      "aliases": [
+        "BL_DOWN"
+      ],
+      "group": "backlight",
+      "key": "QK_BACKLIGHT_DOWN",
+      "label": "Backlight Down"
+    },
+    "0x7804": {
+      "aliases": [
+        "BL_UP"
+      ],
+      "group": "backlight",
+      "key": "QK_BACKLIGHT_UP",
+      "label": "Backlight Up"
+    },
+    "0x7805": {
+      "aliases": [
+        "BL_STEP"
+      ],
+      "group": "backlight",
+      "key": "QK_BACKLIGHT_STEP",
+      "label": "Backlight Step"
+    },
+    "0x7806": {
+      "aliases": [
+        "BL_BRTG"
+      ],
+      "group": "backlight",
+      "key": "QK_BACKLIGHT_TOGGLE_BREATHING",
+      "label": "Toggle Breathing"
+    },
+    "0x7810": {
+      "aliases": [
+        "LM_ON"
+      ],
+      "group": "led_matrix",
+      "key": "QK_LED_MATRIX_ON",
+      "label": "LED Matrix On"
+    },
+    "0x7811": {
+      "aliases": [
+        "LM_OFF"
+      ],
+      "group": "led_matrix",
+      "key": "QK_LED_MATRIX_OFF",
+      "label": "LED Matrix Off"
+    },
+    "0x7812": {
+      "aliases": [
+        "LM_TOGG"
+      ],
+      "group": "led_matrix",
+      "key": "QK_LED_MATRIX_TOGGLE",
+      "label": "Toggle LED Matrix"
+    },
+    "0x7813": {
+      "aliases": [
+        "LM_NEXT"
+      ],
+      "group": "led_matrix",
+      "key": "QK_LED_MATRIX_MODE_NEXT",
+      "label": "LED Matrix Next"
+    },
+    "0x7814": {
+      "aliases": [
+        "LM_PREV"
+      ],
+      "group": "led_matrix",
+      "key": "QK_LED_MATRIX_MODE_PREVIOUS",
+      "label": "LED Matrix Previous"
+    },
+    "0x7815": {
+      "aliases": [
+        "LM_BRIU"
+      ],
+      "group": "led_matrix",
+      "key": "QK_LED_MATRIX_BRIGHTNESS_UP",
+      "label": "LED Matrix Brightness Up"
+    },
+    "0x7816": {
+      "aliases": [
+        "LM_BRID"
+      ],
+      "group": "led_matrix",
+      "key": "QK_LED_MATRIX_BRIGHTNESS_DOWN",
+      "label": "LED Matrix Brightness Down"
+    },
+    "0x7817": {
+      "aliases": [
+        "LM_SPDU"
+      ],
+      "group": "led_matrix",
+      "key": "QK_LED_MATRIX_SPEED_UP",
+      "label": "LED Matrix Speed Up"
+    },
+    "0x7818": {
+      "aliases": [
+        "LM_SPDD"
+      ],
+      "group": "led_matrix",
+      "key": "QK_LED_MATRIX_SPEED_DOWN",
+      "label": "LED Matrix Speed Down"
+    },
+    "0x7820": {
+      "aliases": [
+        "UG_TOGG"
+      ],
+      "group": "underglow",
+      "key": "QK_UNDERGLOW_TOGGLE",
+      "label": "Toggle RGB Underglow"
+    },
+    "0x7821": {
+      "aliases": [
+        "UG_NEXT"
+      ],
+      "group": "underglow",
+      "key": "QK_UNDERGLOW_MODE_NEXT",
+      "label": "RGB Underglow Next"
+    },
+    "0x7822": {
+      "aliases": [
+        "UG_PREV"
+      ],
+      "group": "underglow",
+      "key": "QK_UNDERGLOW_MODE_PREVIOUS",
+      "label": "RGB Underglow Previous"
+    },
+    "0x7823": {
+      "aliases": [
+        "UG_HUEU"
+      ],
+      "group": "underglow",
+      "key": "QK_UNDERGLOW_HUE_UP",
+      "label": "RGB Underglow Hue Up"
+    },
+    "0x7824": {
+      "aliases": [
+        "UG_HUED"
+      ],
+      "group": "underglow",
+      "key": "QK_UNDERGLOW_HUE_DOWN",
+      "label": "RGB Underglow Hue Down"
+    },
+    "0x7825": {
+      "aliases": [
+        "UG_SATU"
+      ],
+      "group": "underglow",
+      "key": "QK_UNDERGLOW_SATURATION_UP",
+      "label": "RGB Underglow Saturation Up"
+    },
+    "0x7826": {
+      "aliases": [
+        "UG_SATD"
+      ],
+      "group": "underglow",
+      "key": "QK_UNDERGLOW_SATURATION_DOWN",
+      "label": "RGB Underglow Saturation Down"
+    },
+    "0x7827": {
+      "aliases": [
+        "UG_VALU"
+      ],
+      "group": "underglow",
+      "key": "QK_UNDERGLOW_VALUE_UP",
+      "label": "RGB Underglow Value Up"
+    },
+    "0x7828": {
+      "aliases": [
+        "UG_VALD"
+      ],
+      "group": "underglow",
+      "key": "QK_UNDERGLOW_VALUE_DOWN",
+      "label": "RGB Underglow Value Down"
+    },
+    "0x7829": {
+      "aliases": [
+        "UG_SPDU"
+      ],
+      "group": "underglow",
+      "key": "QK_UNDERGLOW_SPEED_UP",
+      "label": "RGB Underglow Speed Up"
+    },
+    "0x782A": {
+      "aliases": [
+        "UG_SPDD"
+      ],
+      "group": "underglow",
+      "key": "QK_UNDERGLOW_SPEED_DOWN",
+      "label": "RGB Underglow Speed Down"
+    },
+    "0x782B": {
+      "aliases": [
+        "RGB_M_P"
+      ],
+      "group": "rgb",
+      "key": "RGB_MODE_PLAIN"
+    },
+    "0x782C": {
+      "aliases": [
+        "RGB_M_B"
+      ],
+      "group": "rgb",
+      "key": "RGB_MODE_BREATHE"
+    },
+    "0x782D": {
+      "aliases": [
+        "RGB_M_R"
+      ],
+      "group": "rgb",
+      "key": "RGB_MODE_RAINBOW"
+    },
+    "0x782E": {
+      "aliases": [
+        "RGB_M_SW"
+      ],
+      "group": "rgb",
+      "key": "RGB_MODE_SWIRL"
+    },
+    "0x782F": {
+      "aliases": [
+        "RGB_M_SN"
+      ],
+      "group": "rgb",
+      "key": "RGB_MODE_SNAKE"
+    },
+    "0x7830": {
+      "aliases": [
+        "RGB_M_K"
+      ],
+      "group": "rgb",
+      "key": "RGB_MODE_KNIGHT"
+    },
+    "0x7831": {
+      "aliases": [
+        "RGB_M_X"
+      ],
+      "group": "rgb",
+      "key": "RGB_MODE_XMAS"
+    },
+    "0x7832": {
+      "aliases": [
+        "RGB_M_G"
+      ],
+      "group": "rgb",
+      "key": "RGB_MODE_GRADIENT"
+    },
+    "0x7833": {
+      "aliases": [
+        "RGB_M_T"
+      ],
+      "group": "rgb",
+      "key": "RGB_MODE_RGBTEST"
+    },
+    "0x7834": {
+      "aliases": [
+        "RGB_M_TW"
+      ],
+      "group": "rgb",
+      "key": "RGB_MODE_TWINKLE"
+    },
+    "0x7840": {
+      "aliases": [
+        "RM_ON"
+      ],
+      "group": "rgb_matrix",
+      "key": "QK_RGB_MATRIX_ON",
+      "label": "RGB Matrix On"
+    },
+    "0x7841": {
+      "aliases": [
+        "RM_OFF"
+      ],
+      "group": "rgb_matrix",
+      "key": "QK_RGB_MATRIX_OFF",
+      "label": "RGB Matrix Off"
+    },
+    "0x7842": {
+      "aliases": [
+        "RM_TOGG"
+      ],
+      "group": "rgb_matrix",
+      "key": "QK_RGB_MATRIX_TOGGLE",
+      "label": "Toggle RGB Matrix"
+    },
+    "0x7843": {
+      "aliases": [
+        "RM_NEXT"
+      ],
+      "group": "rgb_matrix",
+      "key": "QK_RGB_MATRIX_MODE_NEXT",
+      "label": "RGB Matrix Next"
+    },
+    "0x7844": {
+      "aliases": [
+        "RM_PREV"
+      ],
+      "group": "rgb_matrix",
+      "key": "QK_RGB_MATRIX_MODE_PREVIOUS",
+      "label": "RGB Matrix Previous"
+    },
+    "0x7845": {
+      "aliases": [
+        "RM_HUEU"
+      ],
+      "group": "rgb_matrix",
+      "key": "QK_RGB_MATRIX_HUE_UP",
+      "label": "RGB Matrix Hue Up"
+    },
+    "0x7846": {
+      "aliases": [
+        "RM_HUED"
+      ],
+      "group": "rgb_matrix",
+      "key": "QK_RGB_MATRIX_HUE_DOWN",
+      "label": "RGB Matrix Hue Down"
+    },
+    "0x7847": {
+      "aliases": [
+        "RM_SATU"
+      ],
+      "group": "rgb_matrix",
+      "key": "QK_RGB_MATRIX_SATURATION_UP",
+      "label": "RGB Matrix Saturation Up"
+    },
+    "0x7848": {
+      "aliases": [
+        "RM_SATD"
+      ],
+      "group": "rgb_matrix",
+      "key": "QK_RGB_MATRIX_SATURATION_DOWN",
+      "label": "RGB Matrix Saturation Down"
+    },
+    "0x7849": {
+      "aliases": [
+        "RM_VALU"
+      ],
+      "group": "rgb_matrix",
+      "key": "QK_RGB_MATRIX_VALUE_UP",
+      "label": "RGB Matrix Value Up"
+    },
+    "0x784A": {
+      "aliases": [
+        "RM_VALD"
+      ],
+      "group": "rgb_matrix",
+      "key": "QK_RGB_MATRIX_VALUE_DOWN",
+      "label": "RGB Matrix Value Down"
+    },
+    "0x784B": {
+      "aliases": [
+        "RM_SPDU"
+      ],
+      "group": "rgb_matrix",
+      "key": "QK_RGB_MATRIX_SPEED_UP",
+      "label": "RGB Matrix Speed Up"
+    },
+    "0x784C": {
+      "aliases": [
+        "RM_SPDD"
+      ],
+      "group": "rgb_matrix",
+      "key": "QK_RGB_MATRIX_SPEED_DOWN",
+      "label": "RGB Matrix Speed Down"
+    },
+    "0x7C00": {
+      "aliases": [
+        "QK_BOOT"
+      ],
+      "group": "quantum",
+      "key": "QK_BOOTLOADER",
+      "label": "Bootloader"
+    },
+    "0x7C01": {
+      "aliases": [
+        "QK_RBT"
+      ],
+      "group": "quantum",
+      "key": "QK_REBOOT",
+      "label": "Reboot"
+    },
+    "0x7C02": {
+      "aliases": [
+        "DB_TOGG"
+      ],
+      "group": "quantum",
+      "key": "QK_DEBUG_TOGGLE",
+      "label": "Toggle Debug"
+    },
+    "0x7C03": {
+      "aliases": [
+        "EE_CLR"
+      ],
+      "group": "quantum",
+      "key": "QK_CLEAR_EEPROM",
+      "label": "Clear EEPROM"
+    },
+    "0x7C04": {
+      "group": "quantum",
+      "key": "QK_MAKE",
+      "label": "Make"
+    },
+    "0x7C10": {
+      "aliases": [
+        "AS_DOWN"
+      ],
+      "group": "quantum",
+      "key": "QK_AUTO_SHIFT_DOWN",
+      "label": "Auto Shift Down"
+    },
+    "0x7C11": {
+      "aliases": [
+        "AS_UP"
+      ],
+      "group": "quantum",
+      "key": "QK_AUTO_SHIFT_UP",
+      "label": "Auto Shift Up"
+    },
+    "0x7C12": {
+      "aliases": [
+        "AS_RPT"
+      ],
+      "group": "quantum",
+      "key": "QK_AUTO_SHIFT_REPORT",
+      "label": "Auto Shift Report"
+    },
+    "0x7C13": {
+      "aliases": [
+        "AS_ON"
+      ],
+      "group": "quantum",
+      "key": "QK_AUTO_SHIFT_ON",
+      "label": "Auto Shift On"
+    },
+    "0x7C14": {
+      "aliases": [
+        "AS_OFF"
+      ],
+      "group": "quantum",
+      "key": "QK_AUTO_SHIFT_OFF",
+      "label": "Auto Shift Off"
+    },
+    "0x7C15": {
+      "aliases": [
+        "AS_TOGG"
+      ],
+      "group": "quantum",
+      "key": "QK_AUTO_SHIFT_TOGGLE",
+      "label": "Toggle Auto Shift"
+    },
+    "0x7C16": {
+      "aliases": [
+        "QK_GESC"
+      ],
+      "group": "quantum",
+      "key": "QK_GRAVE_ESCAPE",
+      "label": "Grave Esc"
+    },
+    "0x7C17": {
+      "aliases": [
+        "VK_TOGG"
+      ],
+      "group": "quantum",
+      "key": "QK_VELOCIKEY_TOGGLE"
+    },
+    "0x7C18": {
+      "aliases": [
+        "SC_LCPO"
+      ],
+      "group": "quantum",
+      "key": "QK_SPACE_CADET_LEFT_CTRL_PARENTHESIS_OPEN",
+      "label": "LCtl/("
+    },
+    "0x7C19": {
+      "aliases": [
+        "SC_RCPC"
+      ],
+      "group": "quantum",
+      "key": "QK_SPACE_CADET_RIGHT_CTRL_PARENTHESIS_CLOSE",
+      "label": "RCtl/)"
+    },
+    "0x7C1A": {
+      "aliases": [
+        "SC_LSPO"
+      ],
+      "group": "quantum",
+      "key": "QK_SPACE_CADET_LEFT_SHIFT_PARENTHESIS_OPEN",
+      "label": "LSft/)"
+    },
+    "0x7C1B": {
+      "aliases": [
+        "SC_RSPC"
+      ],
+      "group": "quantum",
+      "key": "QK_SPACE_CADET_RIGHT_SHIFT_PARENTHESIS_CLOSE",
+      "label": "RSft/)"
+    },
+    "0x7C1C": {
+      "aliases": [
+        "SC_LAPO"
+      ],
+      "group": "quantum",
+      "key": "QK_SPACE_CADET_LEFT_ALT_PARENTHESIS_OPEN",
+      "label": "LAlt/("
+    },
+    "0x7C1D": {
+      "aliases": [
+        "SC_RAPC"
+      ],
+      "group": "quantum",
+      "key": "QK_SPACE_CADET_RIGHT_ALT_PARENTHESIS_CLOSE",
+      "label": "RAlt/)"
+    },
+    "0x7C1E": {
+      "aliases": [
+        "SC_SENT"
+      ],
+      "group": "quantum",
+      "key": "QK_SPACE_CADET_RIGHT_SHIFT_ENTER",
+      "label": "RSft/Ent"
+    },
+    "0x7C20": {
+      "aliases": [
+        "OU_AUTO"
+      ],
+      "group": "quantum",
+      "key": "QK_OUTPUT_AUTO"
+    },
+    "0x7C21": {
+      "aliases": [
+        "OU_USB"
+      ],
+      "group": "quantum",
+      "key": "QK_OUTPUT_USB"
+    },
+    "0x7C22": {
+      "aliases": [
+        "OU_BT"
+      ],
+      "group": "quantum",
+      "key": "QK_OUTPUT_BLUETOOTH"
+    },
+    "0x7C30": {
+      "aliases": [
+        "UC_NEXT"
+      ],
+      "group": "quantum",
+      "key": "QK_UNICODE_MODE_NEXT",
+      "label": "Unicode Mode Next"
+    },
+    "0x7C31": {
+      "aliases": [
+        "UC_PREV"
+      ],
+      "group": "quantum",
+      "key": "QK_UNICODE_MODE_PREVIOUS",
+      "label": "Unicode Mode Previous"
+    },
+    "0x7C32": {
+      "aliases": [
+        "UC_MAC"
+      ],
+      "group": "quantum",
+      "key": "QK_UNICODE_MODE_MACOS",
+      "label": "Unicode Mode macOS"
+    },
+    "0x7C33": {
+      "aliases": [
+        "UC_LINX"
+      ],
+      "group": "quantum",
+      "key": "QK_UNICODE_MODE_LINUX",
+      "label": "Unicode Mode Linux"
+    },
+    "0x7C34": {
+      "aliases": [
+        "UC_WIN"
+      ],
+      "group": "quantum",
+      "key": "QK_UNICODE_MODE_WINDOWS",
+      "label": "Unicode Mode Windows"
+    },
+    "0x7C35": {
+      "aliases": [
+        "UC_BSD"
+      ],
+      "group": "quantum",
+      "key": "QK_UNICODE_MODE_BSD",
+      "label": "Unicode Mode BSD"
+    },
+    "0x7C36": {
+      "aliases": [
+        "UC_WINC"
+      ],
+      "group": "quantum",
+      "key": "QK_UNICODE_MODE_WINCOMPOSE",
+      "label": "Unicode Mode WinCompose"
+    },
+    "0x7C37": {
+      "aliases": [
+        "UC_EMAC"
+      ],
+      "group": "quantum",
+      "key": "QK_UNICODE_MODE_EMACS",
+      "label": "Unicode Mode emacs"
+    },
+    "0x7C40": {
+      "aliases": [
+        "HF_ON"
+      ],
+      "group": "quantum",
+      "key": "QK_HAPTIC_ON",
+      "label": "Haptic On"
+    },
+    "0x7C41": {
+      "aliases": [
+        "HF_OFF"
+      ],
+      "group": "quantum",
+      "key": "QK_HAPTIC_OFF",
+      "label": "Haptic Off"
+    },
+    "0x7C42": {
+      "aliases": [
+        "HF_TOGG"
+      ],
+      "group": "quantum",
+      "key": "QK_HAPTIC_TOGGLE",
+      "label": "Toggle Haptic"
+    },
+    "0x7C43": {
+      "aliases": [
+        "HF_RST"
+      ],
+      "group": "quantum",
+      "key": "QK_HAPTIC_RESET",
+      "label": "Haptic Reset"
+    },
+    "0x7C44": {
+      "aliases": [
+        "HF_FDBK"
+      ],
+      "group": "quantum",
+      "key": "QK_HAPTIC_FEEDBACK_TOGGLE",
+      "label": "Toggle Haptic Feedback"
+    },
+    "0x7C45": {
+      "aliases": [
+        "HF_BUZZ"
+      ],
+      "group": "quantum",
+      "key": "QK_HAPTIC_BUZZ_TOGGLE",
+      "label": "Toggle Haptic Buzz"
+    },
+    "0x7C46": {
+      "aliases": [
+        "HF_NEXT"
+      ],
+      "group": "quantum",
+      "key": "QK_HAPTIC_MODE_NEXT",
+      "label": "Haptic Mode Next"
+    },
+    "0x7C47": {
+      "aliases": [
+        "HF_PREV"
+      ],
+      "group": "quantum",
+      "key": "QK_HAPTIC_MODE_PREVIOUS",
+      "label": "Haptic Mode Previous"
+    },
+    "0x7C48": {
+      "aliases": [
+        "HF_CONT"
+      ],
+      "group": "quantum",
+      "key": "QK_HAPTIC_CONTINUOUS_TOGGLE",
+      "label": "Toggle Haptic Continuous"
+    },
+    "0x7C49": {
+      "aliases": [
+        "HF_CONU"
+      ],
+      "group": "quantum",
+      "key": "QK_HAPTIC_CONTINUOUS_UP",
+      "label": "Haptic Continuous Up"
+    },
+    "0x7C4A": {
+      "aliases": [
+        "HF_COND"
+      ],
+      "group": "quantum",
+      "key": "QK_HAPTIC_CONTINUOUS_DOWN",
+      "label": "Haptic Continuous Down"
+    },
+    "0x7C4B": {
+      "aliases": [
+        "HF_DWLU"
+      ],
+      "group": "quantum",
+      "key": "QK_HAPTIC_DWELL_UP",
+      "label": "Haptic Dwell Up"
+    },
+    "0x7C4C": {
+      "aliases": [
+        "HF_DWLD"
+      ],
+      "group": "quantum",
+      "key": "QK_HAPTIC_DWELL_DOWN",
+      "label": "Haptic Dwell Down"
+    },
+    "0x7C50": {
+      "aliases": [
+        "CM_ON"
+      ],
+      "group": "quantum",
+      "key": "QK_COMBO_ON",
+      "label": "Combo On"
+    },
+    "0x7C51": {
+      "aliases": [
+        "CM_OFF"
+      ],
+      "group": "quantum",
+      "key": "QK_COMBO_OFF",
+      "label": "Combo Off"
+    },
+    "0x7C52": {
+      "aliases": [
+        "CM_TOGG"
+      ],
+      "group": "quantum",
+      "key": "QK_COMBO_TOGGLE",
+      "label": "Toggle Combo"
+    },
+    "0x7C53": {
+      "aliases": [
+        "DM_REC1"
+      ],
+      "group": "quantum",
+      "key": "QK_DYNAMIC_MACRO_RECORD_START_1",
+      "label": "Dynamic Macro Record 1"
+    },
+    "0x7C54": {
+      "aliases": [
+        "DM_REC2"
+      ],
+      "group": "quantum",
+      "key": "QK_DYNAMIC_MACRO_RECORD_START_2",
+      "label": "Dynamic Macro Record 2"
+    },
+    "0x7C55": {
+      "aliases": [
+        "DM_RSTP"
+      ],
+      "group": "quantum",
+      "key": "QK_DYNAMIC_MACRO_RECORD_STOP",
+      "label": "Dynamic Macro Stop Recording"
+    },
+    "0x7C56": {
+      "aliases": [
+        "DM_PLY1"
+      ],
+      "group": "quantum",
+      "key": "QK_DYNAMIC_MACRO_PLAY_1",
+      "label": "Dynamic Macro Play 1"
+    },
+    "0x7C57": {
+      "aliases": [
+        "DM_PLY2"
+      ],
+      "group": "quantum",
+      "key": "QK_DYNAMIC_MACRO_PLAY_2",
+      "label": "Dynamic Macro Play 2"
+    },
+    "0x7C58": {
+      "aliases": [
+        "QK_LEAD"
+      ],
+      "group": "quantum",
+      "key": "QK_LEADER",
+      "label": "Leader"
+    },
+    "0x7C59": {
+      "group": "quantum",
+      "key": "QK_LOCK",
+      "label": "Lock"
+    },
+    "0x7C5A": {
+      "aliases": [
+        "OS_ON"
+      ],
+      "group": "quantum",
+      "key": "QK_ONE_SHOT_ON",
+      "label": "One Shot On"
+    },
+    "0x7C5B": {
+      "aliases": [
+        "OS_OFF"
+      ],
+      "group": "quantum",
+      "key": "QK_ONE_SHOT_OFF",
+      "label": "One Shot Off"
+    },
+    "0x7C5C": {
+      "aliases": [
+        "OS_TOGG"
+      ],
+      "group": "quantum",
+      "key": "QK_ONE_SHOT_TOGGLE",
+      "label": "Toggle One Shot"
+    },
+    "0x7C5D": {
+      "aliases": [
+        "KO_TOGG"
+      ],
+      "group": "quantum",
+      "key": "QK_KEY_OVERRIDE_TOGGLE",
+      "label": "Toggle Key Overrides"
+    },
+    "0x7C5E": {
+      "aliases": [
+        "KO_ON"
+      ],
+      "group": "quantum",
+      "key": "QK_KEY_OVERRIDE_ON",
+      "label": "Key Overrides On"
+    },
+    "0x7C5F": {
+      "aliases": [
+        "KO_OFF"
+      ],
+      "group": "quantum",
+      "key": "QK_KEY_OVERRIDE_OFF",
+      "label": "Key Overrides Off"
+    },
+    "0x7C60": {
+      "aliases": [
+        "SE_LOCK"
+      ],
+      "group": "quantum",
+      "key": "QK_SECURE_LOCK",
+      "label": "Lock"
+    },
+    "0x7C61": {
+      "aliases": [
+        "SE_UNLK"
+      ],
+      "group": "quantum",
+      "key": "QK_SECURE_UNLOCK",
+      "label": "Unlock"
+    },
+    "0x7C62": {
+      "aliases": [
+        "SE_TOGG"
+      ],
+      "group": "quantum",
+      "key": "QK_SECURE_TOGGLE",
+      "label": "Toggle Lock"
+    },
+    "0x7C63": {
+      "aliases": [
+        "SE_REQ"
+      ],
+      "group": "quantum",
+      "key": "QK_SECURE_REQUEST",
+      "label": "Request Unlock"
+    },
+    "0x7C70": {
+      "aliases": [
+        "DT_PRNT"
+      ],
+      "group": "quantum",
+      "key": "QK_DYNAMIC_TAPPING_TERM_PRINT",
+      "label": "Print Dynamic Tapping Term"
+    },
+    "0x7C71": {
+      "aliases": [
+        "DT_UP"
+      ],
+      "group": "quantum",
+      "key": "QK_DYNAMIC_TAPPING_TERM_UP",
+      "label": "Dynamic Tapping Term Up"
+    },
+    "0x7C72": {
+      "aliases": [
+        "DT_DOWN"
+      ],
+      "group": "quantum",
+      "key": "QK_DYNAMIC_TAPPING_TERM_DOWN",
+      "label": "Dynamic Tapping Term Down"
+    },
+    "0x7C73": {
+      "aliases": [
+        "CW_TOGG"
+      ],
+      "group": "quantum",
+      "key": "QK_CAPS_WORD_TOGGLE",
+      "label": "Toggle Caps Word"
+    },
+    "0x7C74": {
+      "aliases": [
+        "AC_ON"
+      ],
+      "group": "quantum",
+      "key": "QK_AUTOCORRECT_ON",
+      "label": "Autocorrect On"
+    },
+    "0x7C75": {
+      "aliases": [
+        "AC_OFF"
+      ],
+      "group": "quantum",
+      "key": "QK_AUTOCORRECT_OFF",
+      "label": "Autocorrect Off"
+    },
+    "0x7C76": {
+      "aliases": [
+        "AC_TOGG"
+      ],
+      "group": "quantum",
+      "key": "QK_AUTOCORRECT_TOGGLE",
+      "label": "Toggle Autocorrect"
+    },
+    "0x7C77": {
+      "aliases": [
+        "TL_LOWR"
+      ],
+      "group": "quantum",
+      "key": "QK_TRI_LAYER_LOWER",
+      "label": "Lower"
+    },
+    "0x7C78": {
+      "aliases": [
+        "TL_UPPR"
+      ],
+      "group": "quantum",
+      "key": "QK_TRI_LAYER_UPPER",
+      "label": "Upper"
+    },
+    "0x7C79": {
+      "aliases": [
+        "QK_REP"
+      ],
+      "group": "quantum",
+      "key": "QK_REPEAT_KEY",
+      "label": "Repeat"
+    },
+    "0x7C7A": {
+      "aliases": [
+        "QK_AREP"
+      ],
+      "group": "quantum",
+      "key": "QK_ALT_REPEAT_KEY",
+      "label": "Repeat Alternate"
+    },
+    "0x7E00": {
+      "group": "kb",
+      "key": "QK_KB_0",
+      "label": "Keyboard 0"
+    },
+    "0x7E01": {
+      "group": "kb",
+      "key": "QK_KB_1",
+      "label": "Keyboard 1"
+    },
+    "0x7E02": {
+      "group": "kb",
+      "key": "QK_KB_2",
+      "label": "Keyboard 2"
+    },
+    "0x7E03": {
+      "group": "kb",
+      "key": "QK_KB_3",
+      "label": "Keyboard 3"
+    },
+    "0x7E04": {
+      "group": "kb",
+      "key": "QK_KB_4",
+      "label": "Keyboard 4"
+    },
+    "0x7E05": {
+      "group": "kb",
+      "key": "QK_KB_5",
+      "label": "Keyboard 5"
+    },
+    "0x7E06": {
+      "group": "kb",
+      "key": "QK_KB_6",
+      "label": "Keyboard 6"
+    },
+    "0x7E07": {
+      "group": "kb",
+      "key": "QK_KB_7",
+      "label": "Keyboard 7"
+    },
+    "0x7E08": {
+      "group": "kb",
+      "key": "QK_KB_8",
+      "label": "Keyboard 8"
+    },
+    "0x7E09": {
+      "group": "kb",
+      "key": "QK_KB_9",
+      "label": "Keyboard 9"
+    },
+    "0x7E0A": {
+      "group": "kb",
+      "key": "QK_KB_10",
+      "label": "Keyboard 10"
+    },
+    "0x7E0B": {
+      "group": "kb",
+      "key": "QK_KB_11",
+      "label": "Keyboard 11"
+    },
+    "0x7E0C": {
+      "group": "kb",
+      "key": "QK_KB_12",
+      "label": "Keyboard 12"
+    },
+    "0x7E0D": {
+      "group": "kb",
+      "key": "QK_KB_13",
+      "label": "Keyboard 13"
+    },
+    "0x7E0E": {
+      "group": "kb",
+      "key": "QK_KB_14",
+      "label": "Keyboard 14"
+    },
+    "0x7E0F": {
+      "group": "kb",
+      "key": "QK_KB_15",
+      "label": "Keyboard 15"
+    },
+    "0x7E10": {
+      "group": "kb",
+      "key": "QK_KB_16",
+      "label": "Keyboard 16"
+    },
+    "0x7E11": {
+      "group": "kb",
+      "key": "QK_KB_17",
+      "label": "Keyboard 17"
+    },
+    "0x7E12": {
+      "group": "kb",
+      "key": "QK_KB_18",
+      "label": "Keyboard 18"
+    },
+    "0x7E13": {
+      "group": "kb",
+      "key": "QK_KB_19",
+      "label": "Keyboard 19"
+    },
+    "0x7E14": {
+      "group": "kb",
+      "key": "QK_KB_20",
+      "label": "Keyboard 20"
+    },
+    "0x7E15": {
+      "group": "kb",
+      "key": "QK_KB_21",
+      "label": "Keyboard 21"
+    },
+    "0x7E16": {
+      "group": "kb",
+      "key": "QK_KB_22",
+      "label": "Keyboard 22"
+    },
+    "0x7E17": {
+      "group": "kb",
+      "key": "QK_KB_23",
+      "label": "Keyboard 23"
+    },
+    "0x7E18": {
+      "group": "kb",
+      "key": "QK_KB_24",
+      "label": "Keyboard 24"
+    },
+    "0x7E19": {
+      "group": "kb",
+      "key": "QK_KB_25",
+      "label": "Keyboard 25"
+    },
+    "0x7E1A": {
+      "group": "kb",
+      "key": "QK_KB_26",
+      "label": "Keyboard 26"
+    },
+    "0x7E1B": {
+      "group": "kb",
+      "key": "QK_KB_27",
+      "label": "Keyboard 27"
+    },
+    "0x7E1C": {
+      "group": "kb",
+      "key": "QK_KB_28",
+      "label": "Keyboard 28"
+    },
+    "0x7E1D": {
+      "group": "kb",
+      "key": "QK_KB_29",
+      "label": "Keyboard 29"
+    },
+    "0x7E1E": {
+      "group": "kb",
+      "key": "QK_KB_30",
+      "label": "Keyboard 30"
+    },
+    "0x7E1F": {
+      "group": "kb",
+      "key": "QK_KB_31",
+      "label": "Keyboard 31"
+    },
+    "0x7E40": {
+      "group": "user",
+      "key": "QK_USER_0",
+      "label": "User 0"
+    },
+    "0x7E41": {
+      "group": "user",
+      "key": "QK_USER_1",
+      "label": "User 1"
+    },
+    "0x7E42": {
+      "group": "user",
+      "key": "QK_USER_2",
+      "label": "User 2"
+    },
+    "0x7E43": {
+      "group": "user",
+      "key": "QK_USER_3",
+      "label": "User 3"
+    },
+    "0x7E44": {
+      "group": "user",
+      "key": "QK_USER_4",
+      "label": "User 4"
+    },
+    "0x7E45": {
+      "group": "user",
+      "key": "QK_USER_5",
+      "label": "User 5"
+    },
+    "0x7E46": {
+      "group": "user",
+      "key": "QK_USER_6",
+      "label": "User 6"
+    },
+    "0x7E47": {
+      "group": "user",
+      "key": "QK_USER_7",
+      "label": "User 7"
+    },
+    "0x7E48": {
+      "group": "user",
+      "key": "QK_USER_8",
+      "label": "User 8"
+    },
+    "0x7E49": {
+      "group": "user",
+      "key": "QK_USER_9",
+      "label": "User 9"
+    },
+    "0x7E4A": {
+      "group": "user",
+      "key": "QK_USER_10",
+      "label": "User 10"
+    },
+    "0x7E4B": {
+      "group": "user",
+      "key": "QK_USER_11",
+      "label": "User 11"
+    },
+    "0x7E4C": {
+      "group": "user",
+      "key": "QK_USER_12",
+      "label": "User 12"
+    },
+    "0x7E4D": {
+      "group": "user",
+      "key": "QK_USER_13",
+      "label": "User 13"
+    },
+    "0x7E4E": {
+      "group": "user",
+      "key": "QK_USER_14",
+      "label": "User 14"
+    },
+    "0x7E4F": {
+      "group": "user",
+      "key": "QK_USER_15",
+      "label": "User 15"
+    },
+    "0x7E50": {
+      "group": "user",
+      "key": "QK_USER_16",
+      "label": "User 16"
+    },
+    "0x7E51": {
+      "group": "user",
+      "key": "QK_USER_17",
+      "label": "User 17"
+    },
+    "0x7E52": {
+      "group": "user",
+      "key": "QK_USER_18",
+      "label": "User 18"
+    },
+    "0x7E53": {
+      "group": "user",
+      "key": "QK_USER_19",
+      "label": "User 19"
+    },
+    "0x7E54": {
+      "group": "user",
+      "key": "QK_USER_20",
+      "label": "User 20"
+    },
+    "0x7E55": {
+      "group": "user",
+      "key": "QK_USER_21",
+      "label": "User 21"
+    },
+    "0x7E56": {
+      "group": "user",
+      "key": "QK_USER_22",
+      "label": "User 22"
+    },
+    "0x7E57": {
+      "group": "user",
+      "key": "QK_USER_23",
+      "label": "User 23"
+    },
+    "0x7E58": {
+      "group": "user",
+      "key": "QK_USER_24",
+      "label": "User 24"
+    },
+    "0x7E59": {
+      "group": "user",
+      "key": "QK_USER_25",
+      "label": "User 25"
+    },
+    "0x7E5A": {
+      "group": "user",
+      "key": "QK_USER_26",
+      "label": "User 26"
+    },
+    "0x7E5B": {
+      "group": "user",
+      "key": "QK_USER_27",
+      "label": "User 27"
+    },
+    "0x7E5C": {
+      "group": "user",
+      "key": "QK_USER_28",
+      "label": "User 28"
+    },
+    "0x7E5D": {
+      "group": "user",
+      "key": "QK_USER_29",
+      "label": "User 29"
+    },
+    "0x7E5E": {
+      "group": "user",
+      "key": "QK_USER_30",
+      "label": "User 30"
+    },
+    "0x7E5F": {
+      "group": "user",
+      "key": "QK_USER_31",
+      "label": "User 31"
+    }
+  },
+  "ranges": {
+    "0x0000/0x00FF": {
+      "define": "QK_BASIC"
+    },
+    "0x0100/0x1EFF": {
+      "define": "QK_MODS"
+    },
+    "0x2000/0x1FFF": {
+      "define": "QK_MOD_TAP"
+    },
+    "0x4000/0x0FFF": {
+      "define": "QK_LAYER_TAP"
+    },
+    "0x5000/0x01FF": {
+      "define": "QK_LAYER_MOD"
+    },
+    "0x5200/0x001F": {
+      "define": "QK_TO"
+    },
+    "0x5220/0x001F": {
+      "define": "QK_MOMENTARY"
+    },
+    "0x5240/0x001F": {
+      "define": "QK_DEF_LAYER"
+    },
+    "0x5260/0x001F": {
+      "define": "QK_TOGGLE_LAYER"
+    },
+    "0x5280/0x001F": {
+      "define": "QK_ONE_SHOT_LAYER"
+    },
+    "0x52A0/0x001F": {
+      "define": "QK_ONE_SHOT_MOD"
+    },
+    "0x52C0/0x001F": {
+      "define": "QK_LAYER_TAP_TOGGLE"
+    },
+    "0x5600/0x00FF": {
+      "define": "QK_SWAP_HANDS"
+    },
+    "0x5700/0x00FF": {
+      "define": "QK_TAP_DANCE"
+    },
+    "0x7000/0x00FF": {
+      "define": "QK_MAGIC"
+    },
+    "0x7100/0x00FF": {
+      "define": "QK_MIDI"
+    },
+    "0x7200/0x01FF": {
+      "define": "QK_SEQUENCER"
+    },
+    "0x7400/0x003F": {
+      "define": "QK_JOYSTICK"
+    },
+    "0x7440/0x003F": {
+      "define": "QK_PROGRAMMABLE_BUTTON"
+    },
+    "0x7480/0x003F": {
+      "define": "QK_AUDIO"
+    },
+    "0x74C0/0x003F": {
+      "define": "QK_STENO"
+    },
+    "0x7700/0x007F": {
+      "define": "QK_MACRO"
+    },
+    "0x7800/0x00FF": {
+      "define": "QK_LIGHTING"
+    },
+    "0x7C00/0x01FF": {
+      "define": "QK_QUANTUM"
+    },
+    "0x7E00/0x003F": {
+      "define": "QK_KB"
+    },
+    "0x7E40/0x01BF": {
+      "define": "QK_USER"
+    },
+    "0x8000/0X3FFF": {
+      "define": "QK_UNICODEMAP"
+    },
+    "0x8000/0x7FFF": {
+      "define": "QK_UNICODE"
+    },
+    "0xC000/0X3FFF": {
+      "define": "QK_UNICODEMAP_PAIR"
+    }
+  },
+  "version": "0.0.4"
+}
