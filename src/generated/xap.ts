@@ -606,6 +606,8 @@ export type RgbmatrixGetEnabledEffectsResponse = bigint
 export type UTF8String = string
 export type XapCapabilitiesFlags = number
 export type XapConstants = {
+    keycode_version: string
+    keycode_versions: string[]
     keycodes: XapKeyCodeCategory[]
     rgblight_modes: LightingEffects
     rgb_matrix_modes: LightingEffects
