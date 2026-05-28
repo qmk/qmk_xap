@@ -5,10 +5,82 @@ use specta::Type;
 
 use crate::aggregation::Point2D;
 
-#[derive(Clone, Debug, Serialize, Deserialize, Type)]
+#[derive(Clone, Debug, Default, Serialize, Deserialize, Type)]
 pub struct Config {
     pub layouts: HashMap<String, Layout>,
     pub matrix_size: Point2D,
+    #[serde(default)]
+    pub manufacturer: String,
+    #[serde(default)]
+    pub keyboard_name: String,
+    #[serde(default)]
+    pub usb: UsbInfo,
+    #[serde(default)]
+    pub dynamic_keymap: DynamicKeymapInfo,
+    #[serde(default)]
+    pub features: Features,
+    #[serde(default)]
+    pub encoder: EncoderInfo,
+}
+
+#[derive(Clone, Debug, Default, Serialize, Deserialize, Type)]
+pub struct UsbInfo {
+    #[serde(default)]
+    pub vid: String,
+    #[serde(default)]
+    pub pid: String,
+    #[serde(default)]
+    pub device_version: String,
+}
+
+#[derive(Clone, Debug, Default, Serialize, Deserialize, Type)]
+pub struct DynamicKeymapInfo {
+    #[serde(default)]
+    pub layer_count: u8,
+}
+
+/// Subset of QMK's `features` block we care about for skipping XAP subsystem
+/// queries when the firmware was built without the relevant feature. The
+/// config blob is the authoritative source: boards have been observed
+/// advertising a subsystem bit while the build has no matching feature.
+#[derive(Clone, Debug, Default, Serialize, Deserialize, Type)]
+pub struct Features {
+    #[serde(default)]
+    pub backlight: bool,
+    #[serde(default)]
+    pub rgblight: bool,
+    #[serde(default)]
+    pub rgb_matrix: bool,
+    #[serde(default)]
+    pub led_matrix: bool,
+    #[serde(default)]
+    pub encoder_map: bool,
+}
+
+impl Features {
+    pub fn has_lighting(&self) -> bool {
+        self.backlight || self.rgblight || self.rgb_matrix || self.led_matrix
+    }
+}
+
+/// Mirrors QMK's `encoder` block in info.json (see
+/// `qmk_firmware_ref/data/schemas/keyboard.jsonschema`). `rotary.len()` is the
+/// authoritative encoder count for boards that ship the field; `enabled`
+/// reflects the build-time flag separately.
+#[derive(Clone, Debug, Default, Serialize, Deserialize, Type)]
+pub struct EncoderInfo {
+    #[serde(default)]
+    pub enabled: bool,
+    #[serde(default)]
+    pub rotary: Vec<RotaryEncoder>,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, Type)]
+pub struct RotaryEncoder {
+    pub pin_a: String,
+    pub pin_b: String,
+    #[serde(default)]
+    pub resolution: Option<u8>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Type)]
@@ -47,7 +119,7 @@ fn default_wh() -> f64 {
 
 #[cfg(test)]
 mod test {
-    use crate::aggregation::config::Config;
+    use crate::aggregation::config::{Config, Features};
 
     #[test]
     fn deserialize() {
@@ -589,5 +661,71 @@ mod test {
 }"#;
 
         let _layout: Config = serde_json::from_str(input).unwrap();
+    }
+
+    #[test]
+    fn deserialize_encoder_block() {
+        let input = r#"{
+"layouts": {},
+"matrix_size": { "cols": 0, "rows": 0 },
+"encoder": {
+    "enabled": true,
+    "rotary": [
+        { "pin_a": "B4", "pin_b": "B5" },
+        { "pin_a": "B6", "pin_b": "B7", "resolution": 4 }
+    ]
+}
+}"#;
+        let config: Config = serde_json::from_str(input).unwrap();
+        assert!(config.encoder.enabled);
+        assert_eq!(config.encoder.rotary.len(), 2);
+        assert_eq!(config.encoder.rotary[0].pin_a, "B4");
+        assert_eq!(config.encoder.rotary[0].resolution, None);
+        assert_eq!(config.encoder.rotary[1].resolution, Some(4));
+    }
+
+    #[test]
+    fn deserialize_without_encoder_block() {
+        let input = r#"{
+"layouts": {},
+"matrix_size": { "cols": 0, "rows": 0 }
+}"#;
+        let config: Config = serde_json::from_str(input).unwrap();
+        assert!(!config.encoder.enabled);
+        assert!(config.encoder.rotary.is_empty());
+    }
+
+    #[test]
+    fn deserialize_board_keymap_and_feature_fields() {
+        let input = r#"{
+"layouts": {},
+"matrix_size": { "cols": 0, "rows": 0 },
+"manufacturer": "ACME",
+"keyboard_name": "Widget",
+"usb": { "vid": "0x1209", "pid": "0x88BD", "device_version": "1.2.3" },
+"dynamic_keymap": { "layer_count": 6 },
+"features": {
+    "backlight": false,
+    "rgblight": true,
+    "rgb_matrix": false,
+    "led_matrix": false,
+    "encoder_map": true
+}
+}"#;
+        let config: Config = serde_json::from_str(input).unwrap();
+        assert_eq!(config.manufacturer, "ACME");
+        assert_eq!(config.keyboard_name, "Widget");
+        assert_eq!(config.usb.vid, "0x1209");
+        assert_eq!(config.usb.pid, "0x88BD");
+        assert_eq!(config.usb.device_version, "1.2.3");
+        assert_eq!(config.dynamic_keymap.layer_count, 6);
+        assert!(config.features.has_lighting());
+        assert!(config.features.encoder_map);
+    }
+
+    #[test]
+    fn features_has_lighting_false_when_all_off() {
+        let f = Features::default();
+        assert!(!f.has_lighting());
     }
 }

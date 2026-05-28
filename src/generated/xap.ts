@@ -426,6 +426,45 @@ export const commands = {
     async devicesGet(): Promise<XapDeviceState[]> {
         return await TAURI_INVOKE('devices_get')
     },
+    async keycodeTemplateEncode(template: KeycodeTemplate): Promise<Result<number, Error>> {
+        try {
+            return {
+                status: 'ok',
+                data: await TAURI_INVOKE('keycode_template_encode', { template }),
+            }
+        } catch (e) {
+            if (e instanceof Error) throw e
+            else return { status: 'error', error: e as any }
+        }
+    },
+    /**
+     * Decode a wire keycode (u16) into a fully resolved `KeyCode` entry -- same
+     * catalog lookup the keymap fetch uses, exposed so per-key reads (e.g. the
+     * encoder map view) don't need to re-implement the lookup in TypeScript.
+     */
+    async decodeKeycode(code: number): Promise<KeyCode> {
+        return await TAURI_INVOKE('decode_keycode', { code })
+    },
+    /**
+     * Bulk-fetch the full encoder keymap in one Tauri round-trip. Sweeps every
+     * (layer, encoder, clockwise) slot via `KeymapGetEncoderKeycode`, decodes
+     * each result against the keycode catalog, and returns the
+     * `[layer][encoder][clockwise]` tensor. The Rust side logs total wallclock
+     * + per-call average so encoder fetches show up alongside the keymap fetch
+     * in startup-timing profiles.
+     *
+     * Layer count is taken from `KeymapInfo.layer_count` (or `RemapInfo.layer_count`
+     * as a fallback); encoder count comes from the QMK config blob's
+     * `encoder.rotary` array. Returns an empty `Vec` when either is zero.
+     */
+    async encoderKeymapGet(id: string): Promise<Result<KeyCode[][][], Error>> {
+        try {
+            return { status: 'ok', data: await TAURI_INVOKE('encoder_keymap_get', { id }) }
+        } catch (e) {
+            if (e instanceof Error) throw e
+            else return { status: 'error', error: e as any }
+        }
+    },
 }
 
 export const events = __makeEvents__<{
@@ -447,14 +486,81 @@ export type BacklightCapabilitiesFlags = number
  */
 export type BacklightConfig = { enable: number; mode: number; val: number }
 export type BacklightGetEnabledEffectsResponse = number
-export type Config = { layouts: { [key in string]: Layout }; matrix_size: Point2D }
+export type Config = {
+    layouts: { [key in string]: Layout }
+    matrix_size: Point2D
+    manufacturer?: string
+    keyboard_name?: string
+    usb?: UsbInfo
+    dynamic_keymap?: DynamicKeymapInfo
+    features?: Features
+    encoder?: EncoderInfo
+}
+export type DynamicKeymapInfo = { layer_count?: number }
+/**
+ * Mirrors QMK's `encoder` block in info.json (see
+ * `qmk_firmware_ref/data/schemas/keyboard.jsonschema`). `rotary.len()` is the
+ * authoritative encoder count for boards that ship the field; `enabled`
+ * reflects the build-time flag separately.
+ */
+export type EncoderInfo = { enabled?: boolean; rotary?: RotaryEncoder[] }
 export type Error = string
+/**
+ * Subset of QMK's `features` block we care about for skipping XAP subsystem
+ * queries when the firmware was built without the relevant feature. The
+ * config blob is the authoritative source: boards have been observed
+ * advertising a subsystem bit while the build has no matching feature.
+ */
+export type Features = {
+    backlight?: boolean
+    rgblight?: boolean
+    rgb_matrix?: boolean
+    led_matrix?: boolean
+    encoder_map?: boolean
+}
 export type KeyCode = {
     code?: number
     key: string
     group?: string | null
     label?: string | null
+    top?: string | null
+    bottom?: string | null
     aliases?: string[]
+    description?: string | null
+    template?: KeycodeTemplate | null
+}
+/**
+ * A parameterized keycode the GUI either decoded from firmware or is in the
+ * middle of assembling via the picker. Variants with `Option` slots are the
+ * two-step pickers: the slot is `None` while the picker is collecting the
+ * remaining input.
+ */
+export type KeycodeTemplate =
+    | { kind: 'LayerOp'; op: LayerOp; layer: number }
+    | { kind: 'OneShotMod'; mod_mask: number }
+    | { kind: 'LayerTap'; layer: number; tap_kc: number | null }
+    | { kind: 'ModTap'; mod_mask: number; tap_kc: number | null }
+    | { kind: 'LayerMod'; layer: number; mod_mask: number | null }
+    | { kind: 'Modified'; mod_mask: number; base_kc: number | null }
+export type KeycodeView = { tabs: KeycodeViewTab[] }
+export type KeycodeViewSubgroup = {
+    id: string
+    label: string | null
+    render_mode: string | null
+    is_fallback: boolean
+    codes: KeyCode[]
+    /**
+     * Parameterised subgroup. When present, `codes` is empty and the
+     * frontend expands one button per layer / mod combination at render time.
+     */
+    template: SubgroupTemplate | null
+}
+export type KeycodeViewTab = {
+    id: string
+    label: string
+    is_fallback: boolean
+    color: string | null
+    subgroups: KeycodeViewSubgroup[]
 }
 export type KeymapCapabilitiesFlags = number
 export type KeymapGetEncoderKeycodeArg = { layer: number; encoder: number; clockwise: number }
@@ -468,6 +574,7 @@ export type KeymapInfo = {
     get_encoder_keycode_enabled: boolean
 }
 export type KeymapKey = { code: KeyCode; position: Point3D }
+export type LayerOp = 'MO' | 'TG' | 'TO' | 'DF' | 'OSL' | 'TT' | 'PDF'
 export type Layout = { layout: LayoutEntry[] }
 export type LayoutEntry = {
     matrix: Point2D
@@ -603,10 +710,31 @@ export type RgblightCapabilitiesFlags = number
 export type RgblightGetEnabledEffectsResponse = bigint
 export type RgbmatrixCapabilitiesFlags = number
 export type RgbmatrixGetEnabledEffectsResponse = bigint
+export type RotaryEncoder = { pin_a: string; pin_b: string; resolution?: number | null }
+/**
+ * Parameterised subgroup descriptor. The wire type ships the descriptor
+ * un-expanded; the frontend renders one button per layer / mod combination
+ * using the connected keyboard's layer count.
+ */
+export type SubgroupTemplate =
+    | { kind: 'MO' }
+    | { kind: 'TG' }
+    | { kind: 'TO' }
+    | { kind: 'DF' }
+    | { kind: 'OSL' }
+    | { kind: 'TT' }
+    | { kind: 'PDF' }
+    | { kind: 'LT' }
+    | { kind: 'LM' }
+    | { kind: 'MT'; mods: string[] }
+    | { kind: 'QK_MODS'; mods: string[] }
 export type UTF8String = string
+export type UsbInfo = { vid?: string; pid?: string; device_version?: string }
 export type XapCapabilitiesFlags = number
 export type XapConstants = {
-    keycodes: XapKeyCodeCategory[]
+    keycode_version: string
+    keycode_versions: string[]
+    keycode_view: KeycodeView
     rgblight_modes: LightingEffects
     rgb_matrix_modes: LightingEffects
     led_matrix_modes: LightingEffects
@@ -631,7 +759,6 @@ export type XapEvent =
     | { kind: 'NewDevice'; data: { id: string } }
     | { kind: 'RemovedDevice'; data: { id: string } }
 export type XapInfo = { version: number }
-export type XapKeyCodeCategory = { name: string; codes: KeyCode[] }
 export type XapSecureStatus = 'Locked' | 'Unlocking' | 'Unlocked'
 export type XapSecureStatusResponse = number
 export type XapVersionResponse = number
