@@ -2,7 +2,7 @@ use core::fmt::Debug;
 use std::io::Cursor;
 
 use anyhow::Result;
-use binrw::{binread, BinRead, BinReaderExt, Endian};
+use binrw::{binread, BinRead, Endian};
 use log::trace;
 
 use crate::token::Token;
@@ -34,6 +34,10 @@ impl BroadcastRaw {
         &self.broadcast_type
     }
 
+    pub fn payload(&self) -> &[u8] {
+        &self.payload
+    }
+
     pub fn from_raw_report(report: &[u8]) -> Result<Self> {
         let mut reader = Cursor::new(report);
         let broadcast = Self::read_le(&mut reader)?;
@@ -63,11 +67,7 @@ impl BinRead for LogBroadcast {
         _endian: Endian,
         _args: Self::Args<'_>,
     ) -> binrw::BinResult<Self> {
-        let len: u8 = reader.read_le()?;
-        let mut bytes = Vec::with_capacity(len as usize);
-        reader.read_exact(&mut bytes[..len as usize])?;
-        let mut cursor = Cursor::new(&bytes);
-        Ok(Self(std::io::read_to_string(&mut cursor)?))
+        Ok(Self(std::io::read_to_string(reader)?))
     }
 }
 
@@ -77,3 +77,49 @@ impl XapBroadcast for LogBroadcast {}
 pub struct SecureStatusBroadcast(pub XapSecureStatus);
 
 impl XapBroadcast for SecureStatusBroadcast {}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn decodes_non_empty_log_broadcast_payload() {
+        let report = [
+            0xFF,
+            0xFF,
+            BroadcastType::Log as u8,
+            0x05,
+            b'h',
+            b'e',
+            b'l',
+            b'l',
+            b'o',
+        ];
+
+        let broadcast = BroadcastRaw::from_raw_report(&report).expect("failed to read broadcast");
+        let log: LogBroadcast = broadcast
+            .into_xap_broadcast()
+            .expect("failed to decode log payload");
+
+        assert_eq!(log.0, "hello");
+    }
+
+    #[test]
+    fn exposes_raw_payload_for_unparsed_broadcasts() {
+        let report = [
+            0xFF,
+            0xFF,
+            BroadcastType::User as u8,
+            0x04,
+            0x01,
+            0x2A,
+            0xFF,
+            0x00,
+        ];
+
+        let broadcast = BroadcastRaw::from_raw_report(&report).expect("failed to read broadcast");
+
+        assert_eq!(broadcast.broadcast_type(), &BroadcastType::User);
+        assert_eq!(broadcast.payload(), &[0x01, 0x2A, 0xFF, 0x00]);
+    }
+}

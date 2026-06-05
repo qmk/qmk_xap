@@ -4,6 +4,7 @@
     import { Notify, Loading } from 'quasar'
 
     import { addListener, clearListener } from '@/utils/events'
+    import { useBroadcastStore } from '@/utils/broadcastStore'
     import { useXapDeviceStore } from '@/utils/deviceStore'
     import router from '@/utils/routes'
     import { eventBus } from '@/utils/eventbus'
@@ -11,10 +12,12 @@
     import { commands } from '@generated/xap'
 
     const store = useXapDeviceStore()
+    const broadcastStore = useBroadcastStore()
     const { device, devices } = storeToRefs(store)
 
     function addDevice(device: XapDeviceState) {
         const { id } = device
+        broadcastStore.rememberDevice(device)
         console.log('new device with id ' + id + Date.now())
         if (store.addDevice(device)) {
             Notify.create({
@@ -64,6 +67,16 @@
                     const { id, secure_status } = event.data
                     console.log('secure status ' + secure_status + ' for device ' + id)
                     store.updateSecureStatus(id, secure_status)
+                    break
+                }
+                case 'LogReceived': {
+                    const { id, log } = event.data
+                    broadcastStore.appendLog(id, log)
+                    break
+                }
+                case 'RawBroadcastReceived': {
+                    const { id, broadcast_type, payload } = event.data
+                    broadcastStore.appendRaw(id, broadcast_type, payload)
                     break
                 }
             }

@@ -562,6 +562,7 @@ export type QmkJumpToBootloaderResponse = number
 export type QmkProductNameResponse = UTF8String
 export type QmkReinitializeEepromResponse = number
 export type QmkVersionResponse = number
+export type RawBroadcastType = 'Keyboard' | 'User'
 export type RemapInfo = {
     layer_count: number | null
     set_keycode_enabled: boolean
@@ -629,6 +630,10 @@ export type XapEnabledSubsystemCapabilitiesFlags = number
 export type XapEvent =
     | { kind: 'LogReceived'; data: { id: string; log: string } }
     | { kind: 'SecureStatusChanged'; data: { id: string; secure_status: XapSecureStatus } }
+    | {
+          kind: 'RawBroadcastReceived'
+          data: { id: string; broadcast_type: RawBroadcastType; payload: number[] }
+      }
     | { kind: 'NewDevice'; data: { id: string } }
     | { kind: 'RemovedDevice'; data: { id: string } }
 export type XapInfo = { version: number }

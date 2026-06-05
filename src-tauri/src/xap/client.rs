@@ -2,21 +2,46 @@ use std::{collections::HashMap, fmt::Debug, sync::Arc};
 
 use anyhow::{anyhow, Result};
 use hidapi::{DeviceInfo, HidApi};
-use log::error;
 use uuid::Uuid;
 
 use xap_specs::{
-    broadcast::{BroadcastType, LogBroadcast},
+    broadcast::{BroadcastRaw, BroadcastType, LogBroadcast},
     constants::XapConstants,
     request::XapRequest,
+    XapSecureStatus,
 };
 
+use crate::rpc::events::RawBroadcastType;
 use crate::XapEvent;
 
 use super::device::XapDevice;
 
 const XAP_USAGE_PAGE: u16 = 0xFF51;
 const XAP_USAGE: u16 = 0x0058;
+
+fn broadcast_event(
+    id: Uuid,
+    secure_status: XapSecureStatus,
+    broadcast: BroadcastRaw,
+) -> Result<XapEvent> {
+    match broadcast.broadcast_type() {
+        BroadcastType::Log => {
+            let log: LogBroadcast = broadcast.into_xap_broadcast()?;
+            Ok(XapEvent::LogReceived { id, log: log.0 })
+        }
+        BroadcastType::SecureStatus => Ok(XapEvent::SecureStatusChanged { id, secure_status }),
+        BroadcastType::Keyboard => Ok(XapEvent::RawBroadcastReceived {
+            id,
+            broadcast_type: RawBroadcastType::Keyboard,
+            payload: broadcast.payload().to_vec(),
+        }),
+        BroadcastType::User => Ok(XapEvent::RawBroadcastReceived {
+            id,
+            broadcast_type: RawBroadcastType::User,
+            payload: broadcast.payload().to_vec(),
+        }),
+    }
+}
 
 pub(crate) struct XapClient {
     hid: HidApi,
@@ -48,23 +73,11 @@ impl XapClient {
             device.poll()?;
 
             while let Some(broadcast) = device.broadcast_queue.pop_front() {
-                match broadcast.broadcast_type() {
-                    BroadcastType::Log => {
-                        let log: LogBroadcast = broadcast.into_xap_broadcast()?;
-                        events.push(XapEvent::LogReceived {
-                            id: device.id(),
-                            log: log.0,
-                        });
-                    }
-                    BroadcastType::SecureStatus => {
-                        events.push(XapEvent::SecureStatusChanged {
-                            id: device.id(),
-                            secure_status: *device.secure_status(),
-                        });
-                    }
-                    BroadcastType::Keyboard => error!("keyboard broadcasts are not implemented!"),
-                    BroadcastType::User => error!("user broadcasts are not implemented!"),
-                }
+                events.push(broadcast_event(
+                    device.id(),
+                    *device.secure_status(),
+                    broadcast,
+                )?);
             }
         }
 
@@ -148,5 +161,58 @@ impl XapClient {
 
     pub fn get_devices(&self) -> Vec<&XapDevice> {
         self.devices.values().collect()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn maps_user_payload_to_raw_broadcast_event() {
+        let id = Uuid::new_v4();
+        let report = [
+            0xFF,
+            0xFF,
+            BroadcastType::User as u8,
+            0x03,
+            0x01,
+            0x2A,
+            0xFF,
+        ];
+        let broadcast = BroadcastRaw::from_raw_report(&report).expect("failed to read broadcast");
+
+        let event =
+            broadcast_event(id, XapSecureStatus::Locked, broadcast).expect("failed to map event");
+
+        match event {
+            XapEvent::RawBroadcastReceived {
+                id: event_id,
+                broadcast_type: RawBroadcastType::User,
+                payload,
+            } => {
+                assert_eq!(event_id, id);
+                assert_eq!(payload, vec![0x01, 0x2A, 0xFF]);
+            }
+            _ => panic!("expected raw user broadcast event"),
+        }
+    }
+
+    #[test]
+    fn maps_log_payload_to_decoded_log_event() {
+        let id = Uuid::new_v4();
+        let report = [0xFF, 0xFF, BroadcastType::Log as u8, 0x02, b'o', b'k'];
+        let broadcast = BroadcastRaw::from_raw_report(&report).expect("failed to read broadcast");
+
+        let event =
+            broadcast_event(id, XapSecureStatus::Locked, broadcast).expect("failed to map event");
+
+        match event {
+            XapEvent::LogReceived { id: event_id, log } => {
+                assert_eq!(event_id, id);
+                assert_eq!(log, "ok");
+            }
+            _ => panic!("expected decoded log event"),
+        }
     }
 }

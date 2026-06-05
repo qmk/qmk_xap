@@ -38,6 +38,12 @@
                         to="/rgb"
                         exact
                     />
+                    <q-route-tab
+                        label="Broadcast"
+                        :disable="device == null"
+                        to="/broadcast"
+                        exact
+                    />
                     <q-route-tab label="Info" :disable="device == null" to="/info" exact />
                 </q-tabs>
             </q-toolbar>
