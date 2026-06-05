@@ -29,6 +29,10 @@ const routes: RouteRecordRaw[] = [
                 component: () => import('@/pages/KeymapView.vue'),
                 meta: { showSecureButton: true },
             },
+            {
+                path: 'encoder',
+                component: () => import('@/pages/EncoderMapView.vue'),
+            },
         ],
     },
 ]

@@ -32,8 +32,8 @@ use crate::{
     },
     xap::spec::{
         keymap::{
-            KeymapCapabilitiesFlags, KeymapCapabilitiesRequest, KeymapGetKeycodeRequest,
-            KeymapGetLayerCountRequest,
+            KeymapCapabilitiesFlags, KeymapCapabilitiesRequest, KeymapGetEncoderKeycodeArg,
+            KeymapGetEncoderKeycodeRequest, KeymapGetKeycodeRequest, KeymapGetLayerCountRequest,
         },
         lighting::{
             backlight::{
@@ -154,6 +154,7 @@ impl XapDevice {
             config: Config {
                 layouts: HashMap::new(),
                 matrix_size: Point2D { x: 0, y: 0 },
+                encoder: Default::default(),
             },
             config_json: String::new(),
             secure_status: XapSecureStatus::Locked,
@@ -253,6 +254,54 @@ impl XapDevice {
         self.state.keymap.remap_key(&key)?;
 
         Ok(key)
+    }
+
+    /// Read every (layer, encoder, clockwise) slot via the standard XAP encoder
+    /// route and decode each u16 against the keycode catalog. Returns a tensor
+    /// indexed `[layer][encoder][clockwise]` (clockwise: 0 = CCW, 1 = CW).
+    ///
+    /// Logs the total wallclock cost and the per-call average -- same shape as
+    /// the keymap fetch timing emitted from `XapDevice::new`, so encoder pages
+    /// are easy to compare against initial keymap load in profiling runs.
+    pub fn query_encoder_keymap(
+        &mut self,
+        layer_count: u8,
+        encoder_count: u8,
+    ) -> Result<Vec<Vec<Vec<KeyCode>>>> {
+        let t_start = Instant::now();
+        let total_queries = usize::from(layer_count) * usize::from(encoder_count) * 2;
+        let mut out: Vec<Vec<Vec<KeyCode>>> = Vec::with_capacity(layer_count.into());
+
+        for layer in 0..layer_count {
+            let mut layer_buf: Vec<Vec<KeyCode>> = Vec::with_capacity(encoder_count.into());
+            for encoder in 0..encoder_count {
+                let mut pair: Vec<KeyCode> = Vec::with_capacity(2);
+                for clockwise in 0..=1u8 {
+                    let raw = self.query(KeymapGetEncoderKeycodeRequest(
+                        KeymapGetEncoderKeycodeArg {
+                            layer,
+                            encoder,
+                            clockwise,
+                        },
+                    ))?;
+                    pair.push(self.constants.get_keycode(raw.0));
+                }
+                layer_buf.push(pair);
+            }
+            out.push(layer_buf);
+        }
+
+        let elapsed = t_start.elapsed();
+        let per_call = if total_queries > 0 {
+            elapsed / total_queries as u32
+        } else {
+            Duration::ZERO
+        };
+        info!(
+            "  fetch_encoder_keymap ({} layers x {} encoders x 2 = {} queries): {:?} total, {:?} avg/query",
+            layer_count, encoder_count, total_queries, elapsed, per_call,
+        );
+        Ok(out)
     }
 
     pub fn query<T: XapRequest>(&mut self, request: T) -> Result<T::Response> {

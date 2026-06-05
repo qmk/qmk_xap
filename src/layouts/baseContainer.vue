@@ -33,6 +33,15 @@
                         exact
                     />
                     <q-route-tab
+                        v-if="
+                            device?.info?.keymap?.get_encoder_keycode_enabled &&
+                            (device?.config?.encoder?.rotary?.length ?? 0) > 0
+                        "
+                        label="Encoder"
+                        to="/encoder"
+                        exact
+                    />
+                    <q-route-tab
                         v-if="device?.info?.lighting?.rgblight != null"
                         label="RGB"
                         to="/rgb"

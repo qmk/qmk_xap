@@ -9,6 +9,28 @@ use crate::aggregation::Point2D;
 pub struct Config {
     pub layouts: HashMap<String, Layout>,
     pub matrix_size: Point2D,
+    #[serde(default)]
+    pub encoder: EncoderInfo,
+}
+
+/// Mirrors QMK's `encoder` block in info.json (see
+/// `qmk_firmware_ref/data/schemas/keyboard.jsonschema`). `rotary.len()` is the
+/// authoritative encoder count for boards that ship the field; `enabled`
+/// reflects the build-time flag separately.
+#[derive(Clone, Debug, Default, Serialize, Deserialize, Type)]
+pub struct EncoderInfo {
+    #[serde(default)]
+    pub enabled: bool,
+    #[serde(default)]
+    pub rotary: Vec<RotaryEncoder>,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, Type)]
+pub struct RotaryEncoder {
+    pub pin_a: String,
+    pub pin_b: String,
+    #[serde(default)]
+    pub resolution: Option<u8>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Type)]
@@ -589,5 +611,37 @@ mod test {
 }"#;
 
         let _layout: Config = serde_json::from_str(input).unwrap();
+    }
+
+    #[test]
+    fn deserialize_encoder_block() {
+        let input = r#"{
+"layouts": {},
+"matrix_size": { "cols": 0, "rows": 0 },
+"encoder": {
+    "enabled": true,
+    "rotary": [
+        { "pin_a": "B4", "pin_b": "B5" },
+        { "pin_a": "B6", "pin_b": "B7", "resolution": 4 }
+    ]
+}
+}"#;
+        let config: Config = serde_json::from_str(input).unwrap();
+        assert!(config.encoder.enabled);
+        assert_eq!(config.encoder.rotary.len(), 2);
+        assert_eq!(config.encoder.rotary[0].pin_a, "B4");
+        assert_eq!(config.encoder.rotary[0].resolution, None);
+        assert_eq!(config.encoder.rotary[1].resolution, Some(4));
+    }
+
+    #[test]
+    fn deserialize_without_encoder_block() {
+        let input = r#"{
+"layouts": {},
+"matrix_size": { "cols": 0, "rows": 0 }
+}"#;
+        let config: Config = serde_json::from_str(input).unwrap();
+        assert!(!config.encoder.enabled);
+        assert!(config.encoder.rotary.is_empty());
     }
 }

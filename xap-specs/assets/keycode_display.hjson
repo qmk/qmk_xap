@@ -1,0 +1,798 @@
+{
+    // Schema version of this remap file (independent of QMK keycode versions).
+    "version": "1",
+
+    // QMK keycode spec version this file is authored against. When the active
+    // catalog version differs, the GUI gets a raw fallback view (one tab per
+    // generated group) and none of these overrides apply.
+    "target_keycode_version": "0.0.8",
+
+    // Top-level tabs in display order. Each tab has one or more subgroups.
+    // Subgroup populators:
+    //   - `keys: [...]`: explicit list of key names from the target version.
+    //   - `from_group: "X"`: every catalog key whose generated group == X
+    //     and that hasn't already been claimed by an earlier subgroup.
+    // Hidden keys never land in normal subgroups; they always go to the
+    // synthesized "Hidden" tab.
+    "tabs": [
+        {
+            "id": "basic",
+            "label": "Basic",
+            "subgroups": [
+                // ANSI keyboard layout. The Vue component renders this
+                // subgroup specially when render_mode == "ansi". Modifier
+                // keycodes share this layout (left/right Shift, Ctrl, Alt,
+                // GUI all have ANSI slots), so they're pulled in here rather
+                // than living in a separate subgroup.
+                {
+                    "id": "ansi",
+                    "label": "Standard",
+                    "render_mode": "ansi",
+                    "from_groups": ["basic", "modifiers"]
+                },
+                {
+                    "id": "blank",
+                    "label": "Blank",
+                    "keys": ["KC_NO", "KC_TRANSPARENT"]
+                },
+                {
+                    "id": "extended_f",
+                    "label": "Extended F-Keys",
+                    "keys": [
+                        "KC_F13", "KC_F14", "KC_F15", "KC_F16", "KC_F17", "KC_F18",
+                        "KC_F19", "KC_F20", "KC_F21", "KC_F22", "KC_F23", "KC_F24"
+                    ]
+                },
+                {
+                    "id": "non_us",
+                    "label": "Non-US",
+                    "keys": ["KC_NONUS_HASH", "KC_NONUS_BACKSLASH"]
+                },
+                {
+                    "id": "locking",
+                    "label": "Locking Keys",
+                    "keys": ["KC_LOCKING_CAPS_LOCK", "KC_LOCKING_NUM_LOCK", "KC_LOCKING_SCROLL_LOCK"]
+                },
+                {
+                    "id": "numpad_extras",
+                    "label": "Numpad Extras",
+                    "keys": ["KC_KP_EQUAL", "KC_KP_EQUAL_AS400", "KC_KP_COMMA"]
+                },
+                {
+                    "id": "commands",
+                    "label": "Commands",
+                    "keys": [
+                        "KC_KB_POWER", "KC_EXECUTE", "KC_HELP", "KC_MENU", "KC_SELECT", "KC_STOP",
+                        "KC_AGAIN", "KC_UNDO", "KC_CUT", "KC_COPY", "KC_PASTE", "KC_FIND",
+                        "KC_KB_MUTE", "KC_KB_VOLUME_UP", "KC_KB_VOLUME_DOWN",
+                        "KC_ALTERNATE_ERASE", "KC_SYSTEM_REQUEST", "KC_CANCEL", "KC_CLEAR",
+                        "KC_PRIOR", "KC_RETURN", "KC_SEPARATOR", "KC_OUT", "KC_OPER",
+                        "KC_CLEAR_AGAIN", "KC_CRSEL", "KC_EXSEL"
+                    ]
+                },
+                {
+                    "id": "international",
+                    "label": "International",
+                    "keys": [
+                        "KC_INTERNATIONAL_1", "KC_INTERNATIONAL_2", "KC_INTERNATIONAL_3",
+                        "KC_INTERNATIONAL_4", "KC_INTERNATIONAL_5", "KC_INTERNATIONAL_6",
+                        "KC_INTERNATIONAL_7", "KC_INTERNATIONAL_8", "KC_INTERNATIONAL_9",
+                        "KC_LANGUAGE_1", "KC_LANGUAGE_2", "KC_LANGUAGE_3", "KC_LANGUAGE_4",
+                        "KC_LANGUAGE_5", "KC_LANGUAGE_6", "KC_LANGUAGE_7", "KC_LANGUAGE_8",
+                        "KC_LANGUAGE_9"
+                    ]
+                }
+            ]
+        },
+        // Parameterised keycodes. Each template subgroup expands at render
+        // time against the connected keyboard's layer count.
+        {
+            "id": "layer",
+            "label": "Layer",
+            "color": "blue",
+            "subgroups": [
+                { "id": "mo",  "label": "Momentary (MO)",        "template": { "kind": "MO"  } },
+                { "id": "tg",  "label": "Toggle (TG)",           "template": { "kind": "TG"  } },
+                { "id": "to",  "label": "Activate (TO)",         "template": { "kind": "TO"  } },
+                { "id": "df",  "label": "Default (DF)",          "template": { "kind": "DF"  } },
+                { "id": "osl", "label": "One-Shot Layer (OSL)",  "template": { "kind": "OSL" } },
+                { "id": "tt",  "label": "Tap-Toggle (TT)",       "template": { "kind": "TT"  } },
+                { "id": "pdf", "label": "Persistent Default (PDF)", "template": { "kind": "PDF" } },
+                { "id": "lt",  "label": "Layer-Tap (LT)",        "template": { "kind": "LT"  } }
+            ]
+        },
+        {
+            "id": "modtap",
+            "label": "Mod-Tap",
+            "color": "purple",
+            "subgroups": [
+                {
+                    "id": "mt",
+                    "label": "Hold Modifier / Tap Key",
+                    "template": {
+                        "kind": "MT",
+                        "mods": [
+                            "LSFT", "LCTL", "LALT", "LGUI",
+                            "RSFT", "RCTL", "RALT", "RGUI",
+                            "LCA", "LCAG", "MEH", "HYPR"
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "id": "layer_mod",
+            "label": "Layer-Mod",
+            "color": "cyan",
+            "subgroups": [
+                { "id": "lm", "label": "Layer + Modifier (LM)", "template": { "kind": "LM" } }
+            ]
+        },
+        {
+            "id": "modified",
+            "label": "Modified",
+            "color": "orange",
+            "subgroups": [
+                {
+                    "id": "qk_mods",
+                    "label": "Modifier + Key",
+                    "template": {
+                        "kind": "QK_MODS",
+                        "mods": [
+                            "LSFT", "LCTL", "LALT", "LGUI",
+                            "RSFT", "RCTL", "RALT", "RGUI",
+                            "LCA", "LCAG", "MEH", "HYPR"
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "id": "lighting",
+            "label": "Lighting",
+            "subgroups": [
+                { "id": "backlight",  "label": "Backlight",  "from_group": "backlight" },
+                { "id": "led_matrix", "label": "LED Matrix", "from_group": "led_matrix" },
+                { "id": "rgb",        "label": "RGB",        "from_group": "rgb" },
+                { "id": "rgb_matrix", "label": "RGB Matrix", "from_group": "rgb_matrix" },
+                { "id": "underglow",  "label": "Underglow",  "from_group": "underglow" }
+            ]
+        },
+        {
+            "id": "system",
+            "label": "System",
+            "subgroups": [
+                { "id": "system", "label": "System", "from_group": "system" },
+                { "id": "media",  "label": "Media",  "from_group": "media" }
+            ]
+        },
+        { "id": "mouse", "label": "Mouse", "subgroups": [{ "id": "mouse", "from_group": "mouse" }] },
+        {
+            "id": "qmk",
+            "label": "QMK",
+            "subgroups": [
+                { "id": "quantum",    "label": "Quantum",    "from_group": "quantum" },
+                { "id": "magic",      "label": "Magic",      "from_group": "magic" },
+                { "id": "swap_hands", "label": "Swap Hands", "from_group": "swap_hands" },
+                { "id": "connection", "label": "Connection", "from_group": "connection" },
+                { "id": "kb",         "label": "Keyboard",   "from_group": "kb" },
+                { "id": "audio",      "label": "Audio",      "from_group": "audio" }
+            ]
+        },
+        { "id": "macro", "label": "Macro", "subgroups": [{ "id": "macro", "from_group": "macro" }] },
+        {
+            "id": "music",
+            "label": "MIDI",
+            "subgroups": [
+                { "id": "midi",      "label": "MIDI",      "from_group": "midi" },
+                { "id": "sequencer", "label": "Sequencer", "from_group": "sequencer" }
+            ]
+        },
+        { "id": "joystick",            "label": "Joystick",            "subgroups": [{ "id": "joystick",            "from_group": "joystick" }] },
+        { "id": "programmable_button", "label": "Programmable",        "subgroups": [{ "id": "programmable_button", "from_group": "programmable_button" }] },
+        { "id": "steno",               "label": "Steno",               "subgroups": [{ "id": "steno",               "from_group": "steno" }] },
+        { "id": "user",                "label": "User",                "subgroups": [{ "id": "user",                "from_group": "user" }] },
+        { "id": "internal",            "label": "Internal",            "subgroups": [{ "id": "internal",            "from_group": "internal" }] }
+    ],
+
+    // Per-key overrides. Keys are exact `key` field names from the target
+    // version's generated hjson. Descriptions are sourced from the QMK docs
+    // (qmk_firmware/docs/keycodes_basic.md and keycodes_magic.md).
+    "keycodes": {
+        // Blank behavior keys shown in Basic > Blank immediately below ANSI.
+        "KC_NO":          { "label": "", "description": "Ignore this key (NOOP)." },
+        "KC_TRANSPARENT": { "description": "Use the next lowest non-transparent key." },
+
+        // Letters
+        "KC_A": { "description": "a and A" },
+        "KC_B": { "description": "b and B" },
+        "KC_C": { "description": "c and C" },
+        "KC_D": { "description": "d and D" },
+        "KC_E": { "description": "e and E" },
+        "KC_F": { "description": "f and F" },
+        "KC_G": { "description": "g and G" },
+        "KC_H": { "description": "h and H" },
+        "KC_I": { "description": "i and I" },
+        "KC_J": { "description": "j and J" },
+        "KC_K": { "description": "k and K" },
+        "KC_L": { "description": "l and L" },
+        "KC_M": { "description": "m and M" },
+        "KC_N": { "description": "n and N" },
+        "KC_O": { "description": "o and O" },
+        "KC_P": { "description": "p and P" },
+        "KC_Q": { "description": "q and Q" },
+        "KC_R": { "description": "r and R" },
+        "KC_S": { "description": "s and S" },
+        "KC_T": { "description": "t and T" },
+        "KC_U": { "description": "u and U" },
+        "KC_V": { "description": "v and V" },
+        "KC_W": { "description": "w and W" },
+        "KC_X": { "description": "x and X" },
+        "KC_Y": { "description": "y and Y" },
+        "KC_Z": { "description": "z and Z" },
+
+        // Number row
+        "KC_1": { "description": "1 and !" },
+        "KC_2": { "description": "2 and @" },
+        "KC_3": { "description": "3 and #" },
+        "KC_4": { "description": "4 and $" },
+        "KC_5": { "description": "5 and %" },
+        "KC_6": { "description": "6 and ^" },
+        "KC_7": { "description": "7 and &" },
+        "KC_8": { "description": "8 and *" },
+        "KC_9": { "description": "9 and (" },
+        "KC_0": { "description": "0 and )" },
+
+        // F-keys
+        "KC_F1":  { "description": "F1" },
+        "KC_F2":  { "description": "F2" },
+        "KC_F3":  { "description": "F3" },
+        "KC_F4":  { "description": "F4" },
+        "KC_F5":  { "description": "F5" },
+        "KC_F6":  { "description": "F6" },
+        "KC_F7":  { "description": "F7" },
+        "KC_F8":  { "description": "F8" },
+        "KC_F9":  { "description": "F9" },
+        "KC_F10": { "description": "F10" },
+        "KC_F11": { "description": "F11" },
+        "KC_F12": { "description": "F12" },
+        "KC_F13": { "description": "F13" },
+        "KC_F14": { "description": "F14" },
+        "KC_F15": { "description": "F15" },
+        "KC_F16": { "description": "F16" },
+        "KC_F17": { "description": "F17" },
+        "KC_F18": { "description": "F18" },
+        "KC_F19": { "description": "F19" },
+        "KC_F20": { "description": "F20" },
+        "KC_F21": { "description": "F21" },
+        "KC_F22": { "description": "F22" },
+        "KC_F23": { "description": "F23" },
+        "KC_F24": { "description": "F24" },
+
+        // Punctuation
+        "KC_ENTER":           { "description": "Return (Enter)" },
+        "KC_ESCAPE":          { "description": "Escape" },
+        "KC_BACKSPACE":       { "description": "Delete (Backspace)" },
+        "KC_TAB":             { "description": "Tab" },
+        "KC_SPACE":           { "description": "Spacebar" },
+        "KC_MINUS":           { "description": "- and _" },
+        "KC_EQUAL":           { "description": "= and +" },
+        "KC_LEFT_BRACKET":    { "description": "[ and {" },
+        "KC_RIGHT_BRACKET":   { "description": "] and }" },
+        "KC_BACKSLASH":       { "description": "\\ and |" },
+        "KC_NONUS_HASH":      { "description": "Non-US # and ~" },
+        "KC_SEMICOLON":       { "description": "; and :" },
+        "KC_QUOTE":           { "description": "' and \"" },
+        "KC_GRAVE":           { "description": "` and ~" },
+        "KC_COMMA":           { "description": ", and <" },
+        "KC_DOT":             { "description": ". and >" },
+        "KC_SLASH":           { "description": "/ and ?" },
+        "KC_NONUS_BACKSLASH": { "description": "Non-US \\ and |" },
+
+        // Lock keys
+        "KC_CAPS_LOCK":           { "description": "Caps Lock" },
+        "KC_SCROLL_LOCK":         { "description": "Scroll Lock, Brightness Down (macOS)" },
+        "KC_NUM_LOCK":            { "description": "Keypad Num Lock and Clear" },
+        "KC_LOCKING_CAPS_LOCK":   { "description": "Locking Caps Lock" },
+        "KC_LOCKING_NUM_LOCK":    { "description": "Locking Num Lock" },
+        "KC_LOCKING_SCROLL_LOCK": { "description": "Locking Scroll Lock" },
+
+        // Modifiers
+        "KC_LEFT_CTRL":   { "description": "Left Control" },
+        "KC_LEFT_SHIFT":  { "description": "Left Shift" },
+        "KC_LEFT_ALT":    { "description": "Left Alt (Option)" },
+        "KC_LEFT_GUI":    { "description": "Left GUI (Windows/Command/Super key)" },
+        "KC_RIGHT_CTRL":  { "description": "Right Control" },
+        "KC_RIGHT_SHIFT": { "description": "Right Shift" },
+        "KC_RIGHT_ALT":   { "description": "Right Alt (Option/AltGr)" },
+        "KC_RIGHT_GUI":   { "description": "Right GUI (Windows/Command/Super key)" },
+
+        // International
+        "KC_INTERNATIONAL_1": { "description": "JIS \\ and _" },
+        "KC_INTERNATIONAL_2": { "description": "JIS Katakana/Hiragana" },
+        "KC_INTERNATIONAL_3": { "description": "JIS ¥ and |" },
+        "KC_INTERNATIONAL_4": { "description": "JIS Henkan" },
+        "KC_INTERNATIONAL_5": { "description": "JIS Muhenkan" },
+        "KC_INTERNATIONAL_6": { "description": "JIS Numpad ," },
+        "KC_INTERNATIONAL_7": { "description": "International 7" },
+        "KC_INTERNATIONAL_8": { "description": "International 8" },
+        "KC_INTERNATIONAL_9": { "description": "International 9" },
+        "KC_LANGUAGE_1":      { "description": "Hangul/English" },
+        "KC_LANGUAGE_2":      { "description": "Hanja" },
+        "KC_LANGUAGE_3":      { "description": "JIS Katakana" },
+        "KC_LANGUAGE_4":      { "description": "JIS Hiragana" },
+        "KC_LANGUAGE_5":      { "description": "JIS Zenkaku/Hankaku" },
+        "KC_LANGUAGE_6":      { "description": "Language 6" },
+        "KC_LANGUAGE_7":      { "description": "Language 7" },
+        "KC_LANGUAGE_8":      { "description": "Language 8" },
+        "KC_LANGUAGE_9":      { "description": "Language 9" },
+
+        // Commands
+        "KC_PRINT_SCREEN":    { "description": "Print Screen" },
+        "KC_PAUSE":           { "description": "Pause, Brightness Up (macOS)" },
+        "KC_INSERT":          { "description": "Insert" },
+        "KC_HOME":            { "description": "Home" },
+        "KC_PAGE_UP":         { "description": "Page Up" },
+        "KC_DELETE":          { "description": "Forward Delete" },
+        "KC_END":             { "description": "End" },
+        "KC_PAGE_DOWN":       { "description": "Page Down" },
+        "KC_RIGHT":           { "description": "Right Arrow" },
+        "KC_LEFT":            { "description": "Left Arrow" },
+        "KC_DOWN":            { "description": "Down Arrow" },
+        "KC_UP":              { "description": "Up Arrow" },
+        "KC_APPLICATION":     { "description": "Application (Windows Context Menu Key)" },
+        "KC_KB_POWER":        { "description": "System Power" },
+        "KC_EXECUTE":         { "description": "Execute" },
+        "KC_HELP":            { "description": "Help" },
+        "KC_MENU":            { "description": "Menu" },
+        "KC_SELECT":          { "description": "Select" },
+        "KC_STOP":            { "description": "Stop" },
+        "KC_AGAIN":           { "description": "Again" },
+        "KC_UNDO":            { "description": "Undo" },
+        "KC_CUT":             { "description": "Cut" },
+        "KC_COPY":            { "description": "Copy" },
+        "KC_PASTE":           { "description": "Paste" },
+        "KC_FIND":            { "description": "Find" },
+        "KC_KB_MUTE":         { "description": "Mute" },
+        "KC_KB_VOLUME_UP":    { "description": "Volume Up" },
+        "KC_KB_VOLUME_DOWN":  { "description": "Volume Down" },
+        "KC_ALTERNATE_ERASE": { "description": "Alternate Erase" },
+        "KC_SYSTEM_REQUEST":  { "description": "SysReq/Attention" },
+        "KC_CANCEL":          { "description": "Cancel" },
+        "KC_CLEAR":           { "description": "Clear" },
+        "KC_PRIOR":           { "description": "Prior" },
+        "KC_RETURN":          { "description": "Return" },
+        "KC_SEPARATOR":       { "description": "Separator" },
+        "KC_OUT":             { "description": "Out" },
+        "KC_OPER":            { "description": "Oper" },
+        "KC_CLEAR_AGAIN":     { "description": "Clear/Again" },
+        "KC_CRSEL":           { "description": "CrSel/Props" },
+        "KC_EXSEL":           { "description": "ExSel" },
+
+        // Media keys
+        "KC_SYSTEM_POWER":       { "description": "System Power Down" },
+        "KC_SYSTEM_SLEEP":       { "description": "System Sleep" },
+        "KC_SYSTEM_WAKE":        { "description": "System Wake" },
+        "KC_AUDIO_MUTE":         { "description": "Mute" },
+        "KC_AUDIO_VOL_UP":       { "description": "Volume Up" },
+        "KC_AUDIO_VOL_DOWN":     { "description": "Volume Down" },
+        "KC_MEDIA_NEXT_TRACK":   { "description": "Next Track" },
+        "KC_MEDIA_PREV_TRACK":   { "description": "Previous Track" },
+        "KC_MEDIA_STOP":         { "description": "Stop Track" },
+        "KC_MEDIA_PLAY_PAUSE":   { "description": "Play/Pause Track" },
+        "KC_MEDIA_SELECT":       { "description": "Launch Media Player" },
+        "KC_MEDIA_EJECT":        { "description": "Eject" },
+        "KC_MAIL":               { "description": "Launch Mail" },
+        "KC_CALCULATOR":         { "description": "Launch Calculator" },
+        "KC_MY_COMPUTER":        { "description": "Launch My Computer" },
+        "KC_WWW_SEARCH":         { "description": "Browser Search" },
+        "KC_WWW_HOME":           { "description": "Browser Home" },
+        "KC_WWW_BACK":           { "description": "Browser Back" },
+        "KC_WWW_FORWARD":        { "description": "Browser Forward" },
+        "KC_WWW_STOP":           { "description": "Browser Stop" },
+        "KC_WWW_REFRESH":        { "description": "Browser Refresh" },
+        "KC_WWW_FAVORITES":      { "description": "Browser Favorites" },
+        "KC_MEDIA_FAST_FORWARD": { "description": "Fast Forward" },
+        "KC_MEDIA_REWIND":       { "description": "Rewind" },
+        "KC_BRIGHTNESS_UP":      { "description": "Brightness Up" },
+        "KC_BRIGHTNESS_DOWN":    { "description": "Brightness Down" },
+        "KC_CONTROL_PANEL":      { "description": "Open Control Panel" },
+        "KC_ASSISTANT":          { "description": "Launch Assistant" },
+        "KC_MISSION_CONTROL":    { "description": "Open Mission Control" },
+        "KC_LAUNCHPAD":          { "description": "Open Launchpad" },
+
+        // Number pad
+        "KC_KP_SLASH":       { "description": "Keypad /" },
+        "KC_KP_ASTERISK":    { "description": "Keypad *" },
+        "KC_KP_MINUS":       { "description": "Keypad -" },
+        "KC_KP_PLUS":        { "description": "Keypad +" },
+        "KC_KP_ENTER":       { "description": "Keypad Enter" },
+        "KC_KP_1":           { "description": "Keypad 1 and End" },
+        "KC_KP_2":           { "description": "Keypad 2 and Down Arrow" },
+        "KC_KP_3":           { "description": "Keypad 3 and Page Down" },
+        "KC_KP_4":           { "description": "Keypad 4 and Left Arrow" },
+        "KC_KP_5":           { "description": "Keypad 5" },
+        "KC_KP_6":           { "description": "Keypad 6 and Right Arrow" },
+        "KC_KP_7":           { "description": "Keypad 7 and Home" },
+        "KC_KP_8":           { "description": "Keypad 8 and Up Arrow" },
+        "KC_KP_9":           { "description": "Keypad 9 and Page Up" },
+        "KC_KP_0":           { "description": "Keypad 0 and Insert" },
+        "KC_KP_DOT":         { "description": "Keypad . and Delete" },
+        "KC_KP_EQUAL":       { "description": "Keypad =" },
+        "KC_KP_COMMA":       { "description": "Keypad ," },
+        "KC_KP_EQUAL_AS400": { "hidden": true, "description": "Keypad = on AS/400 keyboards" },
+
+        // Magic keycodes (qmk_firmware/docs/keycodes_magic.md)
+        "QK_MAGIC_SWAP_CONTROL_CAPS_LOCK":     { "description": "Swap Caps Lock and Left Control" },
+        "QK_MAGIC_UNSWAP_CONTROL_CAPS_LOCK":   { "description": "Unswap Caps Lock and Left Control" },
+        "QK_MAGIC_TOGGLE_CONTROL_CAPS_LOCK":   { "description": "Toggle Caps Lock and Left Control swap" },
+        "QK_MAGIC_CAPS_LOCK_AS_CONTROL_ON":    { "description": "Treat Caps Lock as Control" },
+        "QK_MAGIC_CAPS_LOCK_AS_CONTROL_OFF":   { "description": "Stop treating Caps Lock as Control" },
+        "QK_MAGIC_SWAP_ESCAPE_CAPS_LOCK":      { "description": "Swap Caps Lock and Escape" },
+        "QK_MAGIC_UNSWAP_ESCAPE_CAPS_LOCK":    { "description": "Unswap Caps Lock and Escape" },
+        "QK_MAGIC_TOGGLE_ESCAPE_CAPS_LOCK":    { "description": "Toggle Caps Lock and Escape swap" },
+        "QK_MAGIC_SWAP_LCTL_LGUI":             { "description": "Swap Left Control and GUI" },
+        "QK_MAGIC_UNSWAP_LCTL_LGUI":           { "description": "Unswap Left Control and GUI" },
+        "QK_MAGIC_SWAP_RCTL_RGUI":             { "description": "Swap Right Control and GUI" },
+        "QK_MAGIC_UNSWAP_RCTL_RGUI":           { "description": "Unswap Right Control and GUI" },
+        "QK_MAGIC_SWAP_CTL_GUI":               { "description": "Swap Control and GUI on both sides" },
+        "QK_MAGIC_UNSWAP_CTL_GUI":             { "description": "Unswap Control and GUI on both sides" },
+        "QK_MAGIC_TOGGLE_CTL_GUI":             { "description": "Toggle Control and GUI swap on both sides" },
+        "QK_MAGIC_SWAP_LALT_LGUI":             { "description": "Swap Left Alt and GUI" },
+        "QK_MAGIC_UNSWAP_LALT_LGUI":           { "description": "Unswap Left Alt and GUI" },
+        "QK_MAGIC_SWAP_RALT_RGUI":             { "description": "Swap Right Alt and GUI" },
+        "QK_MAGIC_UNSWAP_RALT_RGUI":           { "description": "Unswap Right Alt and GUI" },
+        "QK_MAGIC_SWAP_ALT_GUI":               { "description": "Swap Alt and GUI on both sides" },
+        "QK_MAGIC_UNSWAP_ALT_GUI":             { "description": "Unswap Alt and GUI on both sides" },
+        "QK_MAGIC_TOGGLE_ALT_GUI":             { "description": "Toggle Alt and GUI swap on both sides" },
+        "QK_MAGIC_GUI_OFF":                    { "description": "Disable the GUI keys" },
+        "QK_MAGIC_GUI_ON":                     { "description": "Enable the GUI keys" },
+        "QK_MAGIC_TOGGLE_GUI":                 { "description": "Toggles the status of the GUI keys" },
+        "QK_MAGIC_SWAP_GRAVE_ESC":             { "description": "Swap ` and Escape" },
+        "QK_MAGIC_UNSWAP_GRAVE_ESC":           { "description": "Unswap ` and Escape" },
+        "QK_MAGIC_SWAP_BACKSLASH_BACKSPACE":   { "description": "Swap \\ and Backspace" },
+        "QK_MAGIC_UNSWAP_BACKSLASH_BACKSPACE": { "description": "Unswap \\ and Backspace" },
+        "QK_MAGIC_TOGGLE_BACKSLASH_BACKSPACE": { "description": "Toggle \\ and Backspace swap state" },
+        "QK_MAGIC_NKRO_ON":                    { "description": "Enable N-key rollover" },
+        "QK_MAGIC_NKRO_OFF":                   { "description": "Disable N-key rollover" },
+        "QK_MAGIC_TOGGLE_NKRO":                { "description": "Toggle N-key rollover" },
+        "QK_MAGIC_EE_HANDS_LEFT":              { "description": "Set the master half of a split keyboard as the left hand (for EE_HANDS)" },
+        "QK_MAGIC_EE_HANDS_RIGHT":             { "description": "Set the master half of a split keyboard as the right hand (for EE_HANDS)" },
+
+        // Quantum / QMK keycodes (qmk_firmware/docs/quantum_keycodes.md,
+        // qmk_firmware/docs/keycodes.md#quantum-keycodes)
+        "QK_BOOTLOADER":   { "label": "Bootloader", "description": "Put the keyboard into bootloader mode for flashing." },
+        "QK_DEBUG_TOGGLE": { "description": "Toggle debug mode." },
+        "QK_CLEAR_EEPROM": { "description": "Reinitializes the keyboard's EEPROM (persistent memory)." },
+        "QK_MAKE":         { "description": "Sends `qmk compile -kb (keyboard) -km (keymap)`, or `qmk flash` if Shift is held. Puts the keyboard into bootloader mode if Shift+Ctrl are held." },
+        "QK_REBOOT":       { "description": "Resets the keyboard. Does not load the bootloader." },
+
+        // Audio
+        "QK_AUDIO_ON":             { "description": "Turns on Audio Feature." },
+        "QK_AUDIO_OFF":            { "description": "Turns off Audio Feature." },
+        "QK_AUDIO_TOGGLE":         { "description": "Toggles Audio state." },
+        "QK_AUDIO_CLICKY_TOGGLE":  { "description": "Toggles Audio clicky mode." },
+        "QK_AUDIO_CLICKY_ON":      { "description": "Turns on Audio clicky mode." },
+        "QK_AUDIO_CLICKY_OFF":     { "description": "Turns off Audio clicky mode." },
+        "QK_AUDIO_CLICKY_UP":      { "description": "Increases frequency of the clicks." },
+        "QK_AUDIO_CLICKY_DOWN":    { "description": "Decreases frequency of the clicks." },
+        "QK_AUDIO_CLICKY_RESET":   { "description": "Resets click frequency to default." },
+        "QK_MUSIC_ON":             { "description": "Turns on Music Mode." },
+        "QK_MUSIC_OFF":            { "description": "Turns off Music Mode." },
+        "QK_MUSIC_TOGGLE":         { "description": "Toggles Music Mode." },
+        "QK_MUSIC_MODE_NEXT":      { "description": "Cycles through the music modes." },
+        "QK_AUDIO_VOICE_NEXT":     { "description": "Cycles through the audio voices." },
+        "QK_AUDIO_VOICE_PREVIOUS": { "description": "Cycles through the audio voices in reverse." },
+
+        // Auto Shift
+        "QK_AUTO_SHIFT_DOWN":   { "description": "Lower the Auto Shift timeout variable (down)." },
+        "QK_AUTO_SHIFT_UP":     { "description": "Raise the Auto Shift timeout variable (up)." },
+        "QK_AUTO_SHIFT_REPORT": { "description": "Report your current Auto Shift timeout value." },
+        "QK_AUTO_SHIFT_ON":     { "description": "Turns on the Auto Shift Function." },
+        "QK_AUTO_SHIFT_OFF":    { "description": "Turns off the Auto Shift Function." },
+        "QK_AUTO_SHIFT_TOGGLE": { "description": "Toggles the state of the Auto Shift feature." },
+
+        // Autocorrect
+        "QK_AUTOCORRECT_ON":     { "description": "Turns on the Autocorrect feature." },
+        "QK_AUTOCORRECT_OFF":    { "description": "Turns off the Autocorrect feature." },
+        "QK_AUTOCORRECT_TOGGLE": { "description": "Toggles the status of the Autocorrect feature." },
+
+        // Backlighting
+        "QK_BACKLIGHT_TOGGLE":           { "description": "Turn the backlight on or off." },
+        "QK_BACKLIGHT_STEP":             { "description": "Cycle through backlight levels." },
+        "QK_BACKLIGHT_ON":               { "description": "Set the backlight to max brightness." },
+        "QK_BACKLIGHT_OFF":              { "description": "Turn the backlight off." },
+        "QK_BACKLIGHT_UP":               { "description": "Increase the backlight level." },
+        "QK_BACKLIGHT_DOWN":             { "description": "Decrease the backlight level." },
+        "QK_BACKLIGHT_TOGGLE_BREATHING": { "description": "Toggle backlight breathing." },
+
+        // Wireless / Bluetooth
+        "QK_OUTPUT_AUTO":            { "description": "Automatically switch to USB when plugged in, otherwise use wireless." },
+        "QK_OUTPUT_NEXT":            { "description": "Cycle forwards through USB, Bluetooth, and 2.4GHz (not yet implemented)." },
+        "QK_OUTPUT_PREV":            { "description": "Cycle backwards through USB, Bluetooth, and 2.4GHz (not yet implemented)." },
+        "QK_OUTPUT_NONE":            { "description": "Disable all output (not yet implemented)." },
+        "QK_OUTPUT_USB":             { "description": "Output to USB only." },
+        "QK_OUTPUT_2P4GHZ":          { "description": "Output to 2.4GHz only (not yet implemented)." },
+        "QK_OUTPUT_BLUETOOTH":       { "description": "Output to Bluetooth only." },
+        "QK_BLUETOOTH_PROFILE_NEXT": { "description": "Move to the next Bluetooth profile (not yet implemented)." },
+        "QK_BLUETOOTH_PROFILE_PREV": { "description": "Move to the previous Bluetooth profile (not yet implemented)." },
+        "QK_BLUETOOTH_UNPAIR":       { "description": "Un-pair the current Bluetooth profile (not yet implemented)." },
+        "QK_BLUETOOTH_PROFILE1":     { "description": "Swap to Bluetooth profile #1 (not yet implemented)." },
+        "QK_BLUETOOTH_PROFILE2":     { "description": "Swap to Bluetooth profile #2 (not yet implemented)." },
+        "QK_BLUETOOTH_PROFILE3":     { "description": "Swap to Bluetooth profile #3 (not yet implemented)." },
+        "QK_BLUETOOTH_PROFILE4":     { "description": "Swap to Bluetooth profile #4 (not yet implemented)." },
+        "QK_BLUETOOTH_PROFILE5":     { "description": "Swap to Bluetooth profile #5 (not yet implemented)." },
+
+        // Caps Word
+        "QK_CAPS_WORD_TOGGLE": { "description": "Toggles Caps Word." },
+
+        // Dynamic Macros
+        "QK_DYNAMIC_MACRO_RECORD_START_1": { "description": "Start recording Macro 1." },
+        "QK_DYNAMIC_MACRO_RECORD_START_2": { "description": "Start recording Macro 2." },
+        "QK_DYNAMIC_MACRO_PLAY_1":         { "description": "Replay Macro 1." },
+        "QK_DYNAMIC_MACRO_PLAY_2":         { "description": "Replay Macro 2." },
+        "QK_DYNAMIC_MACRO_RECORD_STOP":    { "description": "Finish the macro that is currently being recorded." },
+
+        // Grave Escape
+        "QK_GRAVE_ESCAPE": { "description": "Escape when pressed, ` when Shift or GUI are held." },
+
+        // Joystick
+        "QK_JOYSTICK_BUTTON_0":  { "description": "Joystick button 0." },
+        "QK_JOYSTICK_BUTTON_1":  { "description": "Joystick button 1." },
+        "QK_JOYSTICK_BUTTON_2":  { "description": "Joystick button 2." },
+        "QK_JOYSTICK_BUTTON_3":  { "description": "Joystick button 3." },
+        "QK_JOYSTICK_BUTTON_4":  { "description": "Joystick button 4." },
+        "QK_JOYSTICK_BUTTON_5":  { "description": "Joystick button 5." },
+        "QK_JOYSTICK_BUTTON_6":  { "description": "Joystick button 6." },
+        "QK_JOYSTICK_BUTTON_7":  { "description": "Joystick button 7." },
+        "QK_JOYSTICK_BUTTON_8":  { "description": "Joystick button 8." },
+        "QK_JOYSTICK_BUTTON_9":  { "description": "Joystick button 9." },
+        "QK_JOYSTICK_BUTTON_10": { "description": "Joystick button 10." },
+        "QK_JOYSTICK_BUTTON_11": { "description": "Joystick button 11." },
+        "QK_JOYSTICK_BUTTON_12": { "description": "Joystick button 12." },
+        "QK_JOYSTICK_BUTTON_13": { "description": "Joystick button 13." },
+        "QK_JOYSTICK_BUTTON_14": { "description": "Joystick button 14." },
+        "QK_JOYSTICK_BUTTON_15": { "description": "Joystick button 15." },
+        "QK_JOYSTICK_BUTTON_16": { "description": "Joystick button 16." },
+        "QK_JOYSTICK_BUTTON_17": { "description": "Joystick button 17." },
+        "QK_JOYSTICK_BUTTON_18": { "description": "Joystick button 18." },
+        "QK_JOYSTICK_BUTTON_19": { "description": "Joystick button 19." },
+        "QK_JOYSTICK_BUTTON_20": { "description": "Joystick button 20." },
+        "QK_JOYSTICK_BUTTON_21": { "description": "Joystick button 21." },
+        "QK_JOYSTICK_BUTTON_22": { "description": "Joystick button 22." },
+        "QK_JOYSTICK_BUTTON_23": { "description": "Joystick button 23." },
+        "QK_JOYSTICK_BUTTON_24": { "description": "Joystick button 24." },
+        "QK_JOYSTICK_BUTTON_25": { "description": "Joystick button 25." },
+        "QK_JOYSTICK_BUTTON_26": { "description": "Joystick button 26." },
+        "QK_JOYSTICK_BUTTON_27": { "description": "Joystick button 27." },
+        "QK_JOYSTICK_BUTTON_28": { "description": "Joystick button 28." },
+        "QK_JOYSTICK_BUTTON_29": { "description": "Joystick button 29." },
+        "QK_JOYSTICK_BUTTON_30": { "description": "Joystick button 30." },
+        "QK_JOYSTICK_BUTTON_31": { "description": "Joystick button 31." },
+
+        // Key Lock + Layer Lock
+        "QK_LOCK":       { "description": "Hold down the next key pressed, until the key is pressed again." },
+        "QK_LAYER_LOCK": { "description": "Locks or unlocks the highest layer." },
+
+        // LED Matrix
+        "QK_LED_MATRIX_ON":              { "description": "Turn on LED Matrix." },
+        "QK_LED_MATRIX_OFF":             { "description": "Turn off LED Matrix." },
+        "QK_LED_MATRIX_TOGGLE":          { "description": "Toggle LED Matrix on or off." },
+        "QK_LED_MATRIX_MODE_NEXT":       { "description": "Cycle through animations." },
+        "QK_LED_MATRIX_MODE_PREVIOUS":   { "description": "Cycle through animations in reverse." },
+        "QK_LED_MATRIX_BRIGHTNESS_UP":   { "description": "Increase the brightness level." },
+        "QK_LED_MATRIX_BRIGHTNESS_DOWN": { "description": "Decrease the brightness level." },
+        "QK_LED_MATRIX_SPEED_UP":        { "description": "Increase the animation speed." },
+        "QK_LED_MATRIX_SPEED_DOWN":      { "description": "Decrease the animation speed." },
+        "QK_LED_MATRIX_FLAG_NEXT":       { "description": "Cycle through flags." },
+        "QK_LED_MATRIX_FLAG_PREVIOUS":   { "description": "Cycle through flags in reverse." },
+
+        // RGB Matrix
+        "QK_RGB_MATRIX_ON":              { "description": "Turn on RGB Matrix." },
+        "QK_RGB_MATRIX_OFF":             { "description": "Turn off RGB Matrix." },
+        "QK_RGB_MATRIX_TOGGLE":          { "description": "Toggle RGB Matrix on or off." },
+        "QK_RGB_MATRIX_MODE_NEXT":       { "description": "Cycle through animations." },
+        "QK_RGB_MATRIX_MODE_PREVIOUS":   { "description": "Cycle through animations in reverse." },
+        "QK_RGB_MATRIX_HUE_UP":          { "description": "Cycle through hue." },
+        "QK_RGB_MATRIX_HUE_DOWN":        { "description": "Cycle through hue in reverse." },
+        "QK_RGB_MATRIX_SATURATION_UP":   { "description": "Increase the saturation." },
+        "QK_RGB_MATRIX_SATURATION_DOWN": { "description": "Decrease the saturation." },
+        "QK_RGB_MATRIX_VALUE_UP":        { "description": "Increase the brightness level." },
+        "QK_RGB_MATRIX_VALUE_DOWN":      { "description": "Decrease the brightness level." },
+        "QK_RGB_MATRIX_SPEED_UP":        { "description": "Increase the animation speed." },
+        "QK_RGB_MATRIX_SPEED_DOWN":      { "description": "Decrease the animation speed." },
+        "QK_RGB_MATRIX_FLAG_NEXT":       { "description": "Cycle through flags." },
+        "QK_RGB_MATRIX_FLAG_PREVIOUS":   { "description": "Cycle through flags in reverse." },
+
+        // RGB Lighting (Underglow)
+        "QK_UNDERGLOW_TOGGLE":          { "description": "Toggle RGB lighting on or off." },
+        "QK_UNDERGLOW_MODE_NEXT":       { "description": "Cycle through modes, reverse direction when Shift is held." },
+        "QK_UNDERGLOW_MODE_PREVIOUS":   { "description": "Cycle through modes in reverse, forward direction when Shift is held." },
+        "QK_UNDERGLOW_HUE_UP":          { "description": "Increase hue, decrease hue when Shift is held." },
+        "QK_UNDERGLOW_HUE_DOWN":        { "description": "Decrease hue, increase hue when Shift is held." },
+        "QK_UNDERGLOW_SATURATION_UP":   { "description": "Increase saturation, decrease saturation when Shift is held." },
+        "QK_UNDERGLOW_SATURATION_DOWN": { "description": "Decrease saturation, increase saturation when Shift is held." },
+        "QK_UNDERGLOW_VALUE_UP":        { "description": "Increase value (brightness), decrease value when Shift is held." },
+        "QK_UNDERGLOW_VALUE_DOWN":      { "description": "Decrease value (brightness), increase value when Shift is held." },
+        "QK_UNDERGLOW_SPEED_UP":        { "description": "Increase effect speed, decrease speed when Shift is held." },
+        "QK_UNDERGLOW_SPEED_DOWN":      { "description": "Decrease effect speed, increase speed when Shift is held." },
+
+        // Deprecated RGB mode shortcuts (still in 0.0.8 catalog)
+        "RGB_MODE_PLAIN":    { "description": "Static (no animation) mode (deprecated)." },
+        "RGB_MODE_BREATHE":  { "description": "Breathing animation mode (deprecated)." },
+        "RGB_MODE_RAINBOW":  { "description": "Rainbow animation mode (deprecated)." },
+        "RGB_MODE_SWIRL":    { "description": "Swirl animation mode (deprecated)." },
+        "RGB_MODE_SNAKE":    { "description": "Snake animation mode (deprecated)." },
+        "RGB_MODE_KNIGHT":   { "description": "Knight Rider animation mode (deprecated)." },
+        "RGB_MODE_XMAS":     { "description": "Christmas animation mode (deprecated)." },
+        "RGB_MODE_GRADIENT": { "description": "Static gradient animation mode (deprecated)." },
+        "RGB_MODE_RGBTEST":  { "description": "Red, Green, Blue test animation mode (deprecated)." },
+        "RGB_MODE_TWINKLE":  { "description": "Twinkle animation mode (deprecated)." },
+
+        // Mouse keys
+        "QK_MOUSE_CURSOR_UP":      { "description": "Mouse cursor up." },
+        "QK_MOUSE_CURSOR_DOWN":    { "description": "Mouse cursor down." },
+        "QK_MOUSE_CURSOR_LEFT":    { "description": "Mouse cursor left." },
+        "QK_MOUSE_CURSOR_RIGHT":   { "description": "Mouse cursor right." },
+        "QK_MOUSE_BUTTON_1":       { "description": "Mouse button 1." },
+        "QK_MOUSE_BUTTON_2":       { "description": "Mouse button 2." },
+        "QK_MOUSE_BUTTON_3":       { "description": "Mouse button 3." },
+        "QK_MOUSE_BUTTON_4":       { "description": "Mouse button 4." },
+        "QK_MOUSE_BUTTON_5":       { "description": "Mouse button 5." },
+        "QK_MOUSE_BUTTON_6":       { "description": "Mouse button 6." },
+        "QK_MOUSE_BUTTON_7":       { "description": "Mouse button 7." },
+        "QK_MOUSE_BUTTON_8":       { "description": "Mouse button 8." },
+        "QK_MOUSE_WHEEL_UP":       { "description": "Mouse wheel up." },
+        "QK_MOUSE_WHEEL_DOWN":     { "description": "Mouse wheel down." },
+        "QK_MOUSE_WHEEL_LEFT":     { "description": "Mouse wheel left." },
+        "QK_MOUSE_WHEEL_RIGHT":    { "description": "Mouse wheel right." },
+        "QK_MOUSE_ACCELERATION_0": { "description": "Set mouse acceleration to 0." },
+        "QK_MOUSE_ACCELERATION_1": { "description": "Set mouse acceleration to 1." },
+        "QK_MOUSE_ACCELERATION_2": { "description": "Set mouse acceleration to 2." },
+
+        // Programmable Button
+        "QK_PROGRAMMABLE_BUTTON_1":  { "description": "Programmable button 1." },
+        "QK_PROGRAMMABLE_BUTTON_2":  { "description": "Programmable button 2." },
+        "QK_PROGRAMMABLE_BUTTON_3":  { "description": "Programmable button 3." },
+        "QK_PROGRAMMABLE_BUTTON_4":  { "description": "Programmable button 4." },
+        "QK_PROGRAMMABLE_BUTTON_5":  { "description": "Programmable button 5." },
+        "QK_PROGRAMMABLE_BUTTON_6":  { "description": "Programmable button 6." },
+        "QK_PROGRAMMABLE_BUTTON_7":  { "description": "Programmable button 7." },
+        "QK_PROGRAMMABLE_BUTTON_8":  { "description": "Programmable button 8." },
+        "QK_PROGRAMMABLE_BUTTON_9":  { "description": "Programmable button 9." },
+        "QK_PROGRAMMABLE_BUTTON_10": { "description": "Programmable button 10." },
+        "QK_PROGRAMMABLE_BUTTON_11": { "description": "Programmable button 11." },
+        "QK_PROGRAMMABLE_BUTTON_12": { "description": "Programmable button 12." },
+        "QK_PROGRAMMABLE_BUTTON_13": { "description": "Programmable button 13." },
+        "QK_PROGRAMMABLE_BUTTON_14": { "description": "Programmable button 14." },
+        "QK_PROGRAMMABLE_BUTTON_15": { "description": "Programmable button 15." },
+        "QK_PROGRAMMABLE_BUTTON_16": { "description": "Programmable button 16." },
+        "QK_PROGRAMMABLE_BUTTON_17": { "description": "Programmable button 17." },
+        "QK_PROGRAMMABLE_BUTTON_18": { "description": "Programmable button 18." },
+        "QK_PROGRAMMABLE_BUTTON_19": { "description": "Programmable button 19." },
+        "QK_PROGRAMMABLE_BUTTON_20": { "description": "Programmable button 20." },
+        "QK_PROGRAMMABLE_BUTTON_21": { "description": "Programmable button 21." },
+        "QK_PROGRAMMABLE_BUTTON_22": { "description": "Programmable button 22." },
+        "QK_PROGRAMMABLE_BUTTON_23": { "description": "Programmable button 23." },
+        "QK_PROGRAMMABLE_BUTTON_24": { "description": "Programmable button 24." },
+        "QK_PROGRAMMABLE_BUTTON_25": { "description": "Programmable button 25." },
+        "QK_PROGRAMMABLE_BUTTON_26": { "description": "Programmable button 26." },
+        "QK_PROGRAMMABLE_BUTTON_27": { "description": "Programmable button 27." },
+        "QK_PROGRAMMABLE_BUTTON_28": { "description": "Programmable button 28." },
+        "QK_PROGRAMMABLE_BUTTON_29": { "description": "Programmable button 29." },
+        "QK_PROGRAMMABLE_BUTTON_30": { "description": "Programmable button 30." },
+        "QK_PROGRAMMABLE_BUTTON_31": { "description": "Programmable button 31." },
+        "QK_PROGRAMMABLE_BUTTON_32": { "description": "Programmable button 32." },
+
+        // Repeat Key
+        "QK_REPEAT_KEY":     { "description": "Repeat the last pressed key." },
+        "QK_ALT_REPEAT_KEY": { "description": "Perform alternate of the last key." },
+
+        // Space Cadet
+        "QK_SPACE_CADET_LEFT_CTRL_PARENTHESIS_OPEN":    { "description": "Left Control when held, ( when tapped." },
+        "QK_SPACE_CADET_RIGHT_CTRL_PARENTHESIS_CLOSE":  { "description": "Right Control when held, ) when tapped." },
+        "QK_SPACE_CADET_LEFT_SHIFT_PARENTHESIS_OPEN":   { "description": "Left Shift when held, ( when tapped." },
+        "QK_SPACE_CADET_RIGHT_SHIFT_PARENTHESIS_CLOSE": { "description": "Right Shift when held, ) when tapped." },
+        "QK_SPACE_CADET_LEFT_ALT_PARENTHESIS_OPEN":     { "description": "Left Alt when held, ( when tapped." },
+        "QK_SPACE_CADET_RIGHT_ALT_PARENTHESIS_CLOSE":   { "description": "Right Alt when held, ) when tapped." },
+        "QK_SPACE_CADET_RIGHT_SHIFT_ENTER":             { "description": "Right Shift when held, Enter when tapped." },
+
+        // Swap Hands
+        "QK_SWAP_HANDS_ON":            { "description": "Turn on hand swap." },
+        "QK_SWAP_HANDS_OFF":           { "description": "Turn off hand swap." },
+        "QK_SWAP_HANDS_MOMENTARY_ON":  { "description": "Turn on hand swap while held." },
+        "QK_SWAP_HANDS_MOMENTARY_OFF": { "description": "Turn off hand swap while held." },
+        "QK_SWAP_HANDS_TOGGLE":        { "description": "Toggle hand swap." },
+        "QK_SWAP_HANDS_TAP_TOGGLE":    { "description": "Momentary swap when held, toggle when tapped." },
+        "QK_SWAP_HANDS_ONE_SHOT":      { "description": "Turn on hand swap while held or until next key press." },
+
+        // Dynamic Tapping Term
+        "QK_DYNAMIC_TAPPING_TERM_PRINT": { "description": "Types the current tapping term, in milliseconds." },
+        "QK_DYNAMIC_TAPPING_TERM_UP":    { "description": "Increases the current tapping term by DYNAMIC_TAPPING_TERM_INCREMENT ms (5 ms by default)." },
+        "QK_DYNAMIC_TAPPING_TERM_DOWN":  { "description": "Decreases the current tapping term by DYNAMIC_TAPPING_TERM_INCREMENT ms (5 ms by default)." },
+
+        // Unicode
+        "QK_UNICODE_MODE_NEXT":       { "description": "Cycle through selected Unicode input modes." },
+        "QK_UNICODE_MODE_PREVIOUS":   { "description": "Cycle through selected Unicode input modes in reverse." },
+        "QK_UNICODE_MODE_MACOS":      { "description": "Switch to macOS Unicode input." },
+        "QK_UNICODE_MODE_LINUX":      { "description": "Switch to Linux Unicode input." },
+        "QK_UNICODE_MODE_WINDOWS":    { "description": "Switch to Windows Unicode input." },
+        "QK_UNICODE_MODE_BSD":        { "description": "Switch to BSD Unicode input (not implemented)." },
+        "QK_UNICODE_MODE_WINCOMPOSE": { "description": "Switch to Windows Unicode input using WinCompose." },
+        "QK_UNICODE_MODE_EMACS":      { "description": "Switch to emacs Unicode input (C-x-8 RET)." },
+
+        // MIDI - controls
+        "QK_MIDI_ON":                    { "description": "Turn MIDI on." },
+        "QK_MIDI_OFF":                   { "description": "Turn MIDI off." },
+        "QK_MIDI_TOGGLE":                { "description": "Toggle MIDI enabled." },
+        "QK_MIDI_OCTAVE_N2":             { "description": "Set octave to -2." },
+        "QK_MIDI_OCTAVE_N1":             { "description": "Set octave to -1." },
+        "QK_MIDI_OCTAVE_0":              { "description": "Set octave to 0." },
+        "QK_MIDI_OCTAVE_1":              { "description": "Set octave to 1." },
+        "QK_MIDI_OCTAVE_2":              { "description": "Set octave to 2." },
+        "QK_MIDI_OCTAVE_3":              { "description": "Set octave to 3." },
+        "QK_MIDI_OCTAVE_4":              { "description": "Set octave to 4." },
+        "QK_MIDI_OCTAVE_5":              { "description": "Set octave to 5." },
+        "QK_MIDI_OCTAVE_6":              { "description": "Set octave to 6." },
+        "QK_MIDI_OCTAVE_7":              { "description": "Set octave to 7." },
+        "QK_MIDI_OCTAVE_DOWN":           { "description": "Move down an octave." },
+        "QK_MIDI_OCTAVE_UP":             { "description": "Move up an octave." },
+        "QK_MIDI_TRANSPOSE_N6":          { "description": "Set transposition to -6 semitones." },
+        "QK_MIDI_TRANSPOSE_N5":          { "description": "Set transposition to -5 semitones." },
+        "QK_MIDI_TRANSPOSE_N4":          { "description": "Set transposition to -4 semitones." },
+        "QK_MIDI_TRANSPOSE_N3":          { "description": "Set transposition to -3 semitones." },
+        "QK_MIDI_TRANSPOSE_N2":          { "description": "Set transposition to -2 semitones." },
+        "QK_MIDI_TRANSPOSE_N1":          { "description": "Set transposition to -1 semitone." },
+        "QK_MIDI_TRANSPOSE_0":           { "description": "No transposition." },
+        "QK_MIDI_TRANSPOSE_1":           { "description": "Set transposition to +1 semitone." },
+        "QK_MIDI_TRANSPOSE_2":           { "description": "Set transposition to +2 semitones." },
+        "QK_MIDI_TRANSPOSE_3":           { "description": "Set transposition to +3 semitones." },
+        "QK_MIDI_TRANSPOSE_4":           { "description": "Set transposition to +4 semitones." },
+        "QK_MIDI_TRANSPOSE_5":           { "description": "Set transposition to +5 semitones." },
+        "QK_MIDI_TRANSPOSE_6":           { "description": "Set transposition to +6 semitones." },
+        "QK_MIDI_TRANSPOSE_DOWN":        { "description": "Decrease transposition." },
+        "QK_MIDI_TRANSPOSE_UP":          { "description": "Increase transposition." },
+        "QK_MIDI_VELOCITY_0":            { "description": "Set velocity to 0." },
+        "QK_MIDI_VELOCITY_1":            { "description": "Set velocity to 12." },
+        "QK_MIDI_VELOCITY_2":            { "description": "Set velocity to 25." },
+        "QK_MIDI_VELOCITY_3":            { "description": "Set velocity to 38." },
+        "QK_MIDI_VELOCITY_4":            { "description": "Set velocity to 51." },
+        "QK_MIDI_VELOCITY_5":            { "description": "Set velocity to 64." },
+        "QK_MIDI_VELOCITY_6":            { "description": "Set velocity to 76." },
+        "QK_MIDI_VELOCITY_7":            { "description": "Set velocity to 89." },
+        "QK_MIDI_VELOCITY_8":            { "description": "Set velocity to 102." },
+        "QK_MIDI_VELOCITY_9":            { "description": "Set velocity to 114." },
+        "QK_MIDI_VELOCITY_10":           { "description": "Set velocity to 127." },
+        "QK_MIDI_VELOCITY_DOWN":         { "description": "Decrease velocity." },
+        "QK_MIDI_VELOCITY_UP":           { "description": "Increase velocity." },
+        "QK_MIDI_CHANNEL_1":             { "description": "Set MIDI channel to 1." },
+        "QK_MIDI_CHANNEL_2":             { "description": "Set MIDI channel to 2." },
+        "QK_MIDI_CHANNEL_3":             { "description": "Set MIDI channel to 3." },
+        "QK_MIDI_CHANNEL_4":             { "description": "Set MIDI channel to 4." },
+        "QK_MIDI_CHANNEL_5":             { "description": "Set MIDI channel to 5." },
+        "QK_MIDI_CHANNEL_6":             { "description": "Set MIDI channel to 6." },
+        "QK_MIDI_CHANNEL_7":             { "description": "Set MIDI channel to 7." },
+        "QK_MIDI_CHANNEL_8":             { "description": "Set MIDI channel to 8." },
+        "QK_MIDI_CHANNEL_9":             { "description": "Set MIDI channel to 9." },
+        "QK_MIDI_CHANNEL_10":            { "description": "Set MIDI channel to 10." },
+        "QK_MIDI_CHANNEL_11":            { "description": "Set MIDI channel to 11." },
+        "QK_MIDI_CHANNEL_12":            { "description": "Set MIDI channel to 12." },
+        "QK_MIDI_CHANNEL_13":            { "description": "Set MIDI channel to 13." },
+        "QK_MIDI_CHANNEL_14":            { "description": "Set MIDI channel to 14." },
+        "QK_MIDI_CHANNEL_15":            { "description": "Set MIDI channel to 15." },
+        "QK_MIDI_CHANNEL_16":            { "description": "Set MIDI channel to 16." },
+        "QK_MIDI_CHANNEL_DOWN":          { "description": "Decrease MIDI channel." },
+        "QK_MIDI_CHANNEL_UP":            { "description": "Increase MIDI channel." },
+        "QK_MIDI_ALL_NOTES_OFF":         { "description": "Stop all notes." },
+        "QK_MIDI_SUSTAIN":               { "description": "Sustain." },
+        "QK_MIDI_PORTAMENTO":            { "description": "Portamento." },
+        "QK_MIDI_SOSTENUTO":             { "description": "Sostenuto." },
+        "QK_MIDI_SOFT":                  { "description": "Soft pedal." },
+        "QK_MIDI_LEGATO":                { "description": "Legato." },
+        "QK_MIDI_MODULATION":            { "description": "Modulation." },
+        "QK_MIDI_MODULATION_SPEED_DOWN": { "description": "Decrease modulation speed." },
+        "QK_MIDI_MODULATION_SPEED_UP":   { "description": "Increase modulation speed." },
+        "QK_MIDI_PITCH_BEND_DOWN":       { "description": "Bend pitch down." },
+        "QK_MIDI_PITCH_BEND_UP":         { "description": "Bend pitch up." }
+    }
+}

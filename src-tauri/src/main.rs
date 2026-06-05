@@ -22,7 +22,10 @@ use tauri::{
 };
 use tauri::{AppHandle, Manager};
 
-use rpc::commands::{device_get, devices_get, keymap_get, remap_key, xap_constants_get};
+use rpc::commands::{
+    decode_keycode, device_get, devices_get, encoder_keymap_get, keycode_template_encode,
+    keymap_get, remap_key, xap_constants_get,
+};
 use rpc::events::XapEvent;
 use xap::client::XapClient;
 
@@ -105,7 +108,7 @@ fn main() -> Result<()> {
         .formatter(specta::ts::formatter::prettier);
 
     let mut specta_builder =
-        generate_specta_builder!(commands: [xap_constants_get, remap_key, keymap_get, device_get, devices_get], events: [XapEvent])
+        generate_specta_builder!(commands: [xap_constants_get, remap_key, keymap_get, device_get, devices_get, keycode_template_encode, decode_keycode, encoder_keymap_get], events: [XapEvent])
             .config(specta_config);
 
     if cfg!(debug_assertions) {
