@@ -426,6 +426,17 @@ export const commands = {
     async devicesGet(): Promise<XapDeviceState[]> {
         return await TAURI_INVOKE('devices_get')
     },
+    async keycodeTemplateEncode(template: KeycodeTemplate): Promise<Result<number, Error>> {
+        try {
+            return {
+                status: 'ok',
+                data: await TAURI_INVOKE('keycode_template_encode', { template }),
+            }
+        } catch (e) {
+            if (e instanceof Error) throw e
+            else return { status: 'error', error: e as any }
+        }
+    },
 }
 
 export const events = __makeEvents__<{
@@ -454,7 +465,44 @@ export type KeyCode = {
     key: string
     group?: string | null
     label?: string | null
+    top?: string | null
+    bottom?: string | null
     aliases?: string[]
+    description?: string | null
+    template?: KeycodeTemplate | null
+}
+/**
+ * A parameterized keycode the GUI either decoded from firmware or is in the
+ * middle of assembling via the picker. Variants with `Option` slots are the
+ * two-step pickers: the slot is `None` while the picker is collecting the
+ * remaining input.
+ */
+export type KeycodeTemplate =
+    | { kind: 'LayerOp'; op: LayerOp; layer: number }
+    | { kind: 'OneShotMod'; mod_mask: number }
+    | { kind: 'LayerTap'; layer: number; tap_kc: number | null }
+    | { kind: 'ModTap'; mod_mask: number; tap_kc: number | null }
+    | { kind: 'LayerMod'; layer: number; mod_mask: number | null }
+    | { kind: 'Modified'; mod_mask: number; base_kc: number | null }
+export type KeycodeView = { tabs: KeycodeViewTab[] }
+export type KeycodeViewSubgroup = {
+    id: string
+    label: string | null
+    render_mode: string | null
+    is_fallback: boolean
+    codes: KeyCode[]
+    /**
+     * Parameterised subgroup. When present, `codes` is empty and the
+     * frontend expands one button per layer / mod combination at render time.
+     */
+    template: SubgroupTemplate | null
+}
+export type KeycodeViewTab = {
+    id: string
+    label: string
+    is_fallback: boolean
+    color: string | null
+    subgroups: KeycodeViewSubgroup[]
 }
 export type KeymapCapabilitiesFlags = number
 export type KeymapGetEncoderKeycodeArg = { layer: number; encoder: number; clockwise: number }
@@ -468,6 +516,7 @@ export type KeymapInfo = {
     get_encoder_keycode_enabled: boolean
 }
 export type KeymapKey = { code: KeyCode; position: Point3D }
+export type LayerOp = 'MO' | 'TG' | 'TO' | 'DF' | 'OSL' | 'TT' | 'PDF'
 export type Layout = { layout: LayoutEntry[] }
 export type LayoutEntry = {
     matrix: Point2D
@@ -604,10 +653,29 @@ export type RgblightCapabilitiesFlags = number
 export type RgblightGetEnabledEffectsResponse = bigint
 export type RgbmatrixCapabilitiesFlags = number
 export type RgbmatrixGetEnabledEffectsResponse = bigint
+/**
+ * Parameterised subgroup descriptor. The wire type ships the descriptor
+ * un-expanded; the frontend renders one button per layer / mod combination
+ * using the connected keyboard's layer count.
+ */
+export type SubgroupTemplate =
+    | { kind: 'MO' }
+    | { kind: 'TG' }
+    | { kind: 'TO' }
+    | { kind: 'DF' }
+    | { kind: 'OSL' }
+    | { kind: 'TT' }
+    | { kind: 'PDF' }
+    | { kind: 'LT' }
+    | { kind: 'LM' }
+    | { kind: 'MT'; mods: string[] }
+    | { kind: 'QK_MODS'; mods: string[] }
 export type UTF8String = string
 export type XapCapabilitiesFlags = number
 export type XapConstants = {
-    keycodes: XapKeyCodeCategory[]
+    keycode_version: string
+    keycode_versions: string[]
+    keycode_view: KeycodeView
     rgblight_modes: LightingEffects
     rgb_matrix_modes: LightingEffects
     led_matrix_modes: LightingEffects
@@ -637,7 +705,6 @@ export type XapEvent =
     | { kind: 'NewDevice'; data: { id: string } }
     | { kind: 'RemovedDevice'; data: { id: string } }
 export type XapInfo = { version: number }
-export type XapKeyCodeCategory = { name: string; codes: KeyCode[] }
 export type XapSecureStatus = 'Locked' | 'Unlocking' | 'Unlocked'
 export type XapSecureStatusResponse = number
 export type XapVersionResponse = number
